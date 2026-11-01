@@ -177,7 +177,7 @@ function updateObraAPI(JSONPayload) {
 }
 
 // Inclui várias fanfics de uma vez (página "Incluir obras").
-// rows: [{ titulo, autor, fandom, serie: bool, nomeSerie, volume, genero, palavras, plot,
+// rows: [{ titulo, autor, fandom, serie: bool, nomeSerie, volume, genero, orientacao, palavras, plot,
 //          status, dataFim: "yyyy-mm-dd", nota, favorita: bool, abandonada: bool, capaUrl }]
 function saveFanficsBatchAPI(JSONPayload) {
   const lock = LockService.getScriptLock();
@@ -204,6 +204,7 @@ function saveFanficsBatchAPI(JSONPayload) {
       nomeSerie: colPor(["nome da serie", "nome serie", "serie (nome)"]),
       volume: colPor(["volume", "vol", "vol."]),
       genero: colPor(["genero"]),
+      orientacao: colPor(["orientacao"]),
       idioma: colPor(["idioma"]),
       paginas: colPor(["paginas", "numero de paginas", "n de paginas"]),
       palavras: colPor(["palavras", "numero de palavras"]),
@@ -250,10 +251,9 @@ function saveFanficsBatchAPI(JSONPayload) {
         if (C.nomeSerie >= 0) { put(C.serie, i, "Sim"); put(C.nomeSerie, i, (r.nomeSerie || "").trim()); }
         else put(C.serie, i, (r.nomeSerie || "").trim() || "Sim");
         put(C.volume, i, r.volume === "" || r.volume === undefined ? "" : Number(r.volume));
-      } else {
-        put(C.serie, i, "Não");
-      }
+      } // sem série: coluna Série fica em branco
       put(C.genero, i, r.genero || "Romance");
+      put(C.orientacao, i, r.orientacao || "Straight");
       put(C.idioma, i, "Inglês");
       put(C.palavras, i, palavras || "");
       put(C.paginas, i, palavras ? Math.ceil(palavras / 300) : "");

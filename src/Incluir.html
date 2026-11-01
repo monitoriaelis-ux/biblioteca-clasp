@@ -39,6 +39,7 @@
             <th class="c-nomeserie">Nome da série</th>
             <th class="c-vol">Vol.</th>
             <th class="c-genero">Gênero</th>
+            <th class="c-orient">Orientação</th>
             <th class="c-palavras">Palavras</th>
             <th class="c-plot">Plot</th>
             <th class="c-status">Status</th>
@@ -175,7 +176,7 @@
   .c-num { width: 34px; color: var(--texto-secundario); font-weight: 600; }
   .c-titulo { width: 210px; } .c-autor { width: 140px; } .c-fandom { width: 120px; }
   .c-serie { width: 72px; } .c-nomeserie { width: 150px; } .c-vol { width: 60px; }
-  .c-genero { width: 115px; } .c-palavras { width: 90px; } .c-plot { width: 220px; }
+  .c-genero { width: 115px; } .c-orient { width: 105px; } .c-palavras { width: 90px; } .c-plot { width: 220px; }
   .c-status { width: 105px; } .c-data { width: 130px; } .c-nota { width: 110px; }
   .c-check { width: 40px; } .c-capa { width: 170px; } .c-del { width: 36px; }
 
@@ -224,7 +225,7 @@
   let incSalvando = false;
 
   function incNovaLinha() {
-    return { titulo: '', autor: '', fandom: '', serie: false, nomeSerie: '', volume: '', genero: 'Romance',
+    return { titulo: '', autor: '', fandom: '', serie: false, nomeSerie: '', volume: '', genero: 'Romance', orientacao: 'Straight',
              palavras: '', plot: '', status: 'Quero ler', dataFim: '', nota: 0, favorita: false, abandonada: false, capaUrl: '' };
   }
   function incLinhaVazia(r) {
@@ -252,6 +253,13 @@
     const base = (typeof allBooks !== 'undefined' ? allBooks : []).map(b => (b['Gênero'] || b['Genero'] || '').toString().trim()).filter(Boolean);
     const set = [...new Set(['Romance'].concat(base))];
     return ['Romance'].concat(set.filter(g => g !== 'Romance').sort((a, b) => a.localeCompare(b, 'pt-BR')));
+  }
+
+  // Orientação: Straight (padrão) e Sapphic, mais outras que já existam na planilha
+  function incOrientacoes() {
+    const base = (typeof allBooks !== 'undefined' ? allBooks : []).map(b => (b['Orientação'] || '').toString().trim()).filter(Boolean);
+    const extras = [...new Set(base)].filter(o => !['straight', 'sapphic'].includes(o.toLowerCase())).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    return ['Straight', 'Sapphic'].concat(extras);
   }
 
   function incPreencherDatalists() {
@@ -285,7 +293,9 @@
 
   function incRenderTabela() {
     const generos = incGeneros();
+    const orientacoes = incOrientacoes();
     document.getElementById('inc-tbody').innerHTML = incLinhas.map((r, i) => {
+      const oris = orientacoes.includes(r.orientacao) ? orientacoes : [r.orientacao].concat(orientacoes);
       const lido = r.status === 'Lido';
       const gens = generos.includes(r.genero) ? generos : [r.genero].concat(generos);
       let stars = '';
@@ -307,6 +317,11 @@
           <td>
             <select class="inc-in" data-f="genero">
               ${gens.map(g => `<option value="${incEsc(g)}"${g === r.genero ? ' selected' : ''}>${incEsc(g)}</option>`).join('')}
+            </select>
+          </td>
+          <td>
+            <select class="inc-in" data-f="orientacao">
+              ${oris.map(o => `<option value="${incEsc(o)}"${o === r.orientacao ? ' selected' : ''}>${incEsc(o)}</option>`).join('')}
             </select>
           </td>
           <td><input class="inc-in num" data-f="palavras" type="number" min="0" step="1" value="${incEsc(r.palavras)}" placeholder="0"></td>
@@ -370,7 +385,7 @@
   }
 
   // Ordem das colunas para colagem (igual à tabela)
-  const INC_COLS_COLAR = ['titulo', 'autor', 'fandom', 'serie', 'nomeSerie', 'volume', 'genero', 'palavras', 'plot', 'status', 'dataFim', 'nota', 'favorita', 'abandonada', 'capaUrl'];
+  const INC_COLS_COLAR = ['titulo', 'autor', 'fandom', 'serie', 'nomeSerie', 'volume', 'genero', 'orientacao', 'palavras', 'plot', 'status', 'dataFim', 'nota', 'favorita', 'abandonada', 'capaUrl'];
 
   function incColar(e, el) {
     const texto = (e.clipboardData || window.clipboardData).getData('text');
