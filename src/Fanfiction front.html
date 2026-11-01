@@ -1,18 +1,74 @@
 <!-- Seção "Minhas obsessões" — exibida dentro do Front.html (a navbar fica no Front). -->
 <div class="fanfic-layout">
 
-  <!-- Coluna fixa: um card por fandom; clicar filtra o restante da página -->
+  <!-- Coluna 1 (fixa): filtro por fandom -->
   <aside class="fandom-sidebar">
     <button type="button" id="fandom-todos" class="fandom-todos-btn">
-      <i class="fa-solid fa-layer-group"></i> Todos
+      <i class="fa-solid fa-layer-group"></i> Todos <span id="fandom-todos-total"></span>
     </button>
     <div id="fandom-cards" class="fandom-cards-list"></div>
   </aside>
 
-  <!-- Restante da página: rola independentemente e obedece ao filtro -->
-  <div class="fanfic-content">
-    <div id="fanfic-cards-grid" class="fanfic-custom-grid">
-      <div style="color: var(--texto-secundario); padding: 20px;">Carregando suas obsessões...</div>
+  <!-- Coluna 2 (fixa): estatísticas e top autores — obedecem ao filtro de fandom -->
+  <aside class="fanfic-stats">
+    <div class="stat-card stat-lidas">
+      <div class="stat-text">
+        <span class="stat-label">Obras lidas</span>
+        <span class="stat-value" id="stat-lidas">0</span>
+        <span class="stat-sub" id="stat-lidas-sub"></span>
+      </div>
+      <i class="fa-solid fa-book-bookmark stat-icon"></i>
+    </div>
+
+    <div class="stat-card stat-nota">
+      <div class="stat-text">
+        <span class="stat-label">Nota média</span>
+        <span class="stat-value" id="stat-nota">0.0</span>
+      </div>
+      <i class="fa-solid fa-star stat-icon" style="color: #E2A03F;"></i>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-text">
+        <span class="stat-label">Palavras lidas</span>
+        <span class="stat-value" id="stat-palavras">0</span>
+      </div>
+      <i class="fa-solid fa-font stat-icon"></i>
+    </div>
+
+    <div class="stat-card stat-paginas">
+      <div class="stat-text">
+        <span class="stat-label">Págs. lidas</span>
+        <span class="stat-value" id="stat-paginas">0</span>
+      </div>
+      <i class="fa-solid fa-book-open stat-icon"></i>
+    </div>
+
+    <div class="autores-card">
+      <div class="autores-title"><i class="fa-solid fa-feather-pointed"></i> Top autores</div>
+      <div id="autores-list" class="autores-list"></div>
+    </div>
+  </aside>
+
+  <!-- Coluna 3: barra de busca fixa + lista de fanfics (rola) -->
+  <div class="fanfic-main">
+    <div class="fanfic-toolbar">
+      <div class="fanfic-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="fanfic-search" placeholder="Buscar por título ou autor..." autocomplete="off">
+      </div>
+      <button type="button" class="fanfic-sort-btn" id="sort-alfa" title="Ordenar por título">
+        <i class="fa-solid fa-arrow-down-a-z"></i> <span>A-Z</span>
+      </button>
+      <button type="button" class="fanfic-sort-btn" id="sort-palavras" title="Ordenar por número de palavras">
+        <i class="fa-solid fa-arrow-down-wide-short"></i> <span>Palavras</span>
+      </button>
+    </div>
+
+    <div class="fanfic-list-scroll">
+      <div id="fanfic-cards-grid" class="fanfic-custom-grid">
+        <div style="color: var(--texto-secundario); padding: 20px;">Carregando suas obsessões...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -24,19 +80,11 @@
     height: 100%;
   }
 
-  /* ===== Cards de fandom (coluna esquerda fixa) ===== */
+  /* ===== Coluna 1: cards de fandom ===== */
   .fandom-sidebar {
-    width: 230px;
+    width: 190px;
     flex-shrink: 0;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .fandom-cards-list {
-    flex: 1;
-    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -53,7 +101,7 @@
     background: var(--bg-cards);
     border: 2px solid transparent;
     border-radius: 12px;
-    padding: 8px 14px;
+    padding: 8px 12px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
     transition: border-color 0.2s, color 0.2s, background 0.2s;
@@ -62,12 +110,20 @@
   .fandom-todos-btn:hover { border-color: var(--borda-bege); color: var(--texto-marrom); }
   .fandom-todos-btn.selected { background: var(--cor-fanfic); color: #fff; border-color: var(--cor-fanfic); }
 
+  .fandom-cards-list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .fandom-card {
     flex: 1;
     min-height: 0;
     background: var(--bg-cards);
     border-radius: 12px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
     border: 2px solid transparent;
     display: flex;
@@ -86,10 +142,10 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 8px;
+    gap: 6px;
   }
   .fandom-name {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -99,36 +155,40 @@
     text-overflow: ellipsis;
   }
   .fandom-total {
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--texto-marrom);
     line-height: 1;
+    white-space: nowrap;
   }
   .fandom-total small {
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 600;
     color: var(--texto-secundario);
     margin-left: 2px;
   }
 
-  .fandom-bar {
+  /* Barra 100% lidas x não lidas (usada nos fandoms e nos autores) */
+  .split-bar {
     display: flex;
     height: 8px;
     border-radius: 6px;
     overflow: hidden;
     background: var(--hover-bege);
   }
-  .fandom-bar-lidas { background: var(--cor-livro); }
-  .fandom-bar-naolidas { background: var(--cor-fanfic); }
+  .split-bar-lidas { background: var(--cor-livro); }
+  .split-bar-naolidas { background: var(--cor-fanfic); }
 
   .fandom-legend {
     display: flex;
     justify-content: space-between;
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 600;
     color: var(--texto-secundario);
+    white-space: nowrap;
   }
-  .fandom-legend .dot {
+  .fandom-legend .dot,
+  .autores-legend .dot {
     display: inline-block;
     width: 7px;
     height: 7px;
@@ -136,21 +196,181 @@
     margin-right: 4px;
   }
 
-  /* ===== Restante da página ===== */
-  .fanfic-content {
-    flex: 1;
-    min-width: 0;
+  /* ===== Coluna 2: estatísticas ===== */
+  .fanfic-stats {
+    width: 240px;
+    flex-shrink: 0;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stat-card {
+    flex-shrink: 0;
+    background: var(--bg-cards);
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stat-card.stat-lidas { background: #e3ece8; padding: 14px; }
+  .stat-card.stat-nota { background: #fff9c4; }
+  .stat-card.stat-paginas { background: #ffd1c1; }
+
+  .stat-text { display: flex; flex-direction: column; }
+  .stat-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .stat-value {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--texto-marrom);
+    line-height: 1.1;
+    margin-top: 2px;
+  }
+  .stat-lidas .stat-value { font-size: 28px; }
+  .stat-sub { font-size: 10.5px; font-weight: 600; color: var(--texto-secundario); }
+  .stat-icon { font-size: 18px; color: var(--cor-fanfic); opacity: 0.8; }
+  .stat-lidas .stat-icon { font-size: 24px; color: var(--cor-livro); }
+
+  .autores-card {
+    flex: 1;
+    min-height: 0;
+    background: var(--bg-cards);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
+    display: flex;
+    flex-direction: column;
+  }
+  .autores-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--texto-marrom);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--hover-bege);
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .autores-title i { color: var(--cor-fanfic); margin-right: 4px; }
+  .autores-list {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
+    padding-right: 4px;
+  }
+  .autor-row { display: flex; flex-direction: column; gap: 4px; }
+  .autor-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .autor-nome {
+    font-weight: 600;
+    color: var(--texto-marrom);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .autor-pos { color: var(--texto-secundario); font-weight: 700; margin-right: 4px; }
+  .autor-total { font-weight: 700; color: var(--texto-marrom); white-space: nowrap; }
+  .autor-row .split-bar { height: 6px; }
+  .autores-legend {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+    padding-top: 8px;
+    margin-top: 8px;
+    border-top: 1px solid var(--hover-bege);
+  }
+  .autores-vazio { font-size: 12px; color: var(--texto-secundario); text-align: center; padding: 12px 0; }
+
+  /* ===== Coluna 3: busca + lista ===== */
+  .fanfic-main {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fanfic-toolbar {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .fanfic-search {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-cards);
+    border: 1px solid var(--borda-bege);
+    border-radius: 10px;
+    padding: 0 12px;
+    height: 38px;
+  }
+  .fanfic-search i { color: var(--texto-secundario); font-size: 13px; }
+  .fanfic-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    color: var(--texto-marrom);
+  }
+  .fanfic-search:focus-within { border-color: var(--cor-fanfic); }
+
+  .fanfic-sort-btn {
+    height: 38px;
+    padding: 0 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+    background: var(--bg-cards);
+    border: 1px solid var(--borda-bege);
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .fanfic-sort-btn i { margin-right: 4px; }
+  .fanfic-sort-btn:hover { color: var(--texto-marrom); background: var(--hover-bege); }
+  .fanfic-sort-btn.active { background: var(--cor-fanfic); border-color: var(--cor-fanfic); color: #fff; }
+
+  .fanfic-list-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     padding-right: 4px;
   }
 
   .fanfic-custom-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
     padding-bottom: 20px;
   }
@@ -189,20 +409,6 @@
     border-top: 1px solid #f1f5f9;
     padding-top: 8px;
   }
-
-  /* Telas estreitas (celular): cards de fandom viram uma faixa horizontal no topo */
-  @media (max-width: 700px) {
-    .fanfic-layout { flex-direction: column; }
-    .fandom-sidebar {
-      width: 100%;
-      height: auto;
-      flex-direction: row;
-      overflow-x: auto;
-      flex-shrink: 0;
-    }
-    .fandom-cards-list { flex-direction: row; }
-    .fandom-card { flex: 0 0 170px; }
-  }
 </style>
 
 <script>
@@ -218,17 +424,33 @@
     { nome: 'Gaga',       aliases: ['Lady Gaga'] },
     { nome: 'Outros',     outros: true }
   ];
+  const TOP_AUTORES = 10;
 
-  // Fandom selecionado no filtro (null = todos). As próximas partes da página devem
-  // usar getFanficsFiltradas() para respeitar o filtro.
-  let fandomFiltro = null;
+  // Estado da página
+  let fandomFiltro = null;          // null = todos os fandoms
+  let fanficBusca = '';             // texto da caixa de pesquisa
+  let fanficOrdem = null;           // null | 'alfa' | 'palavras'
+  let fanficOrdemAsc = true;        // direção da ordenação
+  let fanficEventosOk = false;
 
   function fanficNorm(v) { return (v || '').toString().trim().toLowerCase(); }
+
+  // Para a busca: ignora maiúsculas e acentos
+  function fanficSemAcento(v) {
+    return fanficNorm(v).normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
 
   function fanficEsc(v) {
     return (v === undefined || v === null ? '' : v.toString())
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+
+  function fanficNum(v) {
+    const n = parseFloat((v || '').toString().replace(/\./g, '').replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+  }
+
+  function fanficLida(f) { return fanficNorm(f['Status']) === 'lido'; }
 
   function getTodasFanfics() {
     return (typeof allBooks !== 'undefined' ? allBooks : [])
@@ -243,55 +465,88 @@
     return achado ? achado.nome : 'Outros';
   }
 
+  // Fanfics do fandom selecionado (base para estatísticas, autores e lista)
   function getFanficsFiltradas() {
     const todas = getTodasFanfics();
     return fandomFiltro ? todas.filter(f => fandomDaFanfic(f) === fandomFiltro) : todas;
   }
 
+  function splitBar(lidas, total) {
+    const pL = total ? Math.round((lidas / total) * 100) : 0;
+    const pN = total ? 100 - pL : 0;
+    return {
+      pL, pN,
+      html: `<div class="split-bar"><div class="split-bar-lidas" style="width:${pL}%"></div><div class="split-bar-naolidas" style="width:${pN}%"></div></div>`
+    };
+  }
+
   // Chamada pela navbar sempre que a seção é aberta e quando os dados recarregam
   function renderFanficsView() {
+    setupFanficEventos();
     renderFandomCards();
+    renderFanficStats();
+    renderFanficAutores();
     renderFanficsConteudo();
   }
 
+  function setupFanficEventos() {
+    if (fanficEventosOk) return;
+    fanficEventosOk = true;
+
+    document.getElementById('fandom-todos').addEventListener('click', () => {
+      fandomFiltro = null;
+      renderFanficsView();
+    });
+
+    document.getElementById('fanfic-search').addEventListener('input', e => {
+      fanficBusca = e.target.value;
+      renderFanficsConteudo();
+    });
+
+    // 1º clique ativa; cliques seguintes invertem a direção
+    document.getElementById('sort-alfa').addEventListener('click', () => toggleOrdem('alfa', true));
+    document.getElementById('sort-palavras').addEventListener('click', () => toggleOrdem('palavras', false));
+  }
+
+  function toggleOrdem(tipo, ascPadrao) {
+    if (fanficOrdem === tipo) fanficOrdemAsc = !fanficOrdemAsc;
+    else { fanficOrdem = tipo; fanficOrdemAsc = ascPadrao; }
+    renderFanficsConteudo();
+  }
+
+  // ===== Coluna 1 =====
   function renderFandomCards() {
     const todas = getTodasFanfics();
-    const sidebar = document.getElementById('fandom-cards');
-    sidebar.classList.toggle('has-selection', !!fandomFiltro);
+    document.getElementById('fandom-todos-total').textContent = `(${todas.length})`;
+    document.getElementById('fandom-todos').classList.toggle('selected', !fandomFiltro);
 
-    const btnTodos = document.getElementById('fandom-todos');
-    btnTodos.classList.toggle('selected', !fandomFiltro);
-    btnTodos.onclick = () => { fandomFiltro = null; renderFanficsView(); };
+    const lista = document.getElementById('fandom-cards');
+    lista.classList.toggle('has-selection', !!fandomFiltro);
 
-    sidebar.innerHTML = FANDOMS.map(fd => {
+    lista.innerHTML = FANDOMS.map(fd => {
       const doFandom = todas.filter(f => fandomDaFanfic(f) === fd.nome);
       const total = doFandom.length;
-      const lidas = doFandom.filter(f => fanficNorm(f['Status']) === 'lido').length;
-      const naoLidas = total - lidas; // "Quero ler", "Lendo" e demais contam como não lidas
-      const pLidas = total ? Math.round((lidas / total) * 100) : 0;
-      const pNaoLidas = total ? 100 - pLidas : 0;
+      const lidas = doFandom.filter(fanficLida).length;
+      const bar = splitBar(lidas, total);
       const sel = fandomFiltro === fd.nome ? ' selected' : '';
 
       return `
         <div class="fandom-card${sel}" data-fandom="${fanficEsc(fd.nome)}"
-             title="${total ? `${lidas} lidas · ${naoLidas} não lidas` : 'Nenhuma história cadastrada'}">
+             title="${total ? `${lidas} lidas · ${total - lidas} não lidas` : 'Nenhuma história cadastrada'}">
           <div class="fandom-card-top">
             <span class="fandom-name">${fanficEsc(fd.nome)}</span>
             <span class="fandom-total">${total}<small>${total === 1 ? 'história' : 'histórias'}</small></span>
           </div>
-          <div class="fandom-bar">
-            <div class="fandom-bar-lidas" style="width: ${pLidas}%"></div>
-            <div class="fandom-bar-naolidas" style="width: ${pNaoLidas}%"></div>
-          </div>
+          ${bar.html}
           <div class="fandom-legend">
-            <span><span class="dot" style="background: var(--cor-livro);"></span>Lidas ${pLidas}%</span>
-            <span><span class="dot" style="background: var(--cor-fanfic);"></span>Não lidas ${pNaoLidas}%</span>
+            <span><span class="dot" style="background: var(--cor-livro);"></span>Lidas ${bar.pL}%</span>
+            <span><span class="dot" style="background: var(--cor-fanfic);"></span>Não lidas ${bar.pN}%</span>
           </div>
         </div>
       `;
     }).join('');
 
-    sidebar.querySelectorAll('.fandom-card').forEach(card => {
+    lista.querySelectorAll('.fandom-card').forEach(card => {
       card.addEventListener('click', () => {
         const nome = card.dataset.fandom;
         fandomFiltro = (fandomFiltro === nome) ? null : nome; // clicar de novo remove o filtro
@@ -300,15 +555,110 @@
     });
   }
 
-  // Restante da página (por enquanto, a lista de fanfics), já filtrado
+  // ===== Coluna 2: estatísticas =====
+  function renderFanficStats() {
+    const base = getFanficsFiltradas();
+    const lidas = base.filter(fanficLida);
+
+    document.getElementById('stat-lidas').textContent = lidas.length.toLocaleString('pt-BR');
+    document.getElementById('stat-lidas-sub').textContent =
+      base.length ? `de ${base.length} (${Math.round(lidas.length / base.length * 100)}%)` : 'nenhuma obra';
+
+    const avaliadas = base.filter(f => f['Nota'] !== '' && f['Nota'] !== undefined && !isNaN(parseFloat(f['Nota'].toString().replace(',', '.'))));
+    const nota = avaliadas.length
+      ? avaliadas.reduce((s, f) => s + parseFloat(f['Nota'].toString().replace(',', '.')), 0) / avaliadas.length
+      : 0;
+    document.getElementById('stat-nota').textContent = nota.toFixed(1);
+
+    const palavras = lidas.reduce((s, f) => s + fanficNum(f['Palavras']), 0);
+    document.getElementById('stat-palavras').textContent = palavras.toLocaleString('pt-BR');
+
+    // Mesma regra do Prefácio: "Páginas lidas" se existir; senão "Páginas" das obras lidas
+    const paginas = base.reduce((s, f) => {
+      let p = fanficNum(f['Páginas lidas']);
+      if (!p && fanficLida(f)) p = fanficNum(f['Páginas'] || f['Paginas']);
+      return s + p;
+    }, 0);
+    document.getElementById('stat-paginas').textContent = paginas.toLocaleString('pt-BR');
+  }
+
+  // ===== Coluna 2: top autores =====
+  function renderFanficAutores() {
+    const porAutor = {};
+    getFanficsFiltradas().forEach(f => {
+      const nome = (f['Autor'] || '').toString().trim();
+      if (!nome) return;
+      const chave = fanficNorm(nome);
+      if (!porAutor[chave]) porAutor[chave] = { nome, total: 0, lidas: 0 };
+      porAutor[chave].total++;
+      if (fanficLida(f)) porAutor[chave].lidas++;
+    });
+
+    const top = Object.values(porAutor)
+      .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'))
+      .slice(0, TOP_AUTORES);
+
+    const el = document.getElementById('autores-list');
+    if (!top.length) {
+      el.innerHTML = '<div class="autores-vazio">Nenhum autor ainda.</div>';
+    } else {
+      el.innerHTML = top.map((a, i) => {
+        const bar = splitBar(a.lidas, a.total);
+        return `
+          <div class="autor-row" title="${a.lidas} lidas · ${a.total - a.lidas} não lidas">
+            <div class="autor-top">
+              <span class="autor-nome"><span class="autor-pos">${i + 1}.</span>${fanficEsc(a.nome)}</span>
+              <span class="autor-total">${a.total}</span>
+            </div>
+            ${bar.html}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Legenda única no rodapé do painel
+    const card = el.parentElement;
+    if (!card.querySelector('.autores-legend')) {
+      card.insertAdjacentHTML('beforeend', `
+        <div class="autores-legend">
+          <span><span class="dot" style="background: var(--cor-livro);"></span>Lidas</span>
+          <span><span class="dot" style="background: var(--cor-fanfic);"></span>Não lidas</span>
+        </div>`);
+    }
+  }
+
+  // ===== Coluna 3: busca, ordenação e lista =====
   function renderFanficsConteudo() {
-    const list = getFanficsFiltradas();
+    let list = getFanficsFiltradas();
+
+    const termo = fanficSemAcento(fanficBusca);
+    if (termo) {
+      list = list.filter(f => fanficSemAcento(f['Título']).includes(termo) || fanficSemAcento(f['Autor']).includes(termo));
+    }
+
+    if (fanficOrdem === 'alfa') {
+      list = list.slice().sort((a, b) => (a['Título'] || '').toString().localeCompare((b['Título'] || '').toString(), 'pt-BR', { sensitivity: 'base' }));
+    } else if (fanficOrdem === 'palavras') {
+      list = list.slice().sort((a, b) => fanficNum(a['Palavras']) - fanficNum(b['Palavras']));
+    }
+    if (fanficOrdem && !fanficOrdemAsc) list.reverse();
+
+    // Estado visual dos botões de ordenação
+    const btnAlfa = document.getElementById('sort-alfa');
+    const btnPal = document.getElementById('sort-palavras');
+    btnAlfa.classList.toggle('active', fanficOrdem === 'alfa');
+    btnPal.classList.toggle('active', fanficOrdem === 'palavras');
+    btnAlfa.querySelector('span').textContent = (fanficOrdem === 'alfa' && !fanficOrdemAsc) ? 'Z-A' : 'A-Z';
+    btnAlfa.querySelector('i').className = (fanficOrdem === 'alfa' && !fanficOrdemAsc) ? 'fa-solid fa-arrow-up-z-a' : 'fa-solid fa-arrow-down-a-z';
+    btnPal.querySelector('i').className = (fanficOrdem === 'palavras' && fanficOrdemAsc) ? 'fa-solid fa-arrow-up-short-wide' : 'fa-solid fa-arrow-down-wide-short';
+    btnPal.title = (fanficOrdem === 'palavras' && fanficOrdemAsc) ? 'Menos palavras primeiro' : 'Mais palavras primeiro';
 
     const grid = document.getElementById('fanfic-cards-grid');
     if (list.length === 0) {
-      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--texto-secundario); padding: 40px;">${
-        fandomFiltro ? `Nenhuma fanfiction de ${fanficEsc(fandomFiltro)} cadastrada ainda.`
-                     : "Nenhuma fanfiction cadastrada na planilha com o tipo 'Fanfiction'."}</div>`;
+      const msg = termo ? `Nenhuma fanfiction encontrada para "${fanficEsc(fanficBusca)}".`
+        : fandomFiltro ? `Nenhuma fanfiction de ${fanficEsc(fandomFiltro)} cadastrada ainda.`
+        : "Nenhuma fanfiction cadastrada na planilha com o tipo 'Fanfiction'.";
+      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--texto-secundario); padding: 40px;">${msg}</div>`;
       return;
     }
 
@@ -318,7 +668,7 @@
         <div class="obsessao-title">${fanficEsc(f['Título'] || 'Sem Título')}</div>
         <div style="font-size: 12px; color: var(--texto-secundario);">Por: ${fanficEsc(f['Autor'] || 'Desconhecido')}</div>
         <div class="obsessao-detalhes">
-          <span>Palavras: <strong>${f['Palavras'] ? Number(f['Palavras']).toLocaleString('pt-BR') : 'N/A'}</strong></span>
+          <span>Palavras: <strong>${f['Palavras'] ? fanficNum(f['Palavras']).toLocaleString('pt-BR') : 'N/A'}</strong></span>
           <span>Status: <strong>${fanficEsc(f['Status'] || 'Acompanhando')}</strong></span>
         </div>
       </div>
