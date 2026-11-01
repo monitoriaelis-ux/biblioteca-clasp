@@ -1,42 +1,142 @@
-<div class="fanfic-page-wrapper">
-  <div class="fanfic-header-banner">
-    <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Meus Universos & Fanfictions</h2>
-    <p>Espaço dedicado para as histórias favoritas da web, contagem de palavras e fandoms.</p>
-  </div>
+<!-- Seção "Minhas obsessões" — exibida dentro do Front.html (a navbar fica no Front). -->
+<div class="fanfic-layout">
 
-  <div id="fanfic-cards-grid" class="fanfic-custom-grid">
-    <div style="color: var(--texto-secundario); padding: 20px;">Carregando suas obsessões...</div>
+  <!-- Coluna fixa: um card por fandom; clicar filtra o restante da página -->
+  <aside id="fandom-cards" class="fandom-sidebar"></aside>
+
+  <!-- Restante da página: rola independentemente e obedece ao filtro -->
+  <div class="fanfic-content">
+    <div class="fanfic-header-banner">
+      <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Meus Universos & Fanfictions</h2>
+      <p id="fanfic-filter-label">Todas as fandoms</p>
+    </div>
+
+    <div id="fanfic-cards-grid" class="fanfic-custom-grid">
+      <div style="color: var(--texto-secundario); padding: 20px;">Carregando suas obsessões...</div>
+    </div>
   </div>
 </div>
 
 <style>
-  .fanfic-page-wrapper {
-    width: 100%;
+  .fanfic-layout {
+    display: flex;
+    gap: 16px;
+    height: 100%;
+  }
+
+  /* ===== Cards de fandom (coluna esquerda fixa) ===== */
+  .fandom-sidebar {
+    width: 230px;
+    flex-shrink: 0;
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    overflow-y: auto;
-    padding: 4px;
+    gap: 8px;
   }
-  
+
+  .fandom-card {
+    flex: 1;
+    min-height: 0;
+    background: var(--bg-cards);
+    border-radius: 12px;
+    padding: 10px 14px;
+    box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s, opacity 0.2s, transform 0.2s;
+    user-select: none;
+  }
+  .fandom-card:hover { transform: translateX(2px); border-color: var(--borda-bege); }
+  .fandom-card.selected { border-color: var(--cor-fanfic); }
+  .fandom-sidebar.has-selection .fandom-card:not(.selected) { opacity: 0.55; }
+
+  .fandom-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .fandom-name {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--texto-marrom);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fandom-total {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--texto-marrom);
+    line-height: 1;
+  }
+  .fandom-total small {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+    margin-left: 2px;
+  }
+
+  .fandom-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--hover-bege);
+  }
+  .fandom-bar-lidas { background: var(--cor-livro); }
+  .fandom-bar-naolidas { background: var(--cor-fanfic); }
+
+  .fandom-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+  }
+  .fandom-legend .dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+
+  /* ===== Restante da página ===== */
+  .fanfic-content {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-right: 4px;
+  }
+
   .fanfic-header-banner {
     background: linear-gradient(135deg, #fce7f3 0%, #fef3c7 100%);
-    padding: 24px;
+    padding: 20px 24px;
     border-radius: 12px;
     border: 1px solid #fbcfe8;
     color: #831843;
+    flex-shrink: 0;
   }
-  
   .fanfic-header-banner h2 {
     font-size: 20px;
-    margin-bottom: 6px;
+    margin: 0 0 6px;
     font-family: 'Poppins', sans-serif;
   }
-
   .fanfic-header-banner p {
     font-size: 12.5px;
     opacity: 0.85;
+    margin: 0;
   }
 
   .fanfic-custom-grid {
@@ -60,17 +160,8 @@
     border-right: 1px solid #f1f5f9;
     border-bottom: 1px solid #f1f5f9;
   }
-
-  .obsessao-card:hover {
-    transform: translateY(-2px);
-  }
-
-  .obsessao-title {
-    font-weight: 700;
-    font-size: 14.5px;
-    color: #1e293b;
-  }
-
+  .obsessao-card:hover { transform: translateY(-2px); }
+  .obsessao-title { font-weight: 700; font-size: 14.5px; color: #1e293b; }
   .obsessao-fandom {
     font-size: 10.5px;
     font-weight: 600;
@@ -80,7 +171,6 @@
     border-radius: 6px;
     width: fit-content;
   }
-
   .obsessao-detalhes {
     font-size: 11.5px;
     color: #64748b;
@@ -90,35 +180,134 @@
     border-top: 1px solid #f1f5f9;
     padding-top: 8px;
   }
+
+  /* Telas estreitas (celular): cards de fandom viram uma faixa horizontal no topo */
+  @media (max-width: 700px) {
+    .fanfic-layout { flex-direction: column; }
+    .fandom-sidebar {
+      width: 100%;
+      height: auto;
+      flex-direction: row;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .fandom-card { flex: 0 0 170px; }
+  }
 </style>
 
 <script>
-  // Exibida dentro do Front.html: usa a lista "allBooks" já carregada pelo Front.
-  // Chamada pela navbar sempre que a seção "Minhas obsessões" é aberta.
-  function renderFanficsView() {
-    const list = (typeof allBooks !== 'undefined' ? allBooks : []).filter(b => {
-      const tipo = (b['Tipo'] || '').toString().trim().toLowerCase();
-      return tipo === 'fanfiction' || tipo === 'fanfic';
-    });
-    renderFanficsList(list);
+  // ===== Configuração dos fandoms =====
+  // "nome" é o que aparece no card. "aliases" são outras grafias aceitas na coluna Fandom
+  // da planilha (maiúsculas/minúsculas e espaços nas pontas são ignorados).
+  // "Outros" reúne toda fanfic cujo fandom não está na lista acima (ou está em branco).
+  const FANDOMS = [
+    { nome: 'House',      aliases: ['House M.D.', 'House MD'] },
+    { nome: 'Bones',      aliases: [] },
+    { nome: 'Avengers',   aliases: ['The Avengers', 'Vingadores'] },
+    { nome: 'Station 19', aliases: [] },
+    { nome: 'Gaga',       aliases: ['Lady Gaga'] },
+    { nome: 'Outros',     outros: true }
+  ];
+
+  // Fandom selecionado no filtro (null = todos). As próximas partes da página devem
+  // usar getFanficsFiltradas() para respeitar o filtro.
+  let fandomFiltro = null;
+
+  function fanficNorm(v) { return (v || '').toString().trim().toLowerCase(); }
+
+  function fanficEsc(v) {
+    return (v === undefined || v === null ? '' : v.toString())
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  function renderFanficsList(list) {
-    const grid = document.getElementById('fanfic-cards-grid');
+  function getTodasFanfics() {
+    return (typeof allBooks !== 'undefined' ? allBooks : [])
+      .filter(b => ['fanfiction', 'fanfic'].includes(fanficNorm(b['Tipo'])));
+  }
 
+  // Retorna o nome do card (FANDOMS[].nome) ao qual a fanfic pertence
+  function fandomDaFanfic(f) {
+    const valor = fanficNorm(f['Fandom']);
+    const achado = FANDOMS.find(fd => !fd.outros &&
+      [fd.nome].concat(fd.aliases || []).some(n => fanficNorm(n) === valor));
+    return achado ? achado.nome : 'Outros';
+  }
+
+  function getFanficsFiltradas() {
+    const todas = getTodasFanfics();
+    return fandomFiltro ? todas.filter(f => fandomDaFanfic(f) === fandomFiltro) : todas;
+  }
+
+  // Chamada pela navbar sempre que a seção é aberta e quando os dados recarregam
+  function renderFanficsView() {
+    renderFandomCards();
+    renderFanficsConteudo();
+  }
+
+  function renderFandomCards() {
+    const todas = getTodasFanfics();
+    const sidebar = document.getElementById('fandom-cards');
+    sidebar.classList.toggle('has-selection', !!fandomFiltro);
+
+    sidebar.innerHTML = FANDOMS.map(fd => {
+      const doFandom = todas.filter(f => fandomDaFanfic(f) === fd.nome);
+      const total = doFandom.length;
+      const lidas = doFandom.filter(f => fanficNorm(f['Status']) === 'lido').length;
+      const naoLidas = total - lidas; // "Quero ler", "Lendo" e demais contam como não lidas
+      const pLidas = total ? Math.round((lidas / total) * 100) : 0;
+      const pNaoLidas = total ? 100 - pLidas : 0;
+      const sel = fandomFiltro === fd.nome ? ' selected' : '';
+
+      return `
+        <div class="fandom-card${sel}" data-fandom="${fanficEsc(fd.nome)}"
+             title="${total ? `${lidas} lidas · ${naoLidas} não lidas` : 'Nenhuma história cadastrada'}">
+          <div class="fandom-card-top">
+            <span class="fandom-name">${fanficEsc(fd.nome)}</span>
+            <span class="fandom-total">${total}<small>${total === 1 ? 'história' : 'histórias'}</small></span>
+          </div>
+          <div class="fandom-bar">
+            <div class="fandom-bar-lidas" style="width: ${pLidas}%"></div>
+            <div class="fandom-bar-naolidas" style="width: ${pNaoLidas}%"></div>
+          </div>
+          <div class="fandom-legend">
+            <span><span class="dot" style="background: var(--cor-livro);"></span>Lidas ${pLidas}%</span>
+            <span><span class="dot" style="background: var(--cor-fanfic);"></span>Não lidas ${pNaoLidas}%</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    sidebar.querySelectorAll('.fandom-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const nome = card.dataset.fandom;
+        fandomFiltro = (fandomFiltro === nome) ? null : nome; // clicar de novo remove o filtro
+        renderFanficsView();
+      });
+    });
+  }
+
+  // Restante da página (por enquanto, a lista de fanfics), já filtrado
+  function renderFanficsConteudo() {
+    const list = getFanficsFiltradas();
+    document.getElementById('fanfic-filter-label').textContent =
+      fandomFiltro ? `Filtrando: ${fandomFiltro} (clique no card de novo para ver todas)` : 'Todas as fandoms';
+
+    const grid = document.getElementById('fanfic-cards-grid');
     if (list.length === 0) {
-      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--texto-secundario); padding: 40px;">Nenhuma fanfiction cadastrada na planilha com o tipo 'fanfiction' ou 'fanfic'.</div>`;
+      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--texto-secundario); padding: 40px;">${
+        fandomFiltro ? `Nenhuma fanfiction de ${fanficEsc(fandomFiltro)} cadastrada ainda.`
+                     : "Nenhuma fanfiction cadastrada na planilha com o tipo 'Fanfiction'."}</div>`;
       return;
     }
 
     grid.innerHTML = list.map(f => `
       <div class="obsessao-card">
-        <span class="obsessao-fandom">${f['Fandom'] || 'Fandom Geral'}</span>
-        <div class="obsessao-title">${f['Título'] || 'Sem Título'}</div>
-        <div style="font-size: 12px; color: var(--texto-secundario);">Por: ${f['Autor'] || 'Desconhecido'}</div>
+        <span class="obsessao-fandom">${fanficEsc(f['Fandom'] || 'Fandom Geral')}</span>
+        <div class="obsessao-title">${fanficEsc(f['Título'] || 'Sem Título')}</div>
+        <div style="font-size: 12px; color: var(--texto-secundario);">Por: ${fanficEsc(f['Autor'] || 'Desconhecido')}</div>
         <div class="obsessao-detalhes">
           <span>Palavras: <strong>${f['Palavras'] ? Number(f['Palavras']).toLocaleString('pt-BR') : 'N/A'}</strong></span>
-          <span>Status: <strong>${f['Status'] || 'Acompanhando'}</strong></span>
+          <span>Status: <strong>${fanficEsc(f['Status'] || 'Acompanhando')}</strong></span>
         </div>
       </div>
     `).join('');
