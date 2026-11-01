@@ -31,6 +31,21 @@ jobs:
           fi
           printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
 
+      - name: Validar formato da credencial (sem mostrar valores)
+        run: |
+          node -e '
+            const fs = require("fs");
+            const raw = fs.readFileSync(process.env.HOME + "/.clasprc.json", "utf8");
+            console.log("Tamanho:", raw.length, "caracteres");
+            let j;
+            try { j = JSON.parse(raw); }
+            catch (e) { console.log("::error::O secret CLASPRC_JSON nao e um JSON valido (copiado incompleto ou com quebras de linha?): " + e.message); process.exit(1); }
+            const show = (o, p) => Object.keys(o).forEach(k => { console.log(p + k); if (o[k] && typeof o[k] === "object" && p.length < 4) show(o[k], p + "  "); });
+            show(j, "- ");
+            const t = j.token || {};
+            if (!t.refresh_token) { console.log("::error::Credencial sem token.refresh_token. Formato inesperado (versao do clasp diferente de 2.4.2?)."); process.exit(1); }
+          '
+
       - name: clasp pull
         run: clasp pull
 
