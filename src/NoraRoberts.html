@@ -54,7 +54,7 @@
     <aside class="nr-side" id="nr-side"></aside>
     <div class="nr-list-scroll">
       <div class="nr-row nr-header">
-        <span></span><span class="col-titulo">Título</span><span>Ano</span><span>Páginas</span><span>Obs.</span><span>Status</span><span>Nota</span><span></span>
+        <span></span><span class="col-titulo">Título</span><span>Ano</span><span>Páginas</span><span>Obs.</span><span>Status</span><span>Nota</span><span></span><span></span>
       </div>
       <div id="nr-lista" class="obras-list"><div class="obras-vazio">Carregando obras da Nora...</div></div>
     </div>
@@ -114,7 +114,7 @@
 
   .nr-row {
     display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) 56px 72px 100px 150px 106px 52px;
+    grid-template-columns: 40px minmax(0, 1fr) 56px 72px 100px 150px 106px 22px 22px;
     align-items: center;
     gap: 12px;
   }
@@ -149,7 +149,15 @@
   }
   .nr-obs:hover { background: #e3ece8; color: #4f6f65; }
   .nr-vazio { color: var(--borda-bege); }
-  .nr-icones { display: flex; justify-content: center; gap: 8px; font-size: 13px; }
+  .nr-icones { display: flex; justify-content: center; font-size: 13px; }
+  .nr-titulo-linha { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .nr-titulo-linha .nr-icone-fav { font-size: 11px; flex-shrink: 0; }
+  .nr-card.aberta .obra-expand { transform: rotate(180deg); }
+  .nr-plot {
+    display: none; font-size: 12.5px; line-height: 1.6; color: var(--texto-marrom);
+    border-top: 1px dashed var(--hover-bege); padding: 10px 40px 14px 52px; white-space: pre-line;
+  }
+  .nr-card.aberta .nr-plot { display: block; }
   .nr-icone-tenho { color: #6f948a; }
   .nr-icone-fav { color: #e0607e; }
 
@@ -458,6 +466,7 @@
     const serie = nrSerie(o);
     const ordem = nrOrdemSerie(o);
     const obs = nrObs(o);
+    const plot = (o._plot || o['Plot'] || '').toString().trim();
     const capa = o._capa ? `<img class="obra-capa" src="${nrEsc(o._capa)}" loading="lazy" alt="">` : `<div class="obra-capa"><i class="fa-solid fa-book"></i></div>`;
 
     let sub = trad ? `<span class="trad">${nrEsc(trad)}</span>` : '';
@@ -478,11 +487,14 @@
       </div>`;
 
     return `
-      <div class="nr-card ${cls}" data-i="${i}">
+      <div class="nr-card ${cls}${nrAberta === i ? ' aberta' : ''}" data-i="${i}">
         <div class="nr-row">
           ${capa}
           <div class="nr-titulo-bloco">
-            <span class="nr-titulo" title="${nrEsc(nrTitulo(o))}">${nrEsc(nrTitulo(o) || trad || 'Sem título')}</span>
+            <div class="nr-titulo-linha">
+              <span class="nr-titulo" title="${nrEsc(nrTitulo(o))}">${nrEsc(nrTitulo(o) || trad || 'Sem título')}</span>
+              ${nrFav(o) ? '<i class="fa-solid fa-heart nr-icone-fav" title="Favorito"></i>' : ''}
+            </div>
             ${sub ? `<span class="nr-sub">${sub}</span>` : ''}
           </div>
           <span class="nr-cel">${nrAno(o) || '<span class="nr-vazio">—</span>'}</span>
@@ -490,11 +502,10 @@
           <span class="nr-cel">${obs ? `<span class="nr-obs" title="Filtrar por ${nrEsc(obs)}" onclick="nrFiltrarObs(${i}, event)">${nrEsc(obs)}</span>` : '<span class="nr-vazio">—</span>'}</span>
           <div class="nr-cel nr-status-cel">${statusHtml}</div>
           <div class="nr-cel"><div class="obra-nota ${lida ? 'editavel' : 'bloqueada'}" title="${lida ? 'Clique para dar a nota (mesma estrela limpa)' : 'Marque como Lido para avaliar'}" ${lida ? `onclick="nrAlterarNota(${i}, event)"` : ''}>${stars}</div></div>
-          <div class="nr-icones">
-            ${nrTenho(o) ? '<i class="fa-solid fa-bag-shopping nr-icone-tenho" title="Tenho"></i>' : ''}
-            ${nrFav(o) ? '<i class="fa-solid fa-heart nr-icone-fav" title="Favorito"></i>' : ''}
-          </div>
+          <div class="nr-icones">${nrTenho(o) ? '<i class="fa-solid fa-bag-shopping nr-icone-tenho" title="Tenho"></i>' : ''}</div>
+          ${plot ? `<button type="button" class="obra-expand" onclick="nrToggleObra(${i})" title="Ver plot"><i class="fa-solid fa-chevron-down"></i></button>` : '<span></span>'}
         </div>
+        ${plot ? `<div class="nr-plot">${nrEsc(plot)}</div>` : ''}
       </div>`;
   }
 
@@ -511,6 +522,15 @@
     html += stat('naolidas', 'Não lidas', r.naoLidas, `${r.total ? 100 - nrPct(r.lidas, r.total) : 0}%`);
     html += stat('tenho', 'Adquiridas', r.tenho, `${nrPct(r.tenho, r.total)}% · faltam ${r.total - r.tenho}`);
     document.getElementById('nr-side').innerHTML = html;
+  }
+
+  // ===== Plot expansível (uma obra por vez) =====
+  let nrAberta = null;
+  function nrToggleObra(i) {
+    nrAberta = nrAberta === i ? null : i;
+    document.querySelectorAll('#nr-lista .nr-card.aberta').forEach(c => c.classList.remove('aberta'));
+    const card = document.querySelector(`.nr-card[data-i="${i}"]`);
+    if (card && nrAberta === i) card.classList.add('aberta');
   }
 
   // ===== Edição (status e nota) =====
