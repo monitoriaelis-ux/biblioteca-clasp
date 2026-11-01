@@ -4,17 +4,17 @@
   <!-- Indicadores gerais (não mudam com aba ou filtro) + gráfico por década -->
   <div class="nr-top">
     <div class="nr-kpis">
+      <div class="nr-kpi nr-kpi-nota"><span class="nr-kpi-label">Nota média</span><span class="nr-kpi-valor" id="nr-k-nota">–</span><span class="nr-kpi-sub" id="nr-k-nota-sub"></span></div>
       <div class="nr-kpi"><span class="nr-kpi-label">Obras</span><span class="nr-kpi-valor" id="nr-k-total">–</span></div>
       <div class="nr-kpi nr-kpi-lidas"><span class="nr-kpi-label">Lidas</span><span class="nr-kpi-valor" id="nr-k-lidas">–</span><span class="nr-kpi-sub" id="nr-k-lidas-sub"></span></div>
       <div class="nr-kpi nr-kpi-tenho"><span class="nr-kpi-label">Adquiridas</span><span class="nr-kpi-valor" id="nr-k-tenho">–</span><span class="nr-kpi-sub" id="nr-k-tenho-sub"></span></div>
-      <div class="nr-kpi nr-kpi-nota"><span class="nr-kpi-label">Nota média</span><span class="nr-kpi-valor" id="nr-k-nota">–</span><span class="nr-kpi-sub" id="nr-k-nota-sub"></span></div>
     </div>
     <div class="nr-chart-card">
       <div class="nr-chart-head">
         <span class="nr-chart-title">Obras por década de lançamento</span>
         <span class="nr-legend">
-          <span><i class="nr-leg-line" style="background:#C0603F"></i>Lançadas</span>
-          <span><i class="nr-leg-line" style="background:#2A80A8"></i>Lidas</span>
+          <span><i class="nr-leg-line" style="background:#6E4C8C"></i>Lançadas</span>
+          <span><i class="nr-leg-line" style="background:#D46A84"></i>Lidas</span>
         </span>
       </div>
       <div class="nr-chart" id="nr-chart"></div>
@@ -51,13 +51,13 @@
 
   <!-- Lista + indicadores da aba (fixos à direita) -->
   <div class="nr-body">
+    <aside class="nr-side" id="nr-side"></aside>
     <div class="nr-list-scroll">
       <div class="nr-row nr-header">
         <span></span><span class="col-titulo">Título</span><span>Ano</span><span>Páginas</span><span>Obs.</span><span>Status</span><span>Nota</span><span></span>
       </div>
       <div id="nr-lista" class="obras-list"><div class="obras-vazio">Carregando obras da Nora...</div></div>
     </div>
-    <aside class="nr-side" id="nr-side"></aside>
   </div>
 
   <div id="nr-toast" class="fanfic-toast"></div>
@@ -67,18 +67,18 @@
   .nr-layout { height: 100%; display: flex; flex-direction: column; gap: 12px; }
 
   /* ===== Topo ===== */
-  .nr-top { flex-shrink: 0; display: flex; gap: 12px; height: 132px; }
-  .nr-kpis { display: grid; grid-template-columns: repeat(4, 118px); gap: 10px; }
+  .nr-top { flex-shrink: 0; display: flex; gap: 12px; height: 100px; }
+  .nr-kpis { display: grid; grid-template-columns: repeat(2, 104px); grid-template-rows: repeat(2, 1fr); gap: 6px; }
   .nr-kpi {
-    background: var(--bg-cards); border-radius: 12px; box-shadow: 0 4px 10px rgba(155, 125, 97, 0.04);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-align: center;
+    background: var(--bg-cards); border-radius: 10px; box-shadow: 0 3px 8px rgba(155, 125, 97, 0.04);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; text-align: center; padding: 2px 4px;
   }
   .nr-kpi-lidas { background: #e3ece8; }
   .nr-kpi-tenho { background: #f3ece1; }
   .nr-kpi-nota { background: #fff9c4; }
-  .nr-kpi-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texto-secundario); }
-  .nr-kpi-valor { font-size: 22px; font-weight: 700; color: var(--texto-marrom); line-height: 1.1; }
-  .nr-kpi-sub { font-size: 10px; font-weight: 600; color: var(--texto-secundario); }
+  .nr-kpi-label { font-size: 8.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texto-secundario); }
+  .nr-kpi-valor { font-size: 14px; font-weight: 700; color: var(--texto-marrom); line-height: 1.15; }
+  .nr-kpi-sub { display: none; }
 
   .nr-chart-card {
     flex: 1; min-width: 0; position: relative; background: var(--bg-cards); border-radius: 12px;
@@ -110,7 +110,7 @@
   /* ===== Lista + lateral ===== */
   .nr-body { flex: 1; min-height: 0; display: flex; gap: 16px; }
   .nr-list-scroll { flex: 1; min-width: 0; overflow-y: auto; padding-right: 4px; }
-  .nr-side { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+  .nr-side { width: 150px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
 
   .nr-row {
     display: grid;
@@ -155,12 +155,13 @@
 
   /* Lateral: indicadores da aba */
   .nr-stat {
-    background: var(--bg-cards); border-radius: 12px; padding: 10px 12px; box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
-    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;
+    flex: 1; min-height: 0; max-height: 86px;
+    background: var(--bg-cards); border-radius: 10px; padding: 4px 10px; box-shadow: 0 3px 8px rgba(155, 125, 97, 0.03);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1px;
   }
-  .nr-stat-label { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texto-secundario); }
-  .nr-stat-valor { font-size: 18px; font-weight: 700; color: var(--texto-marrom); line-height: 1.2; }
-  .nr-stat-sub { font-size: 10px; font-weight: 600; color: var(--texto-secundario); }
+  .nr-stat-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texto-secundario); }
+  .nr-stat-valor { font-size: 15px; font-weight: 700; color: var(--texto-marrom); line-height: 1.2; }
+  .nr-stat-sub { font-size: 9.5px; font-weight: 600; color: var(--texto-secundario); white-space: nowrap; }
   .nr-stat.lidas { background: #e3ece8; }
   .nr-stat.naolidas { background: #fbeee8; }
   .nr-stat.tenho { background: #f3ece1; }
@@ -170,8 +171,8 @@
 
 <script>
   // ===== Estado =====
-  const NR_COR_LANCADAS = '#C0603F';
-  const NR_COR_LIDAS = '#2A80A8';
+  const NR_COR_LANCADAS = '#6E4C8C'; // roxo ameixa
+  const NR_COR_LIDAS = '#D46A84';    // rosa queimado
   let nrObras = [];
   let nrCarregado = false, nrCarregando = false;
   let nrAba = 'unicos';
@@ -262,9 +263,9 @@
   function nrRenderKpis() {
     const r = nrResumo(nrObras);
     document.getElementById('nr-k-total').textContent = r.total;
-    document.getElementById('nr-k-lidas').textContent = r.lidas;
+    document.getElementById('nr-k-lidas').innerHTML = `${r.lidas} <small style="font-size:9.5px;font-weight:600;color:var(--texto-secundario)">${nrPct(r.lidas, r.total)}%</small>`;
     document.getElementById('nr-k-lidas-sub').textContent = `${nrPct(r.lidas, r.total)}%`;
-    document.getElementById('nr-k-tenho').textContent = r.tenho;
+    document.getElementById('nr-k-tenho').innerHTML = `${r.tenho} <small style="font-size:9.5px;font-weight:600;color:var(--texto-secundario)">${nrPct(r.tenho, r.total)}%</small>`;
     document.getElementById('nr-k-tenho-sub').textContent = `${nrPct(r.tenho, r.total)}%`;
     document.getElementById('nr-k-nota').textContent = r.nota.toFixed(1);
     document.getElementById('nr-k-nota-sub').textContent = `${r.avaliadas} ${r.avaliadas === 1 ? 'avaliação' : 'avaliações'}`;
@@ -503,13 +504,13 @@
     const r = nrResumo(lista);
     const stat = (cls, label, valor, sub, extra) => `
       <div class="nr-stat ${cls}"><span class="nr-stat-label">${label}</span><span class="nr-stat-valor">${valor}</span>${sub ? `<span class="nr-stat-sub">${sub}</span>` : ''}${extra || ''}</div>`;
-    let html = stat('', 'Obras', r.total);
+    let html = stat('nota', 'Nota média', r.nota.toFixed(1), `${r.avaliadas} ${r.avaliadas === 1 ? 'avaliação' : 'avaliações'}`);
+    html += stat('', 'Obras', r.total);
     if (nrAba === 'series') html += stat('', 'Séries', new Set(lista.map(o => nrNorm(nrSerie(o)))).size);
     html += stat('lidas', 'Lidas', r.lidas, `${nrPct(r.lidas, r.total)}%`,
       `<div class="split-bar"><div class="split-bar-lidas" style="width:${nrPct(r.lidas, r.total)}%"></div><div class="split-bar-naolidas" style="width:${r.total ? 100 - nrPct(r.lidas, r.total) : 0}%"></div></div>`);
     html += stat('naolidas', 'Não lidas', r.naoLidas, `${r.total ? 100 - nrPct(r.lidas, r.total) : 0}%`);
     html += stat('tenho', 'Adquiridas', r.tenho, `${nrPct(r.tenho, r.total)}% · faltam ${r.total - r.tenho}`);
-    html += stat('nota', 'Nota média', r.nota.toFixed(1), `${r.avaliadas} ${r.avaliadas === 1 ? 'avaliação' : 'avaliações'}`);
     document.getElementById('nr-side').innerHTML = html;
   }
 
