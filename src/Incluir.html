@@ -6,6 +6,7 @@
     <div class="inc-tabs">
       <button type="button" class="inc-tab active" data-inc-tab="fanfic"><i class="fa-solid fa-fire"></i> Fanfiction</button>
       <button type="button" class="inc-tab" data-inc-tab="livros"><i class="fa-solid fa-book"></i> E-book / Livros</button>
+      <button type="button" class="inc-tab" data-inc-tab="nora"><i class="fa-solid fa-crown"></i> Nora Roberts</button>
     </div>
 
     <div class="inc-actions">
@@ -32,6 +33,8 @@
   <datalist id="inc-dl-autores"></datalist>
   <datalist id="inc-dl-fandoms"></datalist>
   <datalist id="inc-dl-series"></datalist>
+  <datalist id="inc-dl-series-nora"></datalist>
+  <datalist id="inc-dl-obs-nora"></datalist>
   <div id="inc-toast" class="fanfic-toast"></div>
 </div>
 
@@ -143,6 +146,7 @@
   .inc-marca:hover { transform: scale(1.15); }
   .inc-marca.fav.on { color: #e0607e; }
   .inc-marca.aband.on { color: #C9675C; }
+  .inc-marca.tenho.on { color: #6f948a; }
 
   .inc-del { border: none; background: none; color: var(--borda-bege); cursor: pointer; width: 26px; height: 26px; border-radius: 50%; }
   .inc-del:hover { background: #fbe7e4; color: #C9675C; }
@@ -175,13 +179,25 @@
       ],
       colar: ['tipo', 'titulo', 'autor', 'serie', 'nomeSerie', 'volume', 'genero', 'orientacao', 'idioma', 'paginas', 'plot', 'status', 'dataFim', 'nota', 'favorita', 'abandonada', 'capaUrl'],
       obrigatorios: ['titulo', 'autor']
+    },
+    nora: {
+      storage: 'incluirNoraRascunho',
+      dica: 'Vai para a aba <strong>Nora Roberts</strong>. Idioma padrão: <strong>Inglês</strong>. Ao marcar Lido, informe o ano da leitura.',
+      cols: [
+        ['num', '#', '30px'], ['titulo', 'Título original *', null], ['tituloTrad', 'Título traduzido', '12%'], ['tipoNora', 'Tipo', '6%'],
+        ['ano', 'Ano', '5%'], ['serie', 'Série', '9%'], ['idioma', 'Idioma', '6.5%'], ['paginas', 'Páginas', '5%'],
+        ['obs', 'Obs.', '7%'], ['plot', 'Plot', '10%'], ['status', 'Status', '9%'], ['marcasNora', '', '56px'],
+        ['capaUrl', 'Link da capa', '7%'], ['del', '', '32px']
+      ],
+      colar: ['titulo', 'tituloTrad', 'tipo', 'ano', 'serie', 'nomeSerie', 'volume', 'idioma', 'paginas', 'obs', 'plot', 'status', 'anoLeitura', 'nota', 'tenho', 'favorita', 'capaUrl'],
+      obrigatorios: ['titulo']
     }
   };
   const INC_TIPOS_LIVRO = [{ v: 'Ebook', t: 'E-book' }, { v: 'Livro', t: 'Livro' }];
   const INC_IDIOMAS = ['Inglês', 'Português'];
 
   let incAba = 'fanfic';
-  const incDados = { fanfic: [], livros: [] };
+  const incDados = { fanfic: [], livros: [], nora: [] };
   let incSalvando = false;
   let incIniciado = false;
 
@@ -190,12 +206,15 @@
   function incNovaLinha(aba) {
     const base = { titulo: '', autor: '', serie: false, nomeSerie: '', volume: '', genero: 'Romance', orientacao: 'Straight',
                    plot: '', status: 'Quero ler', dataFim: '', nota: 0, favorita: false, abandonada: false, capaUrl: '' };
+    if ((aba || incAba) === 'nora') {
+      return Object.assign(base, { tipo: 'Livro', tituloTrad: '', ano: '', idioma: 'Inglês', paginas: '', obs: '', tenho: false, anoLeitura: '' });
+    }
     return (aba || incAba) === 'fanfic'
       ? Object.assign(base, { tipo: 'Fanfiction', fandom: '', palavras: '' })
       : Object.assign(base, { tipo: 'Ebook', idioma: 'Inglês', paginas: '' });
   }
   function incLinhaVazia(r) {
-    return !r.titulo.trim() && !r.autor.trim() && !(r.fandom || '').trim() && !r.plot.trim() &&
+    return !r.titulo.trim() && !r.autor.trim() && !(r.fandom || '').trim() && !(r.tituloTrad || '').trim() && !r.plot.trim() &&
       !String(r.palavras || r.paginas || '').trim() && !r.capaUrl.trim();
   }
   function incHoje() {
@@ -236,6 +255,9 @@
     document.getElementById('inc-dl-fandoms').innerHTML = uniq(fandomsConfig.concat(livros.map(b => b['Fandom']))).map(a => `<option value="${incEsc(a)}">`).join('');
     const series = typeof serieDaObra === 'function' ? livros.map(serieDaObra) : [];
     document.getElementById('inc-dl-series').innerHTML = uniq(series).map(a => `<option value="${incEsc(a)}">`).join('');
+    const nora = typeof nrObras !== 'undefined' ? nrObras : [];
+    document.getElementById('inc-dl-series-nora').innerHTML = uniq(nora.map(o => o['Série']).filter(s => !['-', 'não', 'nao'].includes(String(s).trim().toLowerCase()))).map(a => `<option value="${incEsc(a)}">`).join('');
+    document.getElementById('inc-dl-obs-nora').innerHTML = uniq(['Conto', 'Novela'].concat(nora.map(o => o['Obs']))).map(a => `<option value="${incEsc(a)}">`).join('');
   }
 
   // ===== Renderização =====
@@ -244,11 +266,20 @@
       incIniciado = true;
       incCarregar('fanfic');
       incCarregar('livros');
+      incCarregar('nora');
       document.querySelectorAll('.inc-tab').forEach(t => t.addEventListener('click', () => incTrocarAba(t.dataset.incTab)));
       document.addEventListener('click', incFecharMenus);
     }
     incPreencherDatalists();
     incRenderTabela();
+    // obras da Nora (para sugerir séries/obs. e tipos), sem depender de abrir a página dela
+    if (typeof nrCarregado !== 'undefined' && !nrCarregado && !nrCarregando) {
+      nrCarregando = true;
+      google.script.run.withSuccessHandler(raw => {
+        nrObras = JSON.parse(raw).obras || []; nrCarregado = true; nrCarregando = false;
+        incPreencherDatalists();
+      }).withFailureHandler(() => { nrCarregando = false; }).getNoraDataAPI();
+    }
   }
 
   function incTrocarAba(aba) {
@@ -292,9 +323,9 @@
           ${incDropdown('serie', r.serie ? 'Sim' : 'Não', ['Não', 'Sim'])}
           ${r.serie ? `
             <div class="inc-sub">
-              <input class="inc-in centro" data-f="nomeSerie" value="${incEsc(r.nomeSerie)}" list="inc-dl-series" placeholder="Nome da série">
+              <input class="inc-in centro" data-f="nomeSerie" value="${incEsc(r.nomeSerie)}" list="${incAba === 'nora' ? 'inc-dl-series-nora' : 'inc-dl-series'}" placeholder="Nome da série">
               <div class="inc-sub-linha">
-                <span class="inc-sub-label">Vol.</span>
+                <span class="inc-sub-label">${incAba === 'nora' ? 'Ordem' : 'Vol.'}</span>
                 <input class="inc-in centro vol" data-f="volume" type="number" min="1" value="${incEsc(r.volume)}">
               </div>
             </div>` : ''}
@@ -306,11 +337,26 @@
           ${incDropdown('status', r.status, INC_STATUS, lido ? 'st-lido' : r.status === 'Lendo' ? 'st-lendo' : '')}
           ${lido ? `
             <div class="inc-sub">
-              <input class="inc-in centro" data-f="dataFim" type="date" value="${incEsc(r.dataFim)}" title="Data em que terminou">
+              ${incAba === 'nora'
+                ? `<input class="inc-in centro" data-f="anoLeitura" type="number" min="1900" max="2100" value="${incEsc(r.anoLeitura)}" title="Ano da leitura" placeholder="Ano da leitura">`
+                : `<input class="inc-in centro" data-f="dataFim" type="date" value="${incEsc(r.dataFim)}" title="Data em que terminou">`}
               <div class="inc-stars" title="Nota (clique na mesma estrela para limpar)">${stars}</div>
             </div>` : ''}
         </td>`;
       }
+      case 'tituloTrad': return `<td><input class="inc-in" data-f="tituloTrad" value="${incEsc(r.tituloTrad)}" placeholder="Título traduzido"></td>`;
+      case 'tipoNora': {
+        const tipos = [...new Set(['Livro', 'Ebook'].concat((typeof nrObras !== 'undefined' ? nrObras : []).map(o => String(o['Tipo'] || '').trim()).filter(Boolean)))];
+        return `<td>${incDropdown('tipo', r.tipo, tipos)}</td>`;
+      }
+      case 'ano': return `<td><input class="inc-in centro" data-f="ano" type="number" min="1900" max="2100" value="${incEsc(r.ano)}" placeholder="Ano"></td>`;
+      case 'obs': return `<td><input class="inc-in centro" data-f="obs" value="${incEsc(r.obs)}" list="inc-dl-obs-nora" placeholder="Conto/Novela"></td>`;
+      case 'marcasNora': return `<td>
+          <div class="inc-marcas">
+            <button type="button" class="inc-marca tenho${r.tenho ? ' on' : ''}" data-marca="tenho" title="Tenho"><i class="fa-solid fa-bag-shopping"></i></button>
+            <button type="button" class="inc-marca fav${r.favorita ? ' on' : ''}" data-marca="favorita" title="Favorito"><i class="fa-solid fa-heart"></i></button>
+          </div>
+        </td>`;
       case 'marcas': return `<td>
           <div class="inc-marcas">
             <button type="button" class="inc-marca fav${r.favorita ? ' on' : ''}" data-marca="favorita" title="Favorita"><i class="fa-solid fa-heart"></i></button>
@@ -355,6 +401,7 @@
     if (campo === 'serie') r.serie = valor === 'Sim';
     else r[campo] = valor;
     if (campo === 'status' && valor === 'Lido' && !r.dataFim) r.dataFim = incHoje();
+    if (campo === 'status' && valor === 'Lido' && incAba === 'nora' && !r.anoLeitura) r.anoLeitura = String(new Date().getFullYear());
     if (campo === 'status' && valor !== 'Lido') r.nota = 0;
     incGuardar();
   }
@@ -435,7 +482,9 @@
         const campo = ordem[c0 + j];
         if (!campo) return;
         valor = valor.trim();
-        if (campo === 'serie' || campo === 'favorita' || campo === 'abandonada') r[campo] = simNao(valor);
+        if (campo === 'serie' || campo === 'favorita' || campo === 'abandonada' || campo === 'tenho') r[campo] = simNao(valor);
+        else if (incAba === 'nora' && campo === 'tipo') r.tipo = valor || r.tipo;
+        else if (campo === 'ano' || campo === 'anoLeitura') r[campo] = valor.replace(/[^\d]/g, '');
         else if (campo === 'status') r.status = INC_STATUS.find(s => s.toLowerCase() === valor.toLowerCase()) || r.status;
         else if (campo === 'tipo') r.tipo = /livro/i.test(valor) ? 'Livro' : 'Ebook';
         else if (['palavras', 'paginas', 'volume'].includes(campo)) r[campo] = valor.replace(/[^\d]/g, '');
@@ -444,6 +493,7 @@
       });
       if (r.nomeSerie && !r.serie) r.serie = true;
       if (r.status === 'Lido' && !r.dataFim) r.dataFim = incHoje();
+      if (r.status === 'Lido' && incAba === 'nora' && !r.anoLeitura) r.anoLeitura = String(new Date().getFullYear());
     });
     incGuardar();
     incRenderTabela();
@@ -495,7 +545,7 @@
       INC_ABAS[incAba].obrigatorios.forEach(f => { if (!(r[f] || '').trim()) marcar(i, f); });
       if (r.serie && !r.nomeSerie.trim()) marcar(i, 'nomeSerie');
       if (r.serie && !String(r.volume).trim()) marcar(i, 'volume');
-      if (r.status === 'Lido' && !r.dataFim) marcar(i, 'dataFim');
+      if (r.status === 'Lido' && !r.dataFim && incAba !== 'nora') marcar(i, 'dataFim');
     });
     return ok;
   }
@@ -529,7 +579,14 @@
         const msg = `${res.salvas} ${res.salvas === 1 ? 'obra salva' : 'obras salvas'} na planilha ✓`;
         if (res.avisos && res.avisos.length) incToast(msg + ' — atenção: ' + res.avisos.join('; '), true);
         else incToast(msg);
-        google.script.run.withSuccessHandler(init).getHomeDataAPI(); // atualiza as outras seções
+        if (aba === 'nora') {
+          google.script.run.withSuccessHandler(r2 => {
+            nrObras = JSON.parse(r2).obras || []; nrCarregado = true;
+            if (typeof nrRenderTudo === 'function' && !document.getElementById('view-nora').hidden) nrRenderTudo();
+          }).getNoraDataAPI();
+        } else {
+          google.script.run.withSuccessHandler(init).getHomeDataAPI(); // atualiza as outras seções
+        }
       })
       .withFailureHandler(err => {
         incSalvando = false;
@@ -537,6 +594,6 @@
         incAtualizarContador();
         incToast('Não foi possível salvar: ' + (err && err.message ? err.message : err), true);
       })
-      .saveObrasBatchAPI(JSON.stringify(payload));
+      [aba === 'nora' ? 'saveNoraBatchAPI' : 'saveObrasBatchAPI'](JSON.stringify(payload));
   }
 </script>

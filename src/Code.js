@@ -308,6 +308,110 @@ function saveObrasBatchAPI(JSONPayload) {
   }
 }
 
+// Inclui várias obras na aba "Nora Roberts" (página Incluir obras → aba Nora Roberts).
+// rows: [{ tipo, titulo (original), tituloTrad, ano, serie: bool, nomeSerie, volume (ordem), idioma,
+//          tenho: bool, paginas, plot, status, anoLeitura, nota, favorita: bool, obs, capaUrl }]
+function saveNoraBatchAPI(JSONPayload) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const rows = JSON.parse(JSONPayload);
+    if (!rows || !rows.length) return JSON.stringify({ success: true, salvas: 0, avisos: [] });
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Nora Roberts");
+    if (!sheet) throw new Error("A aba 'Nora Roberts' não foi encontrada.");
+
+    const lastCol = sheet.getLastColumn();
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => h.toString().trim());
+    const norm = v => (v === null || v === undefined ? "" : v.toString()).trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const colPor = nomes => headers.findIndex(h => nomes.indexOf(norm(h)) >= 0);
+    const C = {
+      tipo: colPor(["tipo"]),
+      trad: colPor(["titulo traduzido"]),
+      titulo: colPor(["titulo original"]),
+      ano: colPor(["ano"]),
+      serie: colPor(["serie"]),
+      ordem: colPor(["ordem na serie", "ordem"]),
+      idioma: colPor(["idioma"]),
+      tenho: colPor(["tenho?", "tenho"]),
+      paginas: colPor(["paginas"]),
+      anoLeitura: colPor(["ano da leitura"]),
+      nota: colPor(["nota"]),
+      status: colPor(["status"]),
+      fav: colPor(["favorito", "favorita"]),
+      obs: colPor(["obs", "obs."]),
+      capa: 14,  // coluna O
+      plot: colPor(["plot"]) >= 0 ? colPor(["plot"]) : 15  // coluna P
+    };
+    if (C.titulo < 0) throw new Error("Coluna 'Título original' não encontrada na aba Nora Roberts.");
+
+    // Primeira linha livre = depois da última com Título original preenchido
+    const totalLinhas = sheet.getMaxRows();
+    const titulos = sheet.getRange(1, C.titulo + 1, totalLinhas, 1).getValues();
+    let ultima = 1;
+    for (let i = titulos.length - 1; i >= 1; i--) {
+      if (titulos[i][0] !== "" && titulos[i][0] !== null) { ultima = i + 1; break; }
+    }
+    const inicio = ultima + 1, n = rows.length;
+    if (inicio + n - 1 > totalLinhas) sheet.insertRowsAfter(totalLinhas, inicio + n - 1 - totalLinhas);
+
+    // Tenho?/Favorito: se a coluna usa caixa de seleção (verdadeiro/falso), grava booleano
+    const modelo = ultima >= 2 ? sheet.getRange(ultima, 1, 1, lastCol).getValues()[0] : [];
+    const simNao = (c, v, vazioSeNao) => typeof modelo[c] === "boolean" ? !!v : (v ? "Sim" : (vazioSeNao ? "" : "Não"));
+
+    const STATUS_VALIDOS = ["Lido", "Lendo", "Quero ler"];
+    const valores = {};
+    const put = (c, i, v) => {
+      if (c === undefined || c < 0 || c >= lastCol) return;
+      if (!valores[c]) valores[c] = new Array(n).fill("");
+      valores[c][i] = v;
+    };
+    rows.forEach((r, i) => {
+      const titulo = (r.titulo || "").toString().trim();
+      if (!titulo) throw new Error("Linha " + (i + 1) + ": título original obrigatório.");
+      const status = STATUS_VALIDOS.indexOf(r.status) >= 0 ? r.status : "Quero ler";
+      put(C.tipo, i, r.tipo || "Livro");
+      put(C.trad, i, (r.tituloTrad || "").trim());
+      put(C.titulo, i, titulo);
+      put(C.ano, i, Number(r.ano) || "");
+      if (r.serie) {
+        put(C.serie, i, (r.nomeSerie || "").trim());
+        put(C.ordem, i, r.volume === "" || r.volume === undefined ? "" : Number(r.volume));
+      }
+      put(C.idioma, i, r.idioma || "Inglês");
+      put(C.tenho, i, simNao(C.tenho, r.tenho, false));
+      put(C.paginas, i, Number(r.paginas) || "");
+      put(C.status, i, status);
+      if (status === "Lido") {
+        put(C.anoLeitura, i, Number(r.anoLeitura) || new Date().getFullYear());
+        if (r.nota) put(C.nota, i, Number(r.nota));
+      }
+      put(C.fav, i, simNao(C.fav, r.favorita, true));
+      put(C.obs, i, (r.obs || "").trim());
+      put(C.capa, i, (r.capaUrl || "").trim());
+      put(C.plot, i, (r.plot || "").trim());
+    });
+
+    Object.keys(valores).forEach(c => {
+      c = Number(c);
+      sheet.getRange(inicio, c + 1, n, 1).setValues(valores[c].map(v => [v]));
+    });
+
+    // Colunas com fórmula na linha de cima (ex.: Década): copia para as novas linhas
+    if (ultima >= 2) {
+      const formulas = sheet.getRange(ultima, 1, 1, lastCol).getFormulasR1C1()[0];
+      const atuais = sheet.getRange(inicio, 1, n, lastCol).getFormulasR1C1();
+      formulas.forEach((formula, c) => {
+        if (!formula || valores[c]) return;
+        if (atuais.every(linha => !linha[c])) sheet.getRange(inicio, c + 1, n, 1).setFormulasR1C1(new Array(n).fill([formula]));
+      });
+    }
+    return JSON.stringify({ success: true, salvas: n, linhaInicial: inicio, avisos: [] });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 // Dados da aba "Nora Roberts" (página Nora Roberts)
 function getNoraDataAPI() {
   try {
@@ -346,7 +450,7 @@ function getNoraDataAPI() {
 
 // ===== Epílogo: diário de leitura (aba "Epílogo", criada automaticamente) =====
 const EPILOGO_ABA = "Epílogo";
-const EPILOGO_COLUNAS = ["ID", "Data", "Título", "Texto", "Obra", "Tipo da obra", "Imagens", "Tags", "Atualizado em"];
+const EPILOGO_COLUNAS = ["ID", "Data", "Título", "Texto", "Obra", "Tipo da obra", "Imagens", "Tags", "Atualizado em", "Humor"];
 
 function epilogoSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -356,6 +460,10 @@ function epilogoSheet_() {
     sheet.getRange(1, 1, 1, EPILOGO_COLUNAS.length).setValues([EPILOGO_COLUNAS]).setFontWeight("bold");
     sheet.setFrozenRows(1);
     sheet.setColumnWidth(4, 500);
+  }
+  // abas criadas antes da coluna "Humor" ganham o cabeçalho que falta
+  if (sheet.getRange(1, EPILOGO_COLUNAS.length).getValue() === "") {
+    sheet.getRange(1, EPILOGO_COLUNAS.length).setValue(EPILOGO_COLUNAS[EPILOGO_COLUNAS.length - 1]).setFontWeight("bold");
   }
   return sheet;
 }
@@ -372,7 +480,8 @@ function getEpilogoAPI() {
     obra: String(r[4] || ""),
     tipoObra: String(r[5] || ""),
     imagens: String(r[6] || "").split(/\n+/).map(x => x.trim()).filter(Boolean),
-    tags: String(r[7] || "").split(",").map(x => x.trim()).filter(Boolean)
+    tags: String(r[7] || "").split(",").map(x => x.trim()).filter(Boolean),
+    humor: String(r[9] || "")
   }));
   return JSON.stringify({ posts: posts });
 }
@@ -391,7 +500,7 @@ function saveEpilogoPostAPI(JSONPayload) {
     const data = partes.length === 3 && partes[0] ? new Date(partes[0], partes[1] - 1, partes[2]) : new Date();
     const id = p.id || Utilities.getUuid();
     const linha = [id, data, p.titulo || "", p.texto || "", p.obra || "", p.tipoObra || "",
-      (p.imagens || []).join("\n"), (p.tags || []).join(", "), new Date()];
+      (p.imagens || []).join("\n"), (p.tags || []).join(", "), new Date(), p.humor || ""];
 
     let row = -1;
     if (p.id && sheet.getLastRow() >= 2) {

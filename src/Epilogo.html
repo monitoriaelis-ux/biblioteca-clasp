@@ -30,6 +30,14 @@
             </div>
           </div>
 
+          <div class="ep-humor-linha">
+            <div class="ep-campo ep-campo-humor">
+              <i class="fa-solid fa-face-smile"></i>
+              <input type="text" class="ep-in" id="ep-humor" list="ep-dl-humores" placeholder="Humor do dia (current mood)">
+            </div>
+            <div class="ep-humores" id="ep-humores"></div>
+          </div>
+
           <div class="ep-campo ep-campo-img">
             <i class="fa-solid fa-image"></i>
             <input type="url" class="ep-in" id="ep-img-url" placeholder="Cole o link de um GIF ou imagem e aperte Enter">
@@ -76,6 +84,7 @@
   </aside>
 
   <datalist id="ep-dl-obras"></datalist>
+  <datalist id="ep-dl-humores"></datalist>
   <div id="ep-toast" class="fanfic-toast"></div>
 </div>
 
@@ -112,6 +121,18 @@
     font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 7px; cursor: pointer; white-space: nowrap;
   }
   .ep-btn-mini:hover { background: var(--cor-fanfic); color: #fff; }
+
+  .ep-humor-linha { display: flex; align-items: center; gap: 8px; }
+  .ep-campo-humor { width: 240px; flex-shrink: 0; }
+  .ep-humores { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ep-humor-chip {
+    border: none; background: var(--bg-creme); border-radius: 8px; padding: 3px 7px; font-size: 15px; cursor: pointer;
+    line-height: 1.2; transition: transform 0.1s, background 0.15s;
+  }
+  .ep-humor-chip:hover { transform: scale(1.15); background: var(--hover-bege); }
+  .ep-humor-chip.ativo { background: var(--cor-fanfic); }
+  .ep-post-humor { font-size: 11.5px; color: var(--texto-secundario); padding: 2px 18px 0; }
+  .ep-post-humor b { font-weight: 600; color: var(--texto-marrom); }
 
   .ep-previa { display: flex; flex-wrap: wrap; gap: 8px; }
   .ep-previa:empty { display: none; }
@@ -211,6 +232,8 @@
   let epEditando = null;              // id do post em edição
   let epImagens = [];                 // imagens do post sendo escrito
   const epF = { busca: '', tag: null, obra: null };
+  const EP_HUMORES = ['😍 apaixonada', '🥰 quentinha', '😭 chorando', '💔 de coração partido', '🤯 surtando', '😱 em choque',
+    '😤 revoltada', '😏 shippando', '🔥 com calor', '😌 em paz', '🤔 pensativa', '😴 sonolenta', '🤓 nerd', '🥲 nostálgica', '📚 sem conseguir parar'];
   const EP_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   const epNorm = v => (v === undefined || v === null ? '' : String(v)).trim().toLowerCase();
@@ -290,6 +313,15 @@
 
   function epIniciar() {
     epIniciado = true;
+    document.getElementById('ep-dl-humores').innerHTML = EP_HUMORES.map(h => `<option value="${epEsc(h)}">`).join('');
+    const humor = document.getElementById('ep-humor');
+    document.getElementById('ep-humores').innerHTML = EP_HUMORES.map(h =>
+      `<button type="button" class="ep-humor-chip" title="${epEsc(h.replace(/^\S+\s/, ''))}" data-h="${epEsc(h)}">${h.split(' ')[0]}</button>`).join('');
+    document.querySelectorAll('.ep-humor-chip').forEach(b => b.addEventListener('click', () => {
+      humor.value = humor.value === b.dataset.h ? '' : b.dataset.h;
+      epMarcarHumor();
+    }));
+    humor.addEventListener('input', epMarcarHumor);
     document.getElementById('ep-abrir').addEventListener('click', () => epAbrirComposer());
     document.getElementById('ep-cancelar').addEventListener('click', epFecharComposer);
     document.getElementById('ep-publicar').addEventListener('click', epPublicar);
@@ -308,6 +340,11 @@
     document.getElementById('ep-filtro-x').addEventListener('click', () => { epF.tag = null; epF.obra = null; epRender(); });
   }
 
+  function epMarcarHumor() {
+    const v = document.getElementById('ep-humor').value;
+    document.querySelectorAll('.ep-humor-chip').forEach(b => b.classList.toggle('ativo', b.dataset.h === v));
+  }
+
   // ===== Composer =====
   function epAbrirComposer(post) {
     epEditando = post ? post.id : null;
@@ -317,6 +354,8 @@
     document.getElementById('ep-obra').value = post ? post.obra : '';
     document.getElementById('ep-data').value = post ? (post.data || epHoje()) : epHoje();
     document.getElementById('ep-tags').value = post ? post.tags.join(', ') : '';
+    document.getElementById('ep-humor').value = post ? (post.humor || '') : '';
+    epMarcarHumor();
     document.getElementById('ep-publicar').innerHTML = post ? '<i class="fa-solid fa-check"></i> Salvar' : '<i class="fa-solid fa-paper-plane"></i> Publicar';
     epRenderPrevia();
     document.getElementById('ep-composer').classList.add('aberto');
@@ -344,6 +383,7 @@
       obra: obra ? obra.titulo : obraTxt,
       tipoObra: obra ? obra.tipo : '',
       imagens: epImagens.slice(),
+      humor: document.getElementById('ep-humor').value.trim(),
       tags: document.getElementById('ep-tags').value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean)
     };
     if (!post.texto && !post.titulo && !post.imagens.length) { epToast('Escreva algo ou adicione um GIF antes de publicar.', true); return; }
@@ -391,7 +431,7 @@
     if (epF.tag) lista = lista.filter(p => p.tags.some(t => epNorm(t) === epNorm(epF.tag)));
     if (epF.obra) lista = lista.filter(p => epNorm(p.obra) === epNorm(epF.obra));
     const termo = epSemAcento(epF.busca);
-    if (termo) lista = lista.filter(p => [p.titulo, p.texto, p.obra, p.tags.join(' ')].some(x => epSemAcento(x).includes(termo)));
+    if (termo) lista = lista.filter(p => [p.titulo, p.texto, p.obra, p.tags.join(' '), p.humor].some(x => epSemAcento(x).includes(termo)));
 
     const el = document.getElementById('ep-posts');
     if (!epPosts.length) el.innerHTML = '<div class="obras-vazio">Seu diário ainda está vazio. Que tal escrever o primeiro post? ✍️</div>';
@@ -414,6 +454,7 @@
             <button type="button" class="apagar" title="Apagar" onclick="epApagar('${epEsc(p.id)}')"><i class="fa-solid fa-trash"></i></button>
           </div>
         </div>
+        ${p.humor ? `<div class="ep-post-humor">humor: <b>${epEsc(p.humor)}</b></div>` : ''}
         <div class="ep-post-corpo">
           ${p.titulo ? `<h3 class="ep-post-titulo">${epEsc(p.titulo)}</h3>` : ''}
           ${p.obra ? `
