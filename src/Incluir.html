@@ -178,7 +178,7 @@
     }
   };
   const INC_TIPOS_LIVRO = [{ v: 'Ebook', t: 'E-book' }, { v: 'Livro', t: 'Livro' }];
-  const INC_IDIOMAS = ['Português', 'Inglês'];
+  const INC_IDIOMAS = ['Inglês', 'Português'];
 
   let incAba = 'fanfic';
   const incDados = { fanfic: [], livros: [] };
@@ -192,7 +192,7 @@
                    plot: '', status: 'Quero ler', dataFim: '', nota: 0, favorita: false, abandonada: false, capaUrl: '' };
     return (aba || incAba) === 'fanfic'
       ? Object.assign(base, { tipo: 'Fanfiction', fandom: '', palavras: '' })
-      : Object.assign(base, { tipo: 'Ebook', idioma: 'Português', paginas: '' });
+      : Object.assign(base, { tipo: 'Ebook', idioma: 'Inglês', paginas: '' });
   }
   function incLinhaVazia(r) {
     return !r.titulo.trim() && !r.autor.trim() && !(r.fandom || '').trim() && !r.plot.trim() &&

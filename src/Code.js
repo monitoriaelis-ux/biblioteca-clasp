@@ -260,7 +260,7 @@ function saveObrasBatchAPI(JSONPayload) {
       } // sem série: coluna Série fica em branco
       put(C.genero, i, r.genero || "Romance");
       put(C.orientacao, i, r.orientacao || "Straight");
-      put(C.idioma, i, fanfic ? "Inglês" : (r.idioma || "Português"));
+      put(C.idioma, i, fanfic ? "Inglês" : (r.idioma || "Inglês"));
       if (fanfic) put(C.palavras, i, palavras || "");
       put(C.paginas, i, paginas);
       put(C.plot, i, (r.plot || "").trim());
