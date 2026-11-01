@@ -36,6 +36,13 @@
       <div class="fanfic-search">
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" id="fanfic-search" placeholder="Buscar por título ou autor..." autocomplete="off">
+        <button type="button" id="fanfic-search-clear" class="fanfic-search-clear" title="Limpar busca" hidden>
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="fanfic-seg" role="group" aria-label="Filtrar por leitura">
+        <button type="button" class="fanfic-seg-btn active" data-leitura="todas">Todas</button>
+        <button type="button" class="fanfic-seg-btn" data-leitura="naolidas">Não lidas</button>
       </div>
       <button type="button" class="fanfic-sort-btn" id="sort-alfa" title="Ordenar por título">
         <i class="fa-solid fa-arrow-down-a-z"></i> <span>A-Z</span>
@@ -339,6 +346,49 @@
     color: var(--texto-marrom);
   }
   .fanfic-search:focus-within { border-color: var(--cor-fanfic); }
+  .fanfic-search-clear {
+    border: none;
+    background: var(--hover-bege);
+    color: var(--texto-secundario);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .fanfic-search-clear[hidden] { display: none; }
+  .fanfic-search-clear:hover { background: var(--cor-fanfic); color: #fff; }
+
+  .fanfic-seg {
+    display: flex;
+    height: 38px;
+    background: var(--bg-cards);
+    border: 1px solid var(--borda-bege);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .fanfic-seg-btn {
+    border: none;
+    background: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+    padding: 0 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .fanfic-seg-btn:hover { color: var(--texto-marrom); }
+  .fanfic-seg-btn.active { background: var(--cor-fanfic); color: #fff; }
 
   .fanfic-sort-btn {
     height: 38px;
@@ -607,6 +657,7 @@
   let fanficBusca = '';             // texto da caixa de pesquisa
   let fanficOrdem = null;           // null | 'alfa' | 'palavras'
   let fanficOrdemAsc = true;        // direção da ordenação
+  let fanficLeitura = 'todas';      // 'todas' | 'naolidas' (filtro só da lista)
   let fanficEventosOk = false;
 
   function fanficNorm(v) { return (v || '').toString().trim().toLowerCase(); }
@@ -674,9 +725,27 @@
       renderFanficsView();
     });
 
-    document.getElementById('fanfic-search').addEventListener('input', e => {
+    const busca = document.getElementById('fanfic-search');
+    const limpar = document.getElementById('fanfic-search-clear');
+    busca.addEventListener('input', e => {
       fanficBusca = e.target.value;
+      limpar.hidden = !fanficBusca;
       renderFanficsConteudo();
+    });
+    limpar.addEventListener('click', () => {
+      busca.value = '';
+      fanficBusca = '';
+      limpar.hidden = true;
+      renderFanficsConteudo();
+      busca.focus();
+    });
+
+    document.querySelectorAll('.fanfic-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        fanficLeitura = btn.dataset.leitura;
+        document.querySelectorAll('.fanfic-seg-btn').forEach(b => b.classList.toggle('active', b === btn));
+        renderFanficsConteudo();
+      });
     });
 
     // 1º clique ativa; cliques seguintes invertem a direção
@@ -799,6 +868,8 @@
   function renderFanficsConteudo() {
     let list = getFanficsFiltradas();
 
+    if (fanficLeitura === 'naolidas') list = list.filter(f => !fanficLida(f));
+
     const termo = fanficSemAcento(fanficBusca);
     if (termo) {
       list = list.filter(f => fanficSemAcento(f['Título']).includes(termo) || fanficSemAcento(f['Autor']).includes(termo));
@@ -824,6 +895,7 @@
     const grid = document.getElementById('fanfic-cards-grid');
     if (list.length === 0) {
       const msg = termo ? `Nenhuma fanfiction encontrada para "${fanficEsc(fanficBusca)}".`
+        : fanficLeitura === 'naolidas' ? 'Nenhuma fanfiction não lida aqui.'
         : fandomFiltro ? `Nenhuma fanfiction de ${fanficEsc(fandomFiltro)} cadastrada ainda.`
         : "Nenhuma fanfiction cadastrada na planilha com o tipo 'Fanfiction'.";
       grid.innerHTML = `<div class="obras-vazio">${msg}</div>`;
@@ -856,12 +928,13 @@
     return html;
   }
 
-  const obrasAbertas = new Set(); // linhas com o plot expandido
+  let obraAberta = null; // só uma linha com o plot expandido por vez
 
   function toggleObra(idx) {
-    if (obrasAbertas.has(idx)) obrasAbertas.delete(idx); else obrasAbertas.add(idx);
+    obraAberta = (obraAberta === idx) ? null : idx;
+    document.querySelectorAll('.obra-card.aberta').forEach(c => c.classList.remove('aberta'));
     const card = document.querySelector(`.obra-card[data-idx="${idx}"]`);
-    if (card) card.classList.toggle('aberta', obrasAbertas.has(idx));
+    if (card && obraAberta === idx) card.classList.add('aberta');
   }
 
   // Coluna O da planilha: "favorita" / "abandonada"
@@ -893,7 +966,7 @@
       : `<div class="obra-capa"><i class="fa-solid fa-book"></i></div>`;
 
     return `
-      <div class="obra-card ${statusClasse(statusAtual)}${obrasAbertas.has(idx) ? ' aberta' : ''}${obs.abandonada ? ' abandonada' : ''}" data-idx="${idx}">
+      <div class="obra-card ${statusClasse(statusAtual)}${obraAberta === idx ? ' aberta' : ''}${obs.abandonada ? ' abandonada' : ''}" data-idx="${idx}">
       <div class="obra-row">
         ${plot ? `<button type="button" class="obra-expand" onclick="toggleObra(${idx})" title="Ver plot"><i class="fa-solid fa-chevron-right"></i></button>` : '<span></span>'}
         ${capa}
