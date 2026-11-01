@@ -93,14 +93,17 @@
 </style>
 
 <script>
-  (function initFanficsView() {
-    google.script.run
-      .withSuccessHandler(renderFanficsList)
-      .getFanficsAPI();
-  })();
+  // Exibida dentro do Front.html: usa a lista "allBooks" já carregada pelo Front.
+  // Chamada pela navbar sempre que a seção "Minhas obsessões" é aberta.
+  function renderFanficsView() {
+    const list = (typeof allBooks !== 'undefined' ? allBooks : []).filter(b => {
+      const tipo = (b['Tipo'] || '').toString().trim().toLowerCase();
+      return tipo === 'fanfiction' || tipo === 'fanfic';
+    });
+    renderFanficsList(list);
+  }
 
-  function renderFanficsList(responseJSON) {
-    const list = JSON.parse(responseJSON);
+  function renderFanficsList(list) {
     const grid = document.getElementById('fanfic-cards-grid');
 
     if (list.length === 0) {

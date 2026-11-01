@@ -82,3 +82,9 @@ function saveNewBookAPI(JSONPayload) {
     throw new Error(error.message);
   }
 }
+
+// Insere o conteúdo de outro arquivo HTML do projeto dentro do Front
+// (usado pelas seções da navbar: <?!= include('Estante'); ?>)
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}

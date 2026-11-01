@@ -38,8 +38,22 @@
     }
 
     .nav-menu {
-      display: flex; justify-content: center; align-items: center; height: 38px; gap: 25px; 
+      display: flex; justify-content: safe center; align-items: center; height: 38px; gap: 25px;
+      overflow-x: auto; white-space: nowrap; padding: 0 16px; scrollbar-width: none;
     }
+    .nav-menu::-webkit-scrollbar { display: none; }
+    .nav-add-btn { flex-shrink: 0; }
+
+    /* Seções da navbar */
+    .main-container[hidden] { display: none !important; }
+    .page-view { display: block; overflow-y: auto; }
+    .placeholder-card {
+      background: var(--bg-cards); border-radius: 14px; padding: 40px 24px; text-align: center;
+      box-shadow: 0 4px 12px rgba(155, 125, 97, 0.04); color: var(--texto-secundario);
+    }
+    .placeholder-card h2 { color: var(--texto-marrom); font-size: 20px; margin: 0 0 8px; }
+    .placeholder-card i { font-size: 28px; color: var(--cor-fanfic); margin-bottom: 12px; }
+    .placeholder-card p { margin: 0; font-size: 13px; }
     .nav-item {
       text-decoration: none; color: var(--texto-secundario); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; height: 100%; display: flex; align-items: center; position: relative; transition: color 0.3s;
     }
@@ -261,17 +275,24 @@
 <div class="top-header">
   <div class="header-image"></div>
   <div class="nav-menu">
-    <a href="#" class="nav-item active"><i class="fa-solid fa-house" style="margin-right: 6px;"></i> Prefácio</a>
-    <a href="#" class="nav-item"><i class="fa-solid fa-book" style="margin-right: 6px;"></i> Minha estante</a>
-    <a href="#" class="nav-item"><i class="fa-solid fa-tablet-screen-button" style="margin-right: 6px;"></i> Meu kindle</a>
-    <a href="#" class="nav-item"><i class="fa-solid fa-fire" style="margin-right: 6px;"></i> Minhas obsessões</a>
-    <a href="#" class="nav-item"><i class="fa-solid fa-crown" style="margin-right: 6px;"></i> Nora Roberts</a>
-    <a href="#" class="nav-item"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i> Epílogo</a>
+    <a href="#" class="nav-item active" data-view="prefacio"><i class="fa-solid fa-house" style="margin-right: 6px;"></i> Prefácio</a>
+    <a href="#" class="nav-item" data-view="estante"><i class="fa-solid fa-book" style="margin-right: 6px;"></i> Minha estante</a>
+    <a href="#" class="nav-item" data-view="kindle"><i class="fa-solid fa-tablet-screen-button" style="margin-right: 6px;"></i> Meu kindle</a>
+    <a href="#" class="nav-item" data-view="obsessoes"><i class="fa-solid fa-fire" style="margin-right: 6px;"></i> Minhas obsessões</a>
+    <a href="#" class="nav-item" data-view="nora"><i class="fa-solid fa-crown" style="margin-right: 6px;"></i> Nora Roberts</a>
+    <a href="#" class="nav-item" data-view="epilogo"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i> Epílogo</a>
     <div class="nav-add-btn" onclick="openAddModal()" title="Adicionar Nova Obra"><i class="fa-solid fa-plus"></i></div>
   </div>
 </div>
 
-<div class="main-container">
+<!-- Seções: só uma fica visível por vez; o cabeçalho acima nunca muda -->
+<div class="main-container page-view" id="view-estante" hidden><?!= include('Estante'); ?></div>
+<div class="main-container page-view" id="view-kindle" hidden><?!= include('Kindle'); ?></div>
+<div class="main-container page-view" id="view-obsessoes" hidden><?!= include('Fanfiction front'); ?></div>
+<div class="main-container page-view" id="view-nora" hidden><?!= include('NoraRoberts'); ?></div>
+<div class="main-container page-view" id="view-epilogo" hidden><?!= include('Epilogo'); ?></div>
+
+<div class="main-container" id="view-prefacio">
   <div id="left-sidebar-cards" class="left-sidebar"></div>
   <div class="right-content">
     <div id="goal-container"></div>
@@ -409,8 +430,58 @@
   let allBooks = [];
 
   window.onload = function () {
+    setupNavbar();
     google.script.run.withSuccessHandler(init).getHomeDataAPI();
   };
+
+  // ===== Navbar: troca a seção visível sem recarregar a página =====
+  const VIEWS = ['prefacio', 'estante', 'kindle', 'obsessoes', 'nora', 'epilogo'];
+  let currentView = 'prefacio';
+
+  // Funções chamadas quando uma seção é exibida (e quando os dados recarregam)
+  const viewRenderers = {
+    obsessoes: () => { if (typeof renderFanficsView === 'function') renderFanficsView(); }
+  };
+
+  function setupNavbar() {
+    document.querySelectorAll('.nav-item[data-view]').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        showView(link.dataset.view, true);
+      });
+    });
+
+    // Abre na seção indicada na URL (?page=estante), se houver
+    if (window.google && google.script && google.script.url) {
+      google.script.url.getLocation(loc => {
+        const page = loc.parameter && loc.parameter.page;
+        if (page && VIEWS.includes(page)) showView(page, false);
+      });
+    }
+    // Botões voltar/avançar do navegador
+    if (window.google && google.script && google.script.history) {
+      google.script.history.setChangeHandler(e => {
+        const page = (e.location.parameter && e.location.parameter.page) || 'prefacio';
+        if (VIEWS.includes(page)) showView(page, false);
+      });
+    }
+  }
+
+  function showView(name, pushHistory) {
+    if (!VIEWS.includes(name)) name = 'prefacio';
+    currentView = name;
+    VIEWS.forEach(v => {
+      const el = document.getElementById('view-' + v);
+      if (el) el.hidden = (v !== name);
+    });
+    document.querySelectorAll('.nav-item[data-view]').forEach(link => {
+      link.classList.toggle('active', link.dataset.view === name);
+    });
+    if (viewRenderers[name]) viewRenderers[name]();
+    if (pushHistory && window.google && google.script && google.script.history) {
+      google.script.history.push({ page: name }, { page: name });
+    }
+  }
 
   function norm(v) { return (v || "").toString().trim().toLowerCase(); }
 
@@ -421,7 +492,8 @@
     renderGoal();
     renderFavorites(allBooks);
     renderRecentReads();
-    setupFormDropdowns(data.tagsGlossario); 
+    setupFormDropdowns(data.tagsGlossario);
+    if (viewRenderers[currentView]) viewRenderers[currentView]();
   }
 
   function setupFormDropdowns(glossarioTags) {
