@@ -328,6 +328,7 @@ function getNoraDataAPI() {
       const o = {};
       headers.forEach((h, i) => o[h] = row[i] instanceof Date ? row[i].toISOString() : row[i]);
       o._row = idx + 2;
+      o._fav = row.length > 12 ? row[12] : ""; // coluna M: Favorito
       // Capa: link direto ou o link de dentro de =IMAGE("...")
       if (row.length > colCapa) {
         const v = (row[colCapa] || "").toString().trim();

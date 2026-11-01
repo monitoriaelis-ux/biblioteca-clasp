@@ -194,7 +194,13 @@
   const nrOrdemSerie = o => { const n = nrNum(o['Ordem na série']); return n === null ? Infinity : n; };
   const nrLida = o => nrNorm(o['Status']) === 'lido';
   const nrTenho = o => nrSim(o['Tenho?']);
-  const nrFav = o => nrSim(o['Favorito']);
+  // Favorito (coluna M): qualquer valor preenchido conta, menos "não"/"falso"/"0"/"-"
+  const nrFav = o => {
+    const v = o._fav !== undefined ? o._fav : o['Favorito'];
+    if (v === true) return true;
+    const t = nrNorm(v);
+    return !!t && !['não', 'nao', 'n', 'false', 'falso', '0', '-', 'no'].includes(t);
+  };
   const nrNota = o => nrNum(o['Nota']);
   const nrAno = o => nrNum(o['Ano']);
   const nrPaginas = o => nrNum(o['Páginas']);
