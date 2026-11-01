@@ -59,7 +59,7 @@
 
     <div class="fanfic-list-scroll">
       <div class="obra-row obra-header">
-        <span></span><span></span><span class="col-titulo">Título</span><span>Palavras</span><span>Fandom</span><span>Status</span><span>Nota</span>
+        <span></span><span class="col-titulo">Título</span><span>Palavras</span><span>Fandom</span><span>Status</span><span>Nota</span><span></span>
       </div>
       <div id="fanfic-cards-grid" class="obras-list">
         <div class="obras-vazio">Carregando suas obsessões...</div>
@@ -452,7 +452,7 @@
   }
   .obra-row {
     display: grid;
-    grid-template-columns: 22px 40px minmax(0, 1fr) 90px 130px 150px 110px;
+    grid-template-columns: 40px minmax(0, 1fr) 90px 130px 150px 110px 22px;
     align-items: center;
     gap: 14px;
   }
@@ -461,7 +461,7 @@
     top: 0;
     z-index: 5;
     background: var(--bg-creme);
-    padding: 0 16px 6px 5px;
+    padding: 0 12px 6px 19px;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
@@ -474,7 +474,7 @@
     --status-cor: var(--borda-bege);
     background: var(--bg-cards);
     border-radius: 10px;
-    padding: 0 16px 0 0;
+    padding: 0 12px 0 14px;
     box-shadow: 0 3px 10px rgba(155, 125, 97, 0.05);
     border-left: 5px solid var(--status-cor);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -488,7 +488,7 @@
     padding: 0;
     width: 22px;
     height: 72px;
-    justify-self: start;
+    justify-self: end;
     color: var(--texto-secundario);
     cursor: pointer;
     font-size: 11px;
@@ -502,7 +502,7 @@
     line-height: 1.6;
     color: var(--texto-marrom);
     border-top: 1px dashed var(--hover-bege);
-    padding: 10px 4px 14px 68px;
+    padding: 10px 28px 14px 54px;
     white-space: pre-line;
   }
   .obra-card.aberta .obra-plot { display: block; }
@@ -1104,7 +1104,6 @@
     return `
       <div class="obra-card ${statusClasse(statusAtual)}${obraAberta === idx ? ' aberta' : ''}${obs.abandonada ? ' abandonada' : ''}" data-idx="${idx}">
       <div class="obra-row">
-        ${plot ? `<button type="button" class="obra-expand" onclick="toggleObra(${idx})" title="Ver plot"><i class="fa-solid fa-chevron-down"></i></button>` : '<span></span>'}
         ${capa}
         <div class="obra-titulo-bloco">
           <div class="obra-titulo-linha">
@@ -1149,6 +1148,7 @@
              ${lida ? `onclick="alterarNotaObra(${idx}, event)"` : ''}>
           ${estrelasHtml(f)}
         </div></div>
+        ${plot ? `<button type="button" class="obra-expand" onclick="toggleObra(${idx})" title="Ver plot"><i class="fa-solid fa-chevron-down"></i></button>` : '<span></span>'}
       </div>
       ${plot ? `<div class="obra-plot">${fanficEsc(plot)}</div>` : ''}
       </div>
