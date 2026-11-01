@@ -862,10 +862,10 @@
       renderFanficsConteudo();
     });
 
-    document.querySelectorAll('.fanfic-seg-btn').forEach(btn => {
+    document.querySelectorAll('#view-obsessoes .fanfic-seg-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         fanficLeitura = btn.dataset.leitura;
-        document.querySelectorAll('.fanfic-seg-btn').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('#view-obsessoes .fanfic-seg-btn').forEach(b => b.classList.toggle('active', b === btn));
         renderFanficsConteudo();
       });
     });
