@@ -23,15 +23,16 @@ Acesse https://script.google.com/home/usersettings e ligue **Google Apps Script 
 (com a mesma conta Google que é dona/editora do projeto).
 
 ### 2. Gerar a credencial do clasp (no seu computador)
-Use **a mesma versão** que os workflows (2.4.2), pois o formato da credencial muda entre versões:
+Use o clasp **3.x**, a mesma versão dos workflows (o formato da credencial muda entre versões). Sem poder instalar nada, use o [Google Cloud Shell](https://shell.cloud.google.com):
 
 ```bash
-npm install -g @google/clasp@2.4.2
-clasp login
+npm install -g @google/clasp@3
+clasp login --no-localhost
 ```
 
 O login abre o navegador; entre com a conta Google do projeto. Isso cria o arquivo `~/.clasprc.json`
-(no Windows: `C:\Users\<seu-usuario>\.clasprc.json`).
+(no Windows: `C:\Users\<seu-usuario>\.clasprc.json`). No Cloud Shell, copie o conteúdo pelo editor
+(`cloudshell edit ~/.clasprc.json`) — copiar pelo terminal costuma cortar o texto.
 
 ### 3. Salvar a credencial como secret no GitHub
 1. Abra o conteúdo de `~/.clasprc.json` e copie **tudo**.

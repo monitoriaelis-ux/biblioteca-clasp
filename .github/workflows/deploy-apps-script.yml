@@ -34,7 +34,7 @@ jobs:
           node-version: 20
 
       - name: Instalar clasp
-        run: npm install -g @google/clasp@2.4.2
+        run: npm install -g @google/clasp@3
 
       - name: Configurar credencial
         env:
@@ -57,8 +57,8 @@ jobs:
             catch (e) { console.log("::error::O secret CLASPRC_JSON nao e um JSON valido (copiado incompleto ou com quebras de linha?): " + e.message); process.exit(1); }
             const show = (o, p) => Object.keys(o).forEach(k => { console.log(p + k); if (o[k] && typeof o[k] === "object" && p.length < 4) show(o[k], p + "  "); });
             show(j, "- ");
-            const t = j.token || {};
-            if (!t.refresh_token) { console.log("::error::Credencial sem token.refresh_token. Formato inesperado (versao do clasp diferente de 2.4.2?)."); process.exit(1); }
+            const t = (j.tokens && j.tokens.default) || {};
+            if (!t.refresh_token) { console.log("::error::Credencial sem tokens.default.refresh_token. Gere a credencial com o clasp 3.x."); process.exit(1); }
           '
 
       - name: clasp push
