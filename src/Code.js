@@ -92,17 +92,20 @@ function updateObraAPI(JSONPayload) {
   lock.waitLock(10000);
   try {
     const p = JSON.parse(JSONPayload);
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Base");
-    if (!sheet) throw new Error("A aba 'Base' não foi encontrada.");
+    const nora = p.aba === "Nora Roberts";
+    const nomeAba = nora ? "Nora Roberts" : "Base";
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nomeAba);
+    if (!sheet) throw new Error("A aba '" + nomeAba + "' não foi encontrada.");
 
     const lastRow = sheet.getLastRow();
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => h.toString().trim());
     const col = name => headers.indexOf(name);
     const norm = v => (v === null || v === undefined ? "" : v.toString()).trim().toLowerCase();
 
-    const colTitulo = col("Título");
-    const colAutor = col("Autor");
-    if (colTitulo < 0) throw new Error("Coluna 'Título' não encontrada na aba Base.");
+    const nomeColTitulo = nora ? "Título original" : "Título";
+    const colTitulo = col(nomeColTitulo);
+    const colAutor = nora ? -1 : col("Autor");
+    if (colTitulo < 0) throw new Error("Coluna '" + nomeColTitulo + "' não encontrada na aba " + nomeAba + ".");
 
     // Confere se a linha ainda é da mesma obra (a planilha pode ter sido reordenada)
     let row = Number(p.row);
@@ -113,7 +116,7 @@ function updateObraAPI(JSONPayload) {
       const values = sheet.getRange(2, 1, Math.max(lastRow - 1, 1), headers.length).getValues();
       const i = values.findIndex(r => norm(r[colTitulo]) === norm(p.titulo) &&
         (colAutor < 0 || norm(r[colAutor]) === norm(p.autor)));
-      if (i < 0) throw new Error("Obra '" + p.titulo + "' não encontrada na aba Base.");
+      if (i < 0) throw new Error("Obra '" + p.titulo + "' não encontrada na aba " + nomeAba + ".");
       row = i + 2;
     }
 
@@ -123,7 +126,7 @@ function updateObraAPI(JSONPayload) {
       let valor = campos[nome];
       if (nome === "Status") {
         if (STATUS_VALIDOS.indexOf(valor) < 0) throw new Error("Status inválido: " + valor);
-      } else if (nome === "Releituras") {
+      } else if (nome === "Releituras" && !nora) {
         valor = Math.max(0, Math.floor(Number(valor) || 0));
         if (valor === 0) valor = "";
       } else if (nome === "Nota") {
@@ -141,7 +144,7 @@ function updateObraAPI(JSONPayload) {
         sheet.getRange(1, c + 1).setValue("Releituras");
         headers.push("Releituras");
       }
-      if (c < 0) throw new Error("Coluna '" + nome + "' não encontrada na aba Base.");
+      if (c < 0) throw new Error("Coluna '" + nome + "' não encontrada na aba " + nomeAba + ".");
       sheet.getRange(row, c + 1).setValue(valor);
     });
 
@@ -155,7 +158,7 @@ function updateObraAPI(JSONPayload) {
       if (colData >= 0) {
         sheet.getRange(row, colData + 1).setValue(hoje);
         resultado.dataFinal = hoje.toISOString();
-      } else {
+      } else if (!nora) {
         resultado.avisos.push("coluna 'Data final' não encontrada");
       }
 
@@ -302,6 +305,40 @@ function saveObrasBatchAPI(JSONPayload) {
     return JSON.stringify({ success: true, salvas: n, linhaInicial: inicio, avisos: avisos });
   } finally {
     lock.releaseLock();
+  }
+}
+
+// Dados da aba "Nora Roberts" (página Nora Roberts)
+function getNoraDataAPI() {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Nora Roberts");
+    if (!sheet) return JSON.stringify({ obras: [], erro: "Aba 'Nora Roberts' não encontrada." });
+
+    const range = sheet.getDataRange();
+    const data = range.getValues();
+    const formulas = range.getFormulas();
+    const headers = data[0].map(h => h.toString().trim());
+    const colCapa = headers.indexOf("Capa");
+
+    const obras = [];
+    data.slice(1).forEach((row, idx) => {
+      const titulo = (row[headers.indexOf("Título original")] || "").toString().trim();
+      const traduzido = (row[headers.indexOf("Titulo traduzido")] || row[headers.indexOf("Título traduzido")] || "").toString().trim();
+      if (!titulo && !traduzido) return; // linha vazia
+      const o = {};
+      headers.forEach((h, i) => o[h] = row[i] instanceof Date ? row[i].toISOString() : row[i]);
+      o._row = idx + 2;
+      // Capa: link direto ou o link de dentro de =IMAGE("...")
+      if (colCapa >= 0) {
+        const v = (row[colCapa] || "").toString();
+        const m = (formulas[idx + 1][colCapa] || "").match(/"(https?:[^"]+)"/);
+        o._capa = /^https?:/i.test(v) ? v : (m ? m[1] : "");
+      }
+      obras.push(o);
+    });
+    return JSON.stringify({ obras: obras });
+  } catch (err) {
+    return JSON.stringify({ obras: [], erro: err.toString() });
   }
 }
 

@@ -346,7 +346,8 @@
   // Funções chamadas quando uma seção é exibida (e quando os dados recarregam)
   const viewRenderers = {
     obsessoes: () => { if (typeof renderFanficsView === 'function') renderFanficsView(); },
-    incluir: () => { if (typeof renderIncluir === 'function') renderIncluir(); }
+    incluir: () => { if (typeof renderIncluir === 'function') renderIncluir(); },
+    nora: () => { if (typeof renderNora === 'function') renderNora(); }
   };
 
   function setupNavbar() {

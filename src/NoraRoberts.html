@@ -1,6 +1,582 @@
-<!-- Seção "Nora Roberts" — exibida dentro do Front.html (a navbar fica no Front). -->
-<div class="placeholder-card">
-  <i class="fa-solid fa-crown"></i>
-  <h2>Nora Roberts</h2>
-  <p>Seção em construção.</p>
+<!-- Seção "Nora Roberts" — dados da aba "Nora Roberts" da planilha (exibida dentro do Front.html). -->
+<div class="nr-layout">
+
+  <!-- Indicadores gerais (não mudam com aba ou filtro) + gráfico por década -->
+  <div class="nr-top">
+    <div class="nr-kpis">
+      <div class="nr-kpi"><span class="nr-kpi-label">Obras</span><span class="nr-kpi-valor" id="nr-k-total">–</span></div>
+      <div class="nr-kpi nr-kpi-lidas"><span class="nr-kpi-label">Lidas</span><span class="nr-kpi-valor" id="nr-k-lidas">–</span><span class="nr-kpi-sub" id="nr-k-lidas-sub"></span></div>
+      <div class="nr-kpi nr-kpi-tenho"><span class="nr-kpi-label">Adquiridas</span><span class="nr-kpi-valor" id="nr-k-tenho">–</span><span class="nr-kpi-sub" id="nr-k-tenho-sub"></span></div>
+      <div class="nr-kpi nr-kpi-nota"><span class="nr-kpi-label">Nota média</span><span class="nr-kpi-valor" id="nr-k-nota">–</span><span class="nr-kpi-sub" id="nr-k-nota-sub"></span></div>
+    </div>
+    <div class="nr-chart-card">
+      <div class="nr-chart-head">
+        <span class="nr-chart-title">Obras por década de lançamento</span>
+        <span class="nr-legend">
+          <span><i class="nr-leg-line" style="background:#C0603F"></i>Lançadas</span>
+          <span><i class="nr-leg-line" style="background:#2A80A8"></i>Lidas</span>
+        </span>
+      </div>
+      <div class="nr-chart" id="nr-chart"></div>
+      <div class="nr-tooltip" id="nr-tooltip"></div>
+    </div>
+  </div>
+
+  <!-- Abas + filtros -->
+  <div class="nr-bar">
+    <div class="inc-tabs">
+      <button type="button" class="inc-tab active" data-nr-aba="unicos">Títulos únicos</button>
+      <button type="button" class="inc-tab" data-nr-aba="series">Séries</button>
+      <button type="button" class="inc-tab" data-nr-aba="mortal">Série Mortal</button>
+    </div>
+    <div class="nr-toolbar">
+      <div class="fanfic-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="nr-busca" placeholder="Buscar por título original ou traduzido..." autocomplete="off">
+        <button type="button" id="nr-busca-x" class="fanfic-search-clear" title="Limpar busca" hidden><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="nr-chip" class="fanfic-serie-chip" hidden>
+        <i class="fa-solid fa-filter"></i><span id="nr-chip-nome"></span>
+        <button type="button" id="nr-chip-x" title="Remover filtro"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="fanfic-seg">
+        <button type="button" class="fanfic-seg-btn active" data-nr-leitura="todas">Todas</button>
+        <button type="button" class="fanfic-seg-btn" data-nr-leitura="naolidas">Não lidas</button>
+      </div>
+      <button type="button" class="fanfic-sort-btn" data-nr-ordem="alfa"><i class="fa-solid fa-arrow-down-a-z"></i> <span>A-Z</span></button>
+      <button type="button" class="fanfic-sort-btn" data-nr-ordem="paginas"><i class="fa-solid fa-arrow-down-wide-short"></i> <span>Páginas</span></button>
+      <button type="button" class="fanfic-sort-btn" data-nr-ordem="ano"><i class="fa-solid fa-calendar"></i> <span>Ano</span></button>
+    </div>
+  </div>
+
+  <!-- Lista + indicadores da aba (fixos à direita) -->
+  <div class="nr-body">
+    <div class="nr-list-scroll">
+      <div class="nr-row nr-header">
+        <span></span><span class="col-titulo">Título</span><span>Ano</span><span>Páginas</span><span>Obs.</span><span>Status</span><span>Nota</span><span></span>
+      </div>
+      <div id="nr-lista" class="obras-list"><div class="obras-vazio">Carregando obras da Nora...</div></div>
+    </div>
+    <aside class="nr-side" id="nr-side"></aside>
+  </div>
+
+  <div id="nr-toast" class="fanfic-toast"></div>
 </div>
+
+<style>
+  .nr-layout { height: 100%; display: flex; flex-direction: column; gap: 12px; }
+
+  /* ===== Topo ===== */
+  .nr-top { flex-shrink: 0; display: flex; gap: 12px; height: 132px; }
+  .nr-kpis { display: grid; grid-template-columns: repeat(4, 118px); gap: 10px; }
+  .nr-kpi {
+    background: var(--bg-cards); border-radius: 12px; box-shadow: 0 4px 10px rgba(155, 125, 97, 0.04);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-align: center;
+  }
+  .nr-kpi-lidas { background: #e3ece8; }
+  .nr-kpi-tenho { background: #f3ece1; }
+  .nr-kpi-nota { background: #fff9c4; }
+  .nr-kpi-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texto-secundario); }
+  .nr-kpi-valor { font-size: 22px; font-weight: 700; color: var(--texto-marrom); line-height: 1.1; }
+  .nr-kpi-sub { font-size: 10px; font-weight: 600; color: var(--texto-secundario); }
+
+  .nr-chart-card {
+    flex: 1; min-width: 0; position: relative; background: var(--bg-cards); border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(155, 125, 97, 0.04); padding: 8px 14px 4px; display: flex; flex-direction: column;
+  }
+  .nr-chart-head { display: flex; justify-content: space-between; align-items: center; }
+  .nr-chart-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--texto-marrom); }
+  .nr-legend { display: flex; gap: 14px; font-size: 11px; font-weight: 600; color: var(--texto-secundario); }
+  .nr-legend span { display: flex; align-items: center; gap: 6px; }
+  .nr-leg-line { display: inline-block; width: 16px; height: 3px; border-radius: 2px; }
+  .nr-chart { flex: 1; min-height: 0; }
+  .nr-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .nr-tooltip {
+    position: absolute; pointer-events: none; background: var(--bg-cards); border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(90, 71, 54, 0.18); padding: 7px 10px; font-size: 11px; color: var(--texto-marrom);
+    opacity: 0; transition: opacity 0.1s; white-space: nowrap; z-index: 10;
+  }
+  .nr-tooltip.show { opacity: 1; }
+  .nr-tooltip b { display: block; margin-bottom: 3px; }
+  .nr-tooltip .linha { display: flex; align-items: center; gap: 6px; }
+  .nr-tooltip .linha i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  /* ===== Abas + filtros ===== */
+  .nr-bar { flex-shrink: 0; display: flex; align-items: center; gap: 12px; }
+  .nr-toolbar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+  .nr-toolbar .fanfic-search { flex: 1; min-width: 160px; }
+  .inc-tab { white-space: nowrap; }
+
+  /* ===== Lista + lateral ===== */
+  .nr-body { flex: 1; min-height: 0; display: flex; gap: 16px; }
+  .nr-list-scroll { flex: 1; min-width: 0; overflow-y: auto; padding-right: 4px; }
+  .nr-side { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+
+  .nr-row {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 56px 72px 100px 150px 106px 52px;
+    align-items: center;
+    gap: 12px;
+  }
+  .nr-header {
+    position: sticky; top: 0; z-index: 5; background: var(--bg-creme); padding: 0 12px 6px 19px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-secundario);
+  }
+  .nr-header span { text-align: center; }
+  .nr-header .col-titulo { text-align: left; }
+  .nr-card {
+    --status-cor: var(--borda-bege);
+    background: var(--bg-cards); border-radius: 10px; padding: 0 12px 0 14px; min-height: 72px;
+    box-shadow: 0 3px 10px rgba(155, 125, 97, 0.05); border-left: 5px solid var(--status-cor);
+  }
+  .nr-card:hover { box-shadow: 0 4px 14px rgba(155, 125, 97, 0.1); }
+  .nr-card > .nr-row { min-height: 72px; }
+  .nr-card.st-lido { --status-cor: var(--cor-livro); }
+  .nr-card.st-lendo { --status-cor: #F2D45C; }
+  .nr-card.st-quero { --status-cor: var(--cor-fanfic); }
+  .nr-card.salvando .nr-status-cel, .nr-card.salvando .obra-nota { opacity: 0.6; pointer-events: none; }
+
+  .nr-cel { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--texto-marrom); }
+  .nr-titulo-bloco { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+  .nr-titulo { font-weight: 700; font-size: 13.5px; color: var(--texto-marrom); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nr-sub { font-size: 11px; color: var(--texto-secundario); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nr-sub .trad { font-style: italic; }
+  .nr-link { color: var(--texto-marrom); font-weight: 600; cursor: pointer; }
+  .nr-link:hover { color: #6f948a; text-decoration: underline; }
+  .nr-obs {
+    font-size: 10.5px; font-weight: 600; background: var(--hover-bege); color: var(--texto-marrom);
+    padding: 3px 9px; border-radius: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+  }
+  .nr-obs:hover { background: #e3ece8; color: #4f6f65; }
+  .nr-vazio { color: var(--borda-bege); }
+  .nr-icones { display: flex; justify-content: center; gap: 8px; font-size: 13px; }
+  .nr-icone-tenho { color: #6f948a; }
+  .nr-icone-fav { color: #e0607e; }
+
+  /* Lateral: indicadores da aba */
+  .nr-stat {
+    background: var(--bg-cards); border-radius: 12px; padding: 10px 12px; box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;
+  }
+  .nr-stat-label { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texto-secundario); }
+  .nr-stat-valor { font-size: 18px; font-weight: 700; color: var(--texto-marrom); line-height: 1.2; }
+  .nr-stat-sub { font-size: 10px; font-weight: 600; color: var(--texto-secundario); }
+  .nr-stat.lidas { background: #e3ece8; }
+  .nr-stat.naolidas { background: #fbeee8; }
+  .nr-stat.tenho { background: #f3ece1; }
+  .nr-stat.nota { background: #fff9c4; }
+  .nr-stat .split-bar { width: 100%; margin-top: 4px; }
+</style>
+
+<script>
+  // ===== Estado =====
+  const NR_COR_LANCADAS = '#C0603F';
+  const NR_COR_LIDAS = '#2A80A8';
+  let nrObras = [];
+  let nrCarregado = false, nrCarregando = false;
+  let nrAba = 'unicos';
+  const nrFiltros = {}; // por aba: { busca, leitura, ordem, asc, serie, obs }
+  ['unicos', 'series', 'mortal'].forEach(a => nrFiltros[a] = { busca: '', leitura: 'todas', ordem: null, asc: true, serie: null, obs: null });
+  let nrStatusAberto = null;
+
+  // ===== Utilidades =====
+  const nrNorm = v => (v === undefined || v === null ? '' : String(v)).trim().toLowerCase();
+  const nrSemAcento = v => nrNorm(v).normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const nrEsc = v => (v === undefined || v === null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const nrNum = v => { const n = parseFloat(String(v === undefined || v === null ? '' : v).replace(',', '.')); return isNaN(n) ? null : n; };
+  const nrSim = v => v === true || ['sim', 's', 'x', 'true', 'verdadeiro', 'yes'].includes(nrNorm(v));
+
+  const nrTitulo = o => (o['Título original'] || '').toString().trim();
+  const nrTraduzido = o => (o['Titulo traduzido'] || o['Título traduzido'] || '').toString().trim();
+  const nrSerie = o => { const s = (o['Série'] || '').toString().trim(); return ['', '-', 'não', 'nao', 'n/a'].includes(nrNorm(s)) ? '' : s; };
+  const nrMortal = o => /mortal|in death/.test(nrSemAcento(nrSerie(o)));
+  const nrOrdemSerie = o => { const n = nrNum(o['Ordem na série']); return n === null ? Infinity : n; };
+  const nrLida = o => nrNorm(o['Status']) === 'lido';
+  const nrTenho = o => nrSim(o['Tenho?']);
+  const nrFav = o => nrSim(o['Favorito']);
+  const nrNota = o => nrNum(o['Nota']);
+  const nrAno = o => nrNum(o['Ano']);
+  const nrPaginas = o => nrNum(o['Páginas']);
+  const nrObs = o => (o['Obs'] || '').toString().trim();
+  function nrDecada(o) {
+    const ano = nrAno(o);
+    if (ano && ano > 1000) return Math.floor(ano / 10) * 10;
+    const d = String(o['Década'] || '').match(/\d{2,4}/);
+    if (!d) return null;
+    let n = Number(d[0]);
+    if (n < 100) n += n >= 30 ? 1900 : 2000;
+    return Math.floor(n / 10) * 10;
+  }
+
+  function nrDaAba(aba) {
+    return nrObras.filter(o => {
+      const s = nrSerie(o);
+      if (aba === 'unicos') return !s;
+      if (aba === 'mortal') return s && nrMortal(o);
+      return s && !nrMortal(o);
+    });
+  }
+
+  function nrResumo(lista) {
+    const lidas = lista.filter(nrLida).length;
+    const tenho = lista.filter(nrTenho).length;
+    const notas = lista.map(nrNota).filter(n => n !== null && n > 0);
+    return {
+      total: lista.length, lidas, naoLidas: lista.length - lidas, tenho,
+      nota: notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : 0, avaliadas: notas.length
+    };
+  }
+  const nrPct = (a, b) => b ? Math.round(a / b * 100) : 0;
+
+  // ===== Carregamento =====
+  function renderNora() {
+    if (!nrCarregado) {
+      if (nrCarregando) return;
+      nrCarregando = true;
+      nrLigarEventos();
+      google.script.run
+        .withSuccessHandler(raw => {
+          const d = JSON.parse(raw);
+          nrObras = d.obras || [];
+          nrCarregado = true; nrCarregando = false;
+          if (d.erro) nrToast(d.erro, true);
+          nrRenderTudo();
+        })
+        .withFailureHandler(err => {
+          nrCarregando = false;
+          document.getElementById('nr-lista').innerHTML = `<div class="obras-vazio">Não foi possível carregar: ${nrEsc(err && err.message ? err.message : err)}</div>`;
+        })
+        .getNoraDataAPI();
+      return;
+    }
+    nrRenderTudo();
+  }
+
+  function nrRenderTudo() {
+    nrRenderKpis();
+    nrRenderGrafico();
+    nrRenderAba();
+  }
+
+  // ===== Indicadores gerais =====
+  function nrRenderKpis() {
+    const r = nrResumo(nrObras);
+    document.getElementById('nr-k-total').textContent = r.total;
+    document.getElementById('nr-k-lidas').textContent = r.lidas;
+    document.getElementById('nr-k-lidas-sub').textContent = `${nrPct(r.lidas, r.total)}%`;
+    document.getElementById('nr-k-tenho').textContent = r.tenho;
+    document.getElementById('nr-k-tenho-sub').textContent = `${nrPct(r.tenho, r.total)}%`;
+    document.getElementById('nr-k-nota').textContent = r.nota.toFixed(1);
+    document.getElementById('nr-k-nota-sub').textContent = `${r.avaliadas} ${r.avaliadas === 1 ? 'avaliação' : 'avaliações'}`;
+  }
+
+  // ===== Gráfico de linhas por década =====
+  function nrRenderGrafico() {
+    const el = document.getElementById('nr-chart');
+    const porDecada = {};
+    nrObras.forEach(o => {
+      const d = nrDecada(o);
+      if (d === null) return;
+      porDecada[d] = porDecada[d] || { lancadas: 0, lidas: 0 };
+      porDecada[d].lancadas++;
+      if (nrLida(o)) porDecada[d].lidas++;
+    });
+    const decadas = Object.keys(porDecada).map(Number).sort((a, b) => a - b);
+    if (!decadas.length) { el.innerHTML = '<div class="obras-vazio" style="padding:20px">Sem ano/década na planilha.</div>'; return; }
+    // preenche décadas vazias no meio
+    for (let d = decadas[0]; d <= decadas[decadas.length - 1]; d += 10) if (!porDecada[d]) porDecada[d] = { lancadas: 0, lidas: 0 };
+    const xs = Object.keys(porDecada).map(Number).sort((a, b) => a - b);
+
+    const W = el.clientWidth || 600, H = el.clientHeight || 90;
+    const pad = { l: 26, r: 46, t: 8, b: 18 };
+    const max = Math.max(1, ...xs.map(d => porDecada[d].lancadas));
+    const passo = Math.pow(10, Math.floor(Math.log10(max)));
+    const topo = Math.ceil(max / passo) * passo;
+    const x = i => pad.l + (xs.length === 1 ? (W - pad.l - pad.r) / 2 : i * (W - pad.l - pad.r) / (xs.length - 1));
+    const y = v => pad.t + (H - pad.t - pad.b) * (1 - v / topo);
+    const linha = k => xs.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(porDecada[d][k]).toFixed(1)}`).join('');
+    const ticks = [0, topo / 2, topo];
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Obras lançadas e lidas por década">`;
+    ticks.forEach(t => {
+      svg += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(t)}" y2="${y(t)}" stroke="#EFE6DA" stroke-width="1"/>`;
+      svg += `<text x="${pad.l - 6}" y="${y(t) + 3}" text-anchor="end" font-size="9" fill="#9B7D61">${Math.round(t)}</text>`;
+    });
+    xs.forEach((d, i) => { svg += `<text x="${x(i)}" y="${H - 4}" text-anchor="middle" font-size="9.5" fill="#9B7D61">${String(d).slice(2)}s</text>`; });
+    svg += `<line id="nr-cross" x1="0" x2="0" y1="${pad.t}" y2="${H - pad.b}" stroke="#D9C8B4" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>`;
+    [['lancadas', NR_COR_LANCADAS], ['lidas', NR_COR_LIDAS]].forEach(([k, cor]) => {
+      svg += `<path d="${linha(k)}" fill="none" stroke="${cor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+      xs.forEach((d, i) => { svg += `<circle cx="${x(i)}" cy="${y(porDecada[d][k])}" r="4" fill="${cor}" stroke="#fff" stroke-width="2"/>`; });
+    });
+    // rótulo direto no fim de cada linha
+    const ult = xs.length - 1, dU = xs[ult];
+    const yL = y(porDecada[dU].lancadas), yR = y(porDecada[dU].lidas);
+    const sep = Math.abs(yL - yR) < 11 ? (yL <= yR ? [-5, 6] : [6, -5]) : [0, 0];
+    svg += `<text x="${x(ult) + 8}" y="${yL + 3 + sep[0]}" font-size="10" font-weight="600" fill="#5A4736">${porDecada[dU].lancadas}</text>`;
+    svg += `<text x="${x(ult) + 8}" y="${yR + 3 + sep[1]}" font-size="10" font-weight="600" fill="#5A4736">${porDecada[dU].lidas}</text>`;
+    // áreas de hover por década (maiores que os pontos)
+    const larg = xs.length > 1 ? (W - pad.l - pad.r) / (xs.length - 1) : W;
+    xs.forEach((d, i) => { svg += `<rect data-i="${i}" x="${x(i) - larg / 2}" y="0" width="${larg}" height="${H}" fill="transparent"/>`; });
+    svg += '</svg>';
+    el.innerHTML = svg;
+
+    const tip = document.getElementById('nr-tooltip');
+    const cross = el.querySelector('#nr-cross');
+    el.querySelectorAll('rect[data-i]').forEach(r => {
+      r.addEventListener('mouseenter', () => {
+        const i = Number(r.dataset.i), d = xs[i], v = porDecada[d];
+        cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('opacity', 1);
+        tip.innerHTML = `<b>Década de ${d}</b>
+          <span class="linha"><i style="background:${NR_COR_LANCADAS}"></i>Lançadas: <strong>${v.lancadas}</strong></span>
+          <span class="linha"><i style="background:${NR_COR_LIDAS}"></i>Lidas: <strong>${v.lidas}</strong></span>`;
+        const card = el.parentElement.getBoundingClientRect(), svgBox = el.getBoundingClientRect();
+        const px = svgBox.left - card.left + x(i) * (svgBox.width / W);
+        tip.style.left = Math.min(Math.max(px - 60, 4), card.width - 130) + 'px';
+        tip.style.top = '26px';
+        tip.classList.add('show');
+      });
+      r.addEventListener('mouseleave', () => { tip.classList.remove('show'); cross.setAttribute('opacity', 0); });
+    });
+  }
+
+  // ===== Abas, filtros e lista =====
+  function nrLigarEventos() {
+    document.querySelectorAll('[data-nr-aba]').forEach(b => b.addEventListener('click', () => {
+      nrAba = b.dataset.nrAba;
+      document.querySelectorAll('[data-nr-aba]').forEach(x => x.classList.toggle('active', x === b));
+      const f = nrFiltros[nrAba];
+      document.getElementById('nr-busca').value = f.busca;
+      nrRenderAba();
+      document.querySelector('.nr-list-scroll').scrollTop = 0;
+    }));
+    const busca = document.getElementById('nr-busca');
+    busca.addEventListener('input', () => { nrFiltros[nrAba].busca = busca.value; nrRenderAba(); });
+    document.getElementById('nr-busca-x').addEventListener('click', () => { busca.value = ''; nrFiltros[nrAba].busca = ''; nrRenderAba(); busca.focus(); });
+    document.getElementById('nr-chip-x').addEventListener('click', () => { const f = nrFiltros[nrAba]; f.serie = null; f.obs = null; nrRenderAba(); });
+    document.querySelectorAll('[data-nr-leitura]').forEach(b => b.addEventListener('click', () => { nrFiltros[nrAba].leitura = b.dataset.nrLeitura; nrRenderAba(); }));
+    document.querySelectorAll('[data-nr-ordem]').forEach(b => b.addEventListener('click', () => {
+      // 1º clique ativa, 2º inverte, 3º remove
+      const f = nrFiltros[nrAba], tipo = b.dataset.nrOrdem, ascPadrao = tipo !== 'paginas'; // A-Z e Ano crescentes; Páginas: maiores primeiro
+      if (f.ordem !== tipo) { f.ordem = tipo; f.asc = ascPadrao; }
+      else if (f.asc === ascPadrao) f.asc = !ascPadrao;
+      else f.ordem = null;
+      nrRenderAba();
+    }));
+    document.addEventListener('click', () => {
+      if (nrStatusAberto === null) return;
+      nrStatusAberto = null;
+      document.querySelectorAll('#nr-lista .status-dd.aberto').forEach(d => d.classList.remove('aberto', 'pra-cima'));
+    });
+    window.addEventListener('resize', () => { if (nrCarregado && !document.getElementById('view-nora').hidden) nrRenderGrafico(); });
+  }
+
+  function nrFiltrarSerie(i, ev) {
+    ev.stopPropagation();
+    const f = nrFiltros[nrAba];
+    f.serie = nrSerie(nrObras[i]); f.obs = null; f.busca = '';
+    document.getElementById('nr-busca').value = '';
+    nrRenderAba();
+    document.querySelector('.nr-list-scroll').scrollTop = 0;
+  }
+  function nrFiltrarObs(i, ev) {
+    ev.stopPropagation();
+    const f = nrFiltros[nrAba];
+    f.obs = nrObs(nrObras[i]); f.serie = null;
+    nrRenderAba();
+    document.querySelector('.nr-list-scroll').scrollTop = 0;
+  }
+
+  function nrListaFiltrada() {
+    const f = nrFiltros[nrAba];
+    let lista = nrDaAba(nrAba);
+    if (f.serie) {
+      return lista.filter(o => nrNorm(nrSerie(o)) === nrNorm(f.serie)).sort((a, b) => nrOrdemSerie(a) - nrOrdemSerie(b));
+    }
+    if (f.obs) lista = lista.filter(o => nrNorm(nrObs(o)) === nrNorm(f.obs));
+    if (f.leitura === 'naolidas') lista = lista.filter(o => !nrLida(o));
+    const termo = nrSemAcento(f.busca);
+    if (termo) lista = lista.filter(o => nrSemAcento(nrTitulo(o)).includes(termo) || nrSemAcento(nrTraduzido(o)).includes(termo));
+
+    // Ordem padrão de cada aba
+    if (nrAba === 'series') {
+      lista = lista.slice().sort((a, b) => nrSerie(a).localeCompare(nrSerie(b), 'pt-BR', { sensitivity: 'base' }) || nrOrdemSerie(a) - nrOrdemSerie(b));
+    } else if (nrAba === 'mortal') {
+      lista = lista.slice().sort((a, b) => nrOrdemSerie(a) - nrOrdemSerie(b));
+    }
+    // Ordenação escolhida
+    if (f.ordem) {
+      const chave = f.ordem === 'alfa' ? null : f.ordem === 'paginas' ? nrPaginas : nrAno;
+      lista = lista.slice().sort((a, b) => chave
+        ? (chave(a) === null ? Infinity : chave(a)) - (chave(b) === null ? Infinity : chave(b))
+        : nrTitulo(a).localeCompare(nrTitulo(b), 'pt-BR', { sensitivity: 'base' }));
+      if (!f.asc) lista.reverse();
+      // Na aba Séries, com A-Z, os volumes de cada série continuam juntos e em ordem
+      if (nrAba === 'series' && f.ordem === 'alfa') {
+        const grupos = {}, vistos = new Set(), res = [];
+        lista.forEach(o => (grupos[nrNorm(nrSerie(o))] = grupos[nrNorm(nrSerie(o))] || []).push(o));
+        Object.values(grupos).forEach(g => g.sort((a, b) => nrOrdemSerie(a) - nrOrdemSerie(b)));
+        lista.forEach(o => { const k = nrNorm(nrSerie(o)); if (!vistos.has(k)) { vistos.add(k); res.push(...grupos[k]); } });
+        lista = res;
+      }
+    }
+    return lista;
+  }
+
+  function nrRenderAba() {
+    const f = nrFiltros[nrAba];
+    // estado dos controles
+    document.getElementById('nr-busca-x').hidden = !f.busca;
+    const chip = document.getElementById('nr-chip');
+    chip.hidden = !(f.serie || f.obs);
+    document.getElementById('nr-chip-nome').textContent = f.serie || f.obs || '';
+    document.querySelectorAll('[data-nr-leitura]').forEach(b => b.classList.toggle('active', b.dataset.nrLeitura === f.leitura));
+    document.querySelectorAll('[data-nr-ordem]').forEach(b => {
+      const ativo = !f.serie && f.ordem === b.dataset.nrOrdem;
+      b.classList.toggle('active', ativo);
+      b.disabled = !!f.serie;
+      if (b.dataset.nrOrdem === 'alfa') b.querySelector('span').textContent = ativo && !f.asc ? 'Z-A' : 'A-Z';
+      b.title = !ativo ? 'Ordenar' : 'Clique para inverter; o 3º clique remove a ordenação';
+    });
+
+    nrRenderLateral();
+
+    const lista = nrListaFiltrada();
+    const el = document.getElementById('nr-lista');
+    if (!lista.length) {
+      el.innerHTML = `<div class="obras-vazio">${f.busca ? `Nada encontrado para "${nrEsc(f.busca)}".` : 'Nenhuma obra aqui.'}</div>`;
+      return;
+    }
+    el.innerHTML = lista.map(nrRenderLinha).join('');
+  }
+
+  function nrRenderLinha(o) {
+    const i = nrObras.indexOf(o);
+    const lida = nrLida(o);
+    const st = nrNorm(o['Status']);
+    const cls = st === 'lido' ? 'st-lido' : st === 'lendo' ? 'st-lendo' : st === 'quero ler' ? 'st-quero' : '';
+    const trad = nrTraduzido(o);
+    const serie = nrSerie(o);
+    const ordem = nrOrdemSerie(o);
+    const obs = nrObs(o);
+    const capa = o._capa ? `<img class="obra-capa" src="${nrEsc(o._capa)}" loading="lazy" alt="">` : `<div class="obra-capa"><i class="fa-solid fa-book"></i></div>`;
+
+    let sub = trad ? `<span class="trad">${nrEsc(trad)}</span>` : '';
+    if (serie && nrAba === 'series') sub += `${sub ? ' · ' : ''}<span class="nr-link" title="Ver a série toda" onclick="nrFiltrarSerie(${i}, event)"><i class="fa-solid fa-layer-group"></i> ${nrEsc(serie)}${ordem !== Infinity ? `, vol. ${ordem}` : ''}</span>`;
+    if (serie && nrAba === 'mortal' && ordem !== Infinity) sub += `${sub ? ' · ' : ''}<span>nº ${ordem}</span>`;
+
+    let stars = '';
+    const nota = nrNota(o) || 0;
+    for (let v = 1; v <= 5; v++) stars += `<i class="${nota >= v ? 'fa-solid fa-star' : nota >= v - 0.5 ? 'fa-solid fa-star-half-stroke' : 'fa-regular fa-star'}" data-v="${v}"></i>`;
+
+    const statusAtual = (o['Status'] || '').toString().trim();
+    const statusHtml = lida ? '<span class="obra-status-fixo">Lido</span>' : `
+      <div class="status-dd${nrStatusAberto === i ? ' aberto' : ''}" id="nr-dd-${i}">
+        <button type="button" class="obra-status" onclick="nrToggleStatus(${i}, event)">${nrEsc(statusAtual || 'Selecione')} <i class="fa-solid fa-chevron-down"></i></button>
+        <div class="status-dd-menu" onclick="event.stopPropagation()">
+          ${['Lido', 'Lendo', 'Quero ler'].map(s => `<button type="button" class="${nrNorm(s) === st ? 'atual' : ''}" onclick="nrAlterarStatus(${i}, '${s}')"><span class="dot" style="background:${s === 'Lido' ? 'var(--cor-livro)' : s === 'Lendo' ? '#F2D45C' : 'var(--cor-fanfic)'}"></span>${s}</button>`).join('')}
+        </div>
+      </div>`;
+
+    return `
+      <div class="nr-card ${cls}" data-i="${i}">
+        <div class="nr-row">
+          ${capa}
+          <div class="nr-titulo-bloco">
+            <span class="nr-titulo" title="${nrEsc(nrTitulo(o))}">${nrEsc(nrTitulo(o) || trad || 'Sem título')}</span>
+            ${sub ? `<span class="nr-sub">${sub}</span>` : ''}
+          </div>
+          <span class="nr-cel">${nrAno(o) || '<span class="nr-vazio">—</span>'}</span>
+          <span class="nr-cel">${nrPaginas(o) ? nrPaginas(o).toLocaleString('pt-BR') : '<span class="nr-vazio">—</span>'}</span>
+          <span class="nr-cel">${obs ? `<span class="nr-obs" title="Filtrar por ${nrEsc(obs)}" onclick="nrFiltrarObs(${i}, event)">${nrEsc(obs)}</span>` : '<span class="nr-vazio">—</span>'}</span>
+          <div class="nr-cel nr-status-cel">${statusHtml}</div>
+          <div class="nr-cel"><div class="obra-nota ${lida ? 'editavel' : 'bloqueada'}" title="${lida ? 'Clique para dar a nota (mesma estrela limpa)' : 'Marque como Lido para avaliar'}" ${lida ? `onclick="nrAlterarNota(${i}, event)"` : ''}>${stars}</div></div>
+          <div class="nr-icones">
+            ${nrTenho(o) ? '<i class="fa-solid fa-bag-shopping nr-icone-tenho" title="Tenho"></i>' : ''}
+            ${nrFav(o) ? '<i class="fa-solid fa-heart nr-icone-fav" title="Favorito"></i>' : ''}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function nrRenderLateral() {
+    const lista = nrDaAba(nrAba);
+    const r = nrResumo(lista);
+    const stat = (cls, label, valor, sub, extra) => `
+      <div class="nr-stat ${cls}"><span class="nr-stat-label">${label}</span><span class="nr-stat-valor">${valor}</span>${sub ? `<span class="nr-stat-sub">${sub}</span>` : ''}${extra || ''}</div>`;
+    let html = stat('', 'Obras', r.total);
+    if (nrAba === 'series') html += stat('', 'Séries', new Set(lista.map(o => nrNorm(nrSerie(o)))).size);
+    html += stat('lidas', 'Lidas', r.lidas, `${nrPct(r.lidas, r.total)}%`,
+      `<div class="split-bar"><div class="split-bar-lidas" style="width:${nrPct(r.lidas, r.total)}%"></div><div class="split-bar-naolidas" style="width:${r.total ? 100 - nrPct(r.lidas, r.total) : 0}%"></div></div>`);
+    html += stat('naolidas', 'Não lidas', r.naoLidas, `${r.total ? 100 - nrPct(r.lidas, r.total) : 0}%`);
+    html += stat('tenho', 'Adquiridas', r.tenho, `${nrPct(r.tenho, r.total)}% · faltam ${r.total - r.tenho}`);
+    html += stat('nota', 'Nota média', r.nota.toFixed(1), `${r.avaliadas} ${r.avaliadas === 1 ? 'avaliação' : 'avaliações'}`);
+    document.getElementById('nr-side').innerHTML = html;
+  }
+
+  // ===== Edição (status e nota) =====
+  function nrToggleStatus(i, ev) {
+    ev.stopPropagation();
+    const dd = document.getElementById('nr-dd-' + i);
+    const abrir = !dd.classList.contains('aberto');
+    document.querySelectorAll('#nr-lista .status-dd.aberto').forEach(d => d.classList.remove('aberto', 'pra-cima'));
+    nrStatusAberto = null;
+    if (!abrir) return;
+    dd.classList.add('aberto');
+    nrStatusAberto = i;
+    const lista = document.querySelector('.nr-list-scroll').getBoundingClientRect();
+    if (dd.querySelector('.status-dd-menu').getBoundingClientRect().bottom > lista.bottom) dd.classList.add('pra-cima');
+  }
+
+  let nrToastTimer = null;
+  function nrToast(msg, erro) {
+    const t = document.getElementById('nr-toast');
+    t.textContent = msg;
+    t.classList.toggle('erro', !!erro);
+    t.classList.add('show');
+    clearTimeout(nrToastTimer);
+    nrToastTimer = setTimeout(() => t.classList.remove('show'), erro ? 5000 : 1800);
+  }
+
+  function nrSalvar(i, campos, anterior, opcoes) {
+    const o = nrObras[i];
+    nrToast('Salvando...');
+    const payload = Object.assign({ aba: 'Nora Roberts', row: o._row, titulo: nrTitulo(o), campos }, opcoes || {});
+    google.script.run
+      .withSuccessHandler(raw => {
+        const r = JSON.parse(raw);
+        if (r.row) o._row = r.row;
+        if (r.ano && r.colunaAno) o[r.colunaAno] = r.ano;
+        nrRenderTudo();
+        if (r.avisos && r.avisos.length) nrToast('Salvo, mas: ' + r.avisos.join('; '), true);
+        else nrToast('Salvo na planilha ✓');
+      })
+      .withFailureHandler(err => {
+        Object.assign(o, anterior);
+        nrRenderTudo();
+        nrToast('Não foi possível salvar: ' + (err && err.message ? err.message : err), true);
+      })
+      .updateObraAPI(JSON.stringify(payload));
+    nrRenderTudo();
+    const card = document.querySelector(`.nr-card[data-i="${i}"]`);
+    if (card) card.classList.add('salvando');
+  }
+
+  function nrAlterarStatus(i, novo) {
+    nrStatusAberto = null;
+    const o = nrObras[i];
+    if (!o || novo === o['Status']) { nrRenderAba(); return; }
+    const anterior = { Status: o['Status'] };
+    o['Status'] = novo;
+    nrSalvar(i, { Status: novo }, anterior, { marcarLeitura: novo === 'Lido' });
+  }
+
+  function nrAlterarNota(i, ev) {
+    const v = Number(ev.target && ev.target.dataset ? ev.target.dataset.v : 0);
+    const o = nrObras[i];
+    if (!v || !o || !nrLida(o)) return;
+    const nova = (nrNota(o) === v) ? '' : v;
+    const anterior = { Nota: o['Nota'] };
+    o['Nota'] = nova;
+    nrSalvar(i, { Nota: nova }, anterior);
+  }
+</script>
