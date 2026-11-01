@@ -344,6 +344,85 @@ function getNoraDataAPI() {
   }
 }
 
+// ===== Epílogo: diário de leitura (aba "Epílogo", criada automaticamente) =====
+const EPILOGO_ABA = "Epílogo";
+const EPILOGO_COLUNAS = ["ID", "Data", "Título", "Texto", "Obra", "Tipo da obra", "Imagens", "Tags", "Atualizado em"];
+
+function epilogoSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(EPILOGO_ABA);
+  if (!sheet) {
+    sheet = ss.insertSheet(EPILOGO_ABA);
+    sheet.getRange(1, 1, 1, EPILOGO_COLUNAS.length).setValues([EPILOGO_COLUNAS]).setFontWeight("bold");
+    sheet.setFrozenRows(1);
+    sheet.setColumnWidth(4, 500);
+  }
+  return sheet;
+}
+
+function getEpilogoAPI() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(EPILOGO_ABA);
+  if (!sheet || sheet.getLastRow() < 2) return JSON.stringify({ posts: [] });
+  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, EPILOGO_COLUNAS.length).getValues();
+  const posts = data.filter(r => r[0]).map(r => ({
+    id: String(r[0]),
+    data: r[1] instanceof Date ? Utilities.formatDate(r[1], Session.getScriptTimeZone(), "yyyy-MM-dd") : String(r[1] || ""),
+    titulo: String(r[2] || ""),
+    texto: String(r[3] || ""),
+    obra: String(r[4] || ""),
+    tipoObra: String(r[5] || ""),
+    imagens: String(r[6] || "").split(/\n+/).map(x => x.trim()).filter(Boolean),
+    tags: String(r[7] || "").split(",").map(x => x.trim()).filter(Boolean)
+  }));
+  return JSON.stringify({ posts: posts });
+}
+
+// post: { id?, data: "yyyy-mm-dd", titulo, texto, obra, tipoObra, imagens: [], tags: [] }
+function saveEpilogoPostAPI(JSONPayload) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const p = JSON.parse(JSONPayload);
+    if (!String(p.texto || "").trim() && !(p.imagens || []).length && !String(p.titulo || "").trim()) {
+      throw new Error("O post está vazio.");
+    }
+    const sheet = epilogoSheet_();
+    const partes = String(p.data || "").split("-").map(Number);
+    const data = partes.length === 3 && partes[0] ? new Date(partes[0], partes[1] - 1, partes[2]) : new Date();
+    const id = p.id || Utilities.getUuid();
+    const linha = [id, data, p.titulo || "", p.texto || "", p.obra || "", p.tipoObra || "",
+      (p.imagens || []).join("\n"), (p.tags || []).join(", "), new Date()];
+
+    let row = -1;
+    if (p.id && sheet.getLastRow() >= 2) {
+      const ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues().map(r => String(r[0]));
+      const i = ids.indexOf(String(p.id));
+      if (i >= 0) row = i + 2;
+    }
+    if (row > 0) sheet.getRange(row, 1, 1, linha.length).setValues([linha]);
+    else sheet.appendRow(linha);
+    return JSON.stringify({ success: true, id: id });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function deleteEpilogoPostAPI(id) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(EPILOGO_ABA);
+    if (!sheet || sheet.getLastRow() < 2) throw new Error("Post não encontrado.");
+    const ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues().map(r => String(r[0]));
+    const i = ids.indexOf(String(id));
+    if (i < 0) throw new Error("Post não encontrado.");
+    sheet.deleteRow(i + 2);
+    return JSON.stringify({ success: true });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 // Insere o conteúdo de outro arquivo HTML do projeto dentro do Front
 // (usado pelas seções da navbar: <?!= include('Estante'); ?>)
 function include(filename) {

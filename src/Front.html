@@ -347,7 +347,8 @@
   const viewRenderers = {
     obsessoes: () => { if (typeof renderFanficsView === 'function') renderFanficsView(); },
     incluir: () => { if (typeof renderIncluir === 'function') renderIncluir(); },
-    nora: () => { if (typeof renderNora === 'function') renderNora(); }
+    nora: () => { if (typeof renderNora === 'function') renderNora(); },
+    epilogo: () => { if (typeof renderEpilogo === 'function') renderEpilogo(); }
   };
 
   function setupNavbar() {

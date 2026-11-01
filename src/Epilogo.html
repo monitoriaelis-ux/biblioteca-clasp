@@ -1,6 +1,461 @@
-<!-- Seção "Epílogo" — exibida dentro do Front.html (a navbar fica no Front). -->
-<div class="placeholder-card">
-  <i class="fa-solid fa-magnifying-glass"></i>
-  <h2>Epílogo</h2>
-  <p>Seção em construção.</p>
+<!-- Seção "Epílogo" — diário de leitura estilo blog/Tumblr (posts guardados na aba "Epílogo" da planilha). -->
+<div class="ep-layout">
+
+  <!-- Feed -->
+  <div class="ep-feed-scroll" id="ep-scroll">
+    <div class="ep-feed">
+
+      <!-- Escrever -->
+      <div class="ep-composer" id="ep-composer">
+        <div class="ep-composer-fechado" id="ep-abrir">
+          <i class="fa-solid fa-feather-pointed"></i>
+          <span>Escrever no diário...</span>
+        </div>
+        <div class="ep-composer-aberto">
+          <input type="text" class="ep-in ep-in-titulo" id="ep-titulo" placeholder="Título (opcional)">
+          <textarea class="ep-in ep-in-texto" id="ep-texto" placeholder="O que você achou? Teorias, surtos, citações favoritas..."></textarea>
+
+          <div class="ep-campos">
+            <div class="ep-campo ep-campo-obra">
+              <i class="fa-solid fa-book"></i>
+              <input type="text" class="ep-in" id="ep-obra" list="ep-dl-obras" placeholder="Obra (opcional) — comece a digitar">
+            </div>
+            <div class="ep-campo">
+              <i class="fa-solid fa-calendar"></i>
+              <input type="date" class="ep-in" id="ep-data">
+            </div>
+            <div class="ep-campo ep-campo-tags">
+              <i class="fa-solid fa-hashtag"></i>
+              <input type="text" class="ep-in" id="ep-tags" placeholder="Tags, separadas por vírgula">
+            </div>
+          </div>
+
+          <div class="ep-campo ep-campo-img">
+            <i class="fa-solid fa-image"></i>
+            <input type="url" class="ep-in" id="ep-img-url" placeholder="Cole o link de um GIF ou imagem e aperte Enter">
+            <button type="button" class="ep-btn-mini" id="ep-img-add">Adicionar</button>
+          </div>
+          <div class="ep-previa" id="ep-previa"></div>
+
+          <div class="ep-composer-acoes">
+            <span class="ep-dica">Dica: no Giphy/Tenor, use “Copiar link” ou “Copiar endereço da imagem”.</span>
+            <button type="button" class="ep-btn" id="ep-cancelar">Cancelar</button>
+            <button type="button" class="ep-btn ep-btn-primario" id="ep-publicar"><i class="fa-solid fa-paper-plane"></i> Publicar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="ep-filtro-ativo" class="ep-filtro-ativo" hidden>
+        <span id="ep-filtro-texto"></span>
+        <button type="button" id="ep-filtro-x" title="Limpar filtro"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div id="ep-posts"><div class="obras-vazio">Carregando o diário...</div></div>
+    </div>
+  </div>
+
+  <!-- Lateral -->
+  <aside class="ep-side">
+    <div class="ep-side-card ep-side-resumo">
+      <div><strong id="ep-total-posts">0</strong><span>posts</span></div>
+      <div><strong id="ep-total-obras">0</strong><span>obras comentadas</span></div>
+    </div>
+    <div class="fanfic-search ep-busca">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="ep-busca" placeholder="Buscar no diário..." autocomplete="off">
+      <button type="button" id="ep-busca-x" class="fanfic-search-clear" title="Limpar busca" hidden><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="ep-side-card ep-side-lista">
+      <div class="ep-side-titulo"><i class="fa-solid fa-hashtag"></i> Tags</div>
+      <div id="ep-tags-lista" class="ep-tags-nuvem"></div>
+    </div>
+    <div class="ep-side-card ep-side-lista ep-side-obras">
+      <div class="ep-side-titulo"><i class="fa-solid fa-book-open"></i> Obras comentadas</div>
+      <div id="ep-obras-lista" class="ep-obras-lista"></div>
+    </div>
+  </aside>
+
+  <datalist id="ep-dl-obras"></datalist>
+  <div id="ep-toast" class="fanfic-toast"></div>
 </div>
+
+<style>
+  .ep-layout { height: 100%; display: flex; gap: 16px; }
+  .ep-feed-scroll { flex: 1; min-width: 0; overflow-y: auto; padding-right: 4px; }
+  .ep-feed { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; padding-bottom: 30px; }
+
+  /* ===== Composer ===== */
+  .ep-composer { background: var(--bg-cards); border-radius: 14px; box-shadow: 0 4px 12px rgba(155, 125, 97, 0.06); }
+  .ep-composer-fechado {
+    display: flex; align-items: center; gap: 10px; padding: 16px 18px; cursor: text;
+    color: var(--texto-secundario); font-size: 13.5px;
+  }
+  .ep-composer-fechado i { color: var(--cor-fanfic); font-size: 16px; }
+  .ep-composer-aberto { display: none; padding: 16px 18px; flex-direction: column; gap: 10px; }
+  .ep-composer.aberto .ep-composer-fechado { display: none; }
+  .ep-composer.aberto .ep-composer-aberto { display: flex; }
+
+  .ep-in {
+    width: 100%; border: none; background: transparent; outline: none; font-family: 'Poppins', sans-serif;
+    font-size: 13px; color: var(--texto-marrom);
+  }
+  .ep-in-titulo { font-size: 17px; font-weight: 700; padding: 2px 0; }
+  .ep-in-texto { min-height: 110px; resize: vertical; line-height: 1.6; padding: 4px 0; }
+  .ep-campos { display: grid; grid-template-columns: 1.6fr 0.9fr 1.3fr; gap: 8px; }
+  .ep-campo {
+    display: flex; align-items: center; gap: 8px; background: var(--bg-creme); border-radius: 9px; padding: 7px 10px;
+  }
+  .ep-campo i { color: var(--texto-secundario); font-size: 12px; flex-shrink: 0; }
+  .ep-campo:focus-within { box-shadow: 0 0 0 2px rgba(218, 163, 143, 0.4); }
+  .ep-btn-mini {
+    border: none; background: var(--hover-bege); color: var(--texto-marrom); font-family: 'Poppins', sans-serif;
+    font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 7px; cursor: pointer; white-space: nowrap;
+  }
+  .ep-btn-mini:hover { background: var(--cor-fanfic); color: #fff; }
+
+  .ep-previa { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ep-previa:empty { display: none; }
+  .ep-previa-item { position: relative; }
+  .ep-previa-item img { height: 90px; max-width: 160px; object-fit: cover; border-radius: 8px; display: block; background: var(--hover-bege); }
+  .ep-previa-item button {
+    position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; border: none;
+    background: rgba(90, 71, 54, 0.75); color: #fff; cursor: pointer; font-size: 11px;
+  }
+
+  .ep-composer-acoes { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .ep-dica { flex: 1; font-size: 10.5px; color: var(--texto-secundario); }
+  .ep-btn {
+    height: 34px; padding: 0 16px; border: none; border-radius: 9px; background: var(--bg-creme);
+    font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; color: var(--texto-secundario); cursor: pointer;
+  }
+  .ep-btn:hover { background: var(--hover-bege); color: var(--texto-marrom); }
+  .ep-btn-primario { background: var(--cor-fanfic); color: #fff; }
+  .ep-btn-primario:hover { background: #c98b73; color: #fff; }
+  .ep-btn:disabled { opacity: 0.6; cursor: wait; }
+
+  .ep-filtro-ativo {
+    display: flex; align-items: center; gap: 8px; align-self: flex-start; background: #e3ece8; color: var(--texto-marrom);
+    font-size: 12px; font-weight: 600; padding: 6px 8px 6px 12px; border-radius: 9px;
+  }
+  .ep-filtro-ativo[hidden] { display: none; }
+  .ep-filtro-ativo button { border: none; background: none; cursor: pointer; color: var(--texto-secundario); width: 20px; height: 20px; border-radius: 50%; }
+  .ep-filtro-ativo button:hover { background: var(--cor-livro); color: #fff; }
+
+  #ep-posts { display: flex; flex-direction: column; gap: 14px; }
+  /* ===== Post ===== */
+  .ep-post { background: var(--bg-cards); border-radius: 14px; box-shadow: 0 4px 12px rgba(155, 125, 97, 0.06); overflow: hidden; }
+  .ep-post-topo { display: flex; align-items: center; gap: 10px; padding: 14px 18px 0; }
+  .ep-data { font-size: 11px; font-weight: 600; color: var(--texto-secundario); text-transform: uppercase; letter-spacing: 0.5px; }
+  .ep-post-acoes { margin-left: auto; display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+  .ep-post:hover .ep-post-acoes { opacity: 1; }
+  .ep-post-acoes button {
+    border: none; background: none; color: var(--texto-secundario); cursor: pointer; width: 28px; height: 28px; border-radius: 50%;
+  }
+  .ep-post-acoes button:hover { background: var(--hover-bege); color: var(--texto-marrom); }
+  .ep-post-acoes button.apagar:hover { background: #fbe7e4; color: #C9675C; }
+  .ep-post-corpo { padding: 6px 18px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .ep-post-titulo { font-size: 18px; font-weight: 700; color: var(--texto-marrom); margin: 0; }
+  .ep-post-texto { font-size: 13.5px; line-height: 1.7; color: var(--texto-marrom); white-space: pre-wrap; word-wrap: break-word; }
+  .ep-post-texto a { color: #6f948a; }
+
+  .ep-obra-chip {
+    display: flex; align-items: center; gap: 10px; background: var(--bg-creme); border-radius: 10px; padding: 8px 10px;
+    cursor: pointer; align-self: flex-start; max-width: 100%;
+  }
+  .ep-obra-chip:hover { background: var(--hover-bege); }
+  .ep-obra-chip .obra-capa { width: 28px; height: 42px; font-size: 11px; }
+  .ep-obra-chip-titulo { font-size: 12.5px; font-weight: 700; color: var(--texto-marrom); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep-obra-chip-sub { font-size: 10.5px; color: var(--texto-secundario); }
+
+  .ep-imagens { display: grid; gap: 6px; }
+  .ep-imagens.n1 { grid-template-columns: 1fr; }
+  .ep-imagens.n2 { grid-template-columns: 1fr 1fr; }
+  .ep-imagens.n3 { grid-template-columns: 1fr 1fr 1fr; }
+  .ep-imagens img { width: 100%; border-radius: 10px; display: block; background: var(--hover-bege); }
+  .ep-imagens.n1 img { max-height: 420px; object-fit: contain; background: var(--bg-creme); }
+  .ep-imagens:not(.n1) img { height: 180px; object-fit: cover; }
+
+  .ep-post-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ep-tag {
+    font-size: 11px; font-weight: 600; color: var(--texto-secundario); background: var(--hover-bege);
+    padding: 3px 9px; border-radius: 6px; cursor: pointer;
+  }
+  .ep-tag:hover, .ep-tag.ativo { background: var(--cor-fanfic); color: #fff; }
+
+  /* ===== Lateral ===== */
+  .ep-side { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .ep-side-card { background: var(--bg-cards); border-radius: 12px; padding: 12px 14px; box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03); }
+  .ep-side-resumo { display: grid; grid-template-columns: 1fr 1fr; text-align: center; gap: 6px; }
+  .ep-side-resumo strong { display: block; font-size: 20px; color: var(--texto-marrom); line-height: 1.1; }
+  .ep-side-resumo span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texto-secundario); }
+  .ep-busca { flex: 0 0 auto; }
+  .ep-side-titulo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-marrom); margin-bottom: 8px; }
+  .ep-side-titulo i { color: var(--cor-fanfic); margin-right: 4px; }
+  .ep-tags-nuvem { display: flex; flex-wrap: wrap; gap: 6px; max-height: 140px; overflow: hidden; }
+  .ep-side-obras { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .ep-obras-lista { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .ep-obra-item {
+    display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--texto-marrom);
+    padding: 5px 6px; border-radius: 7px; cursor: pointer;
+  }
+  .ep-obra-item:hover, .ep-obra-item.ativo { background: var(--bg-creme); }
+  .ep-obra-item span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ep-obra-item span:last-child { font-weight: 700; color: var(--texto-secundario); }
+  .ep-vazio-mini { font-size: 11.5px; color: var(--texto-secundario); }
+</style>
+
+<script>
+  // ===== Estado =====
+  let epPosts = [];
+  let epCarregado = false, epCarregando = false, epIniciado = false;
+  let epEditando = null;              // id do post em edição
+  let epImagens = [];                 // imagens do post sendo escrito
+  const epF = { busca: '', tag: null, obra: null };
+  const EP_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+  const epNorm = v => (v === undefined || v === null ? '' : String(v)).trim().toLowerCase();
+  const epSemAcento = v => epNorm(v).normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const epEsc = v => (v === undefined || v === null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  function epHoje() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function epDataBonita(iso) {
+    const p = String(iso || '').split('-').map(Number);
+    return p.length === 3 && p[0] ? `${p[2]} de ${EP_MESES[p[1] - 1]} de ${p[0]}` : '';
+  }
+  // Argumento seguro para onclick="..." (aguenta aspas, apóstrofos e acentos)
+  function epArg(v) { return `decodeURIComponent('${encodeURIComponent(String(v)).replace(/'/g, '%27')}')`; }
+  // Texto: escapa e transforma links em clicáveis
+  function epTextoHtml(t) {
+    return epEsc(t).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+  // Links de página do Giphy viram o GIF direto
+  function epNormalizarImagem(url) {
+    url = String(url || '').trim();
+    const g = url.match(/giphy\.com\/(?:gifs|stickers)\/(?:[^\/?#]*-)?([A-Za-z0-9]+)(?:[\/?#]|$)/);
+    if (g) return `https://media.giphy.com/media/${g[1]}/giphy.gif`;
+    return url;
+  }
+
+  // ===== Obras (Base + Nora) para vincular aos posts =====
+  function epObras() {
+    const lista = [];
+    (typeof allBooks !== 'undefined' ? allBooks : []).forEach(b => {
+      const t = (b['Título'] || '').toString().trim();
+      if (t) lista.push({ titulo: t, sub: [b['Autor'], b['Tipo']].filter(Boolean).join(' · '), tipo: (b['Tipo'] || '').toString().trim() || 'Base', capa: b['URL da imagem'] || '' });
+    });
+    (typeof nrObras !== 'undefined' ? nrObras : []).forEach(o => {
+      const t = (o['Título original'] || '').toString().trim();
+      if (t) lista.push({ titulo: t, sub: ['Nora Roberts', o['Titulo traduzido'] || o['Título traduzido']].filter(Boolean).join(' · '), tipo: 'Nora Roberts', capa: o._capa || '' });
+    });
+    return lista;
+  }
+  function epAcharObra(titulo, tipo) {
+    const t = epNorm(titulo);
+    const todas = epObras();
+    return todas.find(o => epNorm(o.titulo) === t && (!tipo || epNorm(o.tipo) === epNorm(tipo))) || todas.find(o => epNorm(o.titulo) === t) || null;
+  }
+  function epPreencherObras() {
+    const vistos = new Set();
+    document.getElementById('ep-dl-obras').innerHTML = epObras().filter(o => {
+      const k = epNorm(o.titulo); if (vistos.has(k)) return false; vistos.add(k); return true;
+    }).map(o => `<option value="${epEsc(o.titulo)}">${epEsc(o.sub)}</option>`).join('');
+  }
+
+  // ===== Carregamento =====
+  function renderEpilogo() {
+    if (!epIniciado) epIniciar();
+    epPreencherObras();
+    // garante as obras da Nora para o vínculo (sem depender de abrir a página dela)
+    if (typeof nrCarregado !== 'undefined' && !nrCarregado && !nrCarregando) {
+      nrCarregando = true;
+      google.script.run.withSuccessHandler(raw => {
+        const d = JSON.parse(raw); nrObras = d.obras || []; nrCarregado = true; nrCarregando = false;
+        epPreencherObras(); epRender();
+      }).withFailureHandler(() => { nrCarregando = false; }).getNoraDataAPI();
+    }
+    if (epCarregado) { epRender(); return; }
+    if (epCarregando) return;
+    epCarregando = true;
+    google.script.run
+      .withSuccessHandler(raw => {
+        epPosts = JSON.parse(raw).posts || [];
+        epCarregado = true; epCarregando = false;
+        epRender();
+      })
+      .withFailureHandler(err => {
+        epCarregando = false;
+        document.getElementById('ep-posts').innerHTML = `<div class="obras-vazio">Não foi possível carregar: ${epEsc(err && err.message ? err.message : err)}</div>`;
+      })
+      .getEpilogoAPI();
+  }
+
+  function epIniciar() {
+    epIniciado = true;
+    document.getElementById('ep-abrir').addEventListener('click', () => epAbrirComposer());
+    document.getElementById('ep-cancelar').addEventListener('click', epFecharComposer);
+    document.getElementById('ep-publicar').addEventListener('click', epPublicar);
+    const imgUrl = document.getElementById('ep-img-url');
+    const addImg = () => {
+      const url = epNormalizarImagem(imgUrl.value);
+      if (!/^https?:\/\//i.test(url)) { if (imgUrl.value) epToast('Cole um link que comece com http.', true); return; }
+      epImagens.push(url); imgUrl.value = ''; epRenderPrevia();
+    };
+    document.getElementById('ep-img-add').addEventListener('click', addImg);
+    imgUrl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addImg(); } });
+    imgUrl.addEventListener('paste', () => setTimeout(addImg, 0));
+    const busca = document.getElementById('ep-busca');
+    busca.addEventListener('input', () => { epF.busca = busca.value; epRender(); });
+    document.getElementById('ep-busca-x').addEventListener('click', () => { busca.value = ''; epF.busca = ''; epRender(); });
+    document.getElementById('ep-filtro-x').addEventListener('click', () => { epF.tag = null; epF.obra = null; epRender(); });
+  }
+
+  // ===== Composer =====
+  function epAbrirComposer(post) {
+    epEditando = post ? post.id : null;
+    epImagens = post ? post.imagens.slice() : [];
+    document.getElementById('ep-titulo').value = post ? post.titulo : '';
+    document.getElementById('ep-texto').value = post ? post.texto : '';
+    document.getElementById('ep-obra').value = post ? post.obra : '';
+    document.getElementById('ep-data').value = post ? (post.data || epHoje()) : epHoje();
+    document.getElementById('ep-tags').value = post ? post.tags.join(', ') : '';
+    document.getElementById('ep-publicar').innerHTML = post ? '<i class="fa-solid fa-check"></i> Salvar' : '<i class="fa-solid fa-paper-plane"></i> Publicar';
+    epRenderPrevia();
+    document.getElementById('ep-composer').classList.add('aberto');
+    document.getElementById('ep-scroll').scrollTop = 0;
+    document.getElementById('ep-texto').focus();
+  }
+  function epFecharComposer() {
+    epEditando = null; epImagens = [];
+    document.getElementById('ep-composer').classList.remove('aberto');
+  }
+  function epRenderPrevia() {
+    document.getElementById('ep-previa').innerHTML = epImagens.map((u, i) => `
+      <div class="ep-previa-item"><img src="${epEsc(u)}" alt="" onerror="this.style.opacity=.3"><button type="button" title="Remover" onclick="epRemoverImagem(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
+  }
+  function epRemoverImagem(i) { epImagens.splice(i, 1); epRenderPrevia(); }
+
+  function epPublicar() {
+    const obraTxt = document.getElementById('ep-obra').value.trim();
+    const obra = obraTxt ? epAcharObra(obraTxt) : null;
+    const post = {
+      id: epEditando,
+      data: document.getElementById('ep-data').value || epHoje(),
+      titulo: document.getElementById('ep-titulo').value.trim(),
+      texto: document.getElementById('ep-texto').value.replace(/\s+$/, ''),
+      obra: obra ? obra.titulo : obraTxt,
+      tipoObra: obra ? obra.tipo : '',
+      imagens: epImagens.slice(),
+      tags: document.getElementById('ep-tags').value.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean)
+    };
+    if (!post.texto && !post.titulo && !post.imagens.length) { epToast('Escreva algo ou adicione um GIF antes de publicar.', true); return; }
+    const btn = document.getElementById('ep-publicar');
+    btn.disabled = true;
+    google.script.run
+      .withSuccessHandler(raw => {
+        const r = JSON.parse(raw);
+        btn.disabled = false;
+        post.id = r.id;
+        const i = epPosts.findIndex(p => p.id === r.id);
+        if (i >= 0) epPosts[i] = post; else epPosts.push(post);
+        epFecharComposer();
+        epRender();
+        epToast(i >= 0 ? 'Post atualizado ✓' : 'Publicado no diário ✓');
+      })
+      .withFailureHandler(err => {
+        btn.disabled = false;
+        epToast('Não foi possível salvar: ' + (err && err.message ? err.message : err), true);
+      })
+      .saveEpilogoPostAPI(JSON.stringify(post));
+  }
+
+  function epEditar(id) { const p = epPosts.find(x => x.id === id); if (p) epAbrirComposer(p); }
+  function epApagar(id) {
+    if (!confirm('Apagar este post do diário? Isso não pode ser desfeito.')) return;
+    google.script.run
+      .withSuccessHandler(() => { epPosts = epPosts.filter(p => p.id !== id); epRender(); epToast('Post apagado'); })
+      .withFailureHandler(err => epToast('Não foi possível apagar: ' + (err && err.message ? err.message : err), true))
+      .deleteEpilogoPostAPI(id);
+  }
+
+  // ===== Feed =====
+  function epFiltrarTag(tag) { epF.tag = epNorm(epF.tag) === epNorm(tag) ? null : tag; epF.obra = null; epRender(); document.getElementById('ep-scroll').scrollTop = 0; }
+  function epFiltrarObra(obra) { epF.obra = epNorm(epF.obra) === epNorm(obra) ? null : obra; epF.tag = null; epRender(); document.getElementById('ep-scroll').scrollTop = 0; }
+
+  function epRender() {
+    document.getElementById('ep-busca-x').hidden = !epF.busca;
+    const filtroAtivo = epF.tag ? `#${epF.tag}` : epF.obra ? `📖 ${epF.obra}` : '';
+    document.getElementById('ep-filtro-ativo').hidden = !filtroAtivo;
+    document.getElementById('ep-filtro-texto').textContent = filtroAtivo ? `Mostrando: ${filtroAtivo}` : '';
+
+    const ordenados = epPosts.slice().sort((a, b) => (b.data || '').localeCompare(a.data || '') || 0);
+    let lista = ordenados;
+    if (epF.tag) lista = lista.filter(p => p.tags.some(t => epNorm(t) === epNorm(epF.tag)));
+    if (epF.obra) lista = lista.filter(p => epNorm(p.obra) === epNorm(epF.obra));
+    const termo = epSemAcento(epF.busca);
+    if (termo) lista = lista.filter(p => [p.titulo, p.texto, p.obra, p.tags.join(' ')].some(x => epSemAcento(x).includes(termo)));
+
+    const el = document.getElementById('ep-posts');
+    if (!epPosts.length) el.innerHTML = '<div class="obras-vazio">Seu diário ainda está vazio. Que tal escrever o primeiro post? ✍️</div>';
+    else if (!lista.length) el.innerHTML = '<div class="obras-vazio">Nenhum post encontrado.</div>';
+    else el.innerHTML = lista.map(epRenderPost).join('');
+
+    epRenderLateral();
+  }
+
+  function epRenderPost(p) {
+    const obra = p.obra ? epAcharObra(p.obra, p.tipoObra) : null;
+    const capa = obra && obra.capa ? `<img class="obra-capa" src="${epEsc(obra.capa)}" alt="" loading="lazy">` : '<div class="obra-capa"><i class="fa-solid fa-book"></i></div>';
+    const n = Math.min(p.imagens.length, 3);
+    return `
+      <article class="ep-post">
+        <div class="ep-post-topo">
+          <span class="ep-data">${epDataBonita(p.data)}</span>
+          <div class="ep-post-acoes">
+            <button type="button" title="Editar" onclick="epEditar('${epEsc(p.id)}')"><i class="fa-solid fa-pen"></i></button>
+            <button type="button" class="apagar" title="Apagar" onclick="epApagar('${epEsc(p.id)}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+        <div class="ep-post-corpo">
+          ${p.titulo ? `<h3 class="ep-post-titulo">${epEsc(p.titulo)}</h3>` : ''}
+          ${p.obra ? `
+            <div class="ep-obra-chip" title="Ver todos os posts desta obra" onclick="epFiltrarObra(${epArg(p.obra)})">
+              ${capa}
+              <div style="min-width:0">
+                <div class="ep-obra-chip-titulo">${epEsc(p.obra)}</div>
+                <div class="ep-obra-chip-sub">${epEsc(obra ? obra.sub : p.tipoObra)}</div>
+              </div>
+            </div>` : ''}
+          ${p.texto ? `<div class="ep-post-texto">${epTextoHtml(p.texto)}</div>` : ''}
+          ${n ? `<div class="ep-imagens n${n}">${p.imagens.map(u => `<img src="${epEsc(u)}" alt="" loading="lazy">`).join('')}</div>` : ''}
+          ${p.tags.length ? `<div class="ep-post-tags">${p.tags.map(t => `<span class="ep-tag${epNorm(epF.tag) === epNorm(t) ? ' ativo' : ''}" onclick="epFiltrarTag(${epArg(t)})">#${epEsc(t)}</span>`).join('')}</div>` : ''}
+        </div>
+      </article>`;
+  }
+
+  function epRenderLateral() {
+    const obras = {}, tags = {};
+    epPosts.forEach(p => {
+      if (p.obra) { const k = epNorm(p.obra); obras[k] = obras[k] || { nome: p.obra, n: 0 }; obras[k].n++; }
+      p.tags.forEach(t => { const k = epNorm(t); tags[k] = tags[k] || { nome: t, n: 0 }; tags[k].n++; });
+    });
+    const obrasL = Object.values(obras).sort((a, b) => b.n - a.n || a.nome.localeCompare(b.nome, 'pt-BR'));
+    const tagsL = Object.values(tags).sort((a, b) => b.n - a.n || a.nome.localeCompare(b.nome, 'pt-BR'));
+    document.getElementById('ep-total-posts').textContent = epPosts.length;
+    document.getElementById('ep-total-obras').textContent = obrasL.length;
+    document.getElementById('ep-tags-lista').innerHTML = tagsL.length
+      ? tagsL.map(t => `<span class="ep-tag${epNorm(epF.tag) === epNorm(t.nome) ? ' ativo' : ''}" onclick="epFiltrarTag(${epArg(t.nome)})">#${epEsc(t.nome)}</span>`).join('')
+      : '<span class="ep-vazio-mini">Nenhuma tag ainda.</span>';
+    document.getElementById('ep-obras-lista').innerHTML = obrasL.length
+      ? obrasL.map(o => `<div class="ep-obra-item${epNorm(epF.obra) === epNorm(o.nome) ? ' ativo' : ''}" onclick="epFiltrarObra(${epArg(o.nome)})"><span>${epEsc(o.nome)}</span><span>${o.n}</span></div>`).join('')
+      : '<span class="ep-vazio-mini">Nenhuma obra comentada ainda.</span>';
+  }
+
+  let epToastTimer = null;
+  function epToast(msg, erro) {
+    const t = document.getElementById('ep-toast');
+    t.textContent = msg;
+    t.classList.toggle('erro', !!erro);
+    t.classList.add('show');
+    clearTimeout(epToastTimer);
+    epToastTimer = setTimeout(() => t.classList.remove('show'), erro ? 5000 : 2000);
+  }
+</script>
