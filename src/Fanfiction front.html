@@ -2,15 +2,15 @@
 <div class="fanfic-layout">
 
   <!-- Coluna fixa: um card por fandom; clicar filtra o restante da página -->
-  <aside id="fandom-cards" class="fandom-sidebar"></aside>
+  <aside class="fandom-sidebar">
+    <button type="button" id="fandom-todos" class="fandom-todos-btn">
+      <i class="fa-solid fa-layer-group"></i> Todos
+    </button>
+    <div id="fandom-cards" class="fandom-cards-list"></div>
+  </aside>
 
   <!-- Restante da página: rola independentemente e obedece ao filtro -->
   <div class="fanfic-content">
-    <div class="fanfic-header-banner">
-      <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Meus Universos & Fanfictions</h2>
-      <p id="fanfic-filter-label">Todas as fandoms</p>
-    </div>
-
     <div id="fanfic-cards-grid" class="fanfic-custom-grid">
       <div style="color: var(--texto-secundario); padding: 20px;">Carregando suas obsessões...</div>
     </div>
@@ -34,6 +34,34 @@
     gap: 8px;
   }
 
+  .fandom-cards-list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fandom-todos-btn {
+    flex-shrink: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--texto-secundario);
+    background: var(--bg-cards);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 8px 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .fandom-todos-btn i { margin-right: 6px; }
+  .fandom-todos-btn:hover { border-color: var(--borda-bege); color: var(--texto-marrom); }
+  .fandom-todos-btn.selected { background: var(--cor-fanfic); color: #fff; border-color: var(--cor-fanfic); }
+
   .fandom-card {
     flex: 1;
     min-height: 0;
@@ -52,7 +80,7 @@
   }
   .fandom-card:hover { transform: translateX(2px); border-color: var(--borda-bege); }
   .fandom-card.selected { border-color: var(--cor-fanfic); }
-  .fandom-sidebar.has-selection .fandom-card:not(.selected) { opacity: 0.55; }
+  .fandom-cards-list.has-selection .fandom-card:not(.selected) { opacity: 0.55; }
 
   .fandom-card-top {
     display: flex;
@@ -120,25 +148,6 @@
     padding-right: 4px;
   }
 
-  .fanfic-header-banner {
-    background: linear-gradient(135deg, #fce7f3 0%, #fef3c7 100%);
-    padding: 20px 24px;
-    border-radius: 12px;
-    border: 1px solid #fbcfe8;
-    color: #831843;
-    flex-shrink: 0;
-  }
-  .fanfic-header-banner h2 {
-    font-size: 20px;
-    margin: 0 0 6px;
-    font-family: 'Poppins', sans-serif;
-  }
-  .fanfic-header-banner p {
-    font-size: 12.5px;
-    opacity: 0.85;
-    margin: 0;
-  }
-
   .fanfic-custom-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -191,6 +200,7 @@
       overflow-x: auto;
       flex-shrink: 0;
     }
+    .fandom-cards-list { flex-direction: row; }
     .fandom-card { flex: 0 0 170px; }
   }
 </style>
@@ -249,6 +259,10 @@
     const sidebar = document.getElementById('fandom-cards');
     sidebar.classList.toggle('has-selection', !!fandomFiltro);
 
+    const btnTodos = document.getElementById('fandom-todos');
+    btnTodos.classList.toggle('selected', !fandomFiltro);
+    btnTodos.onclick = () => { fandomFiltro = null; renderFanficsView(); };
+
     sidebar.innerHTML = FANDOMS.map(fd => {
       const doFandom = todas.filter(f => fandomDaFanfic(f) === fd.nome);
       const total = doFandom.length;
@@ -289,8 +303,6 @@
   // Restante da página (por enquanto, a lista de fanfics), já filtrado
   function renderFanficsConteudo() {
     const list = getFanficsFiltradas();
-    document.getElementById('fanfic-filter-label').textContent =
-      fandomFiltro ? `Filtrando: ${fandomFiltro} (clique no card de novo para ver todas)` : 'Todas as fandoms';
 
     const grid = document.getElementById('fanfic-cards-grid');
     if (list.length === 0) {
