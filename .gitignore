@@ -1,0 +1,6 @@
+# Credenciais do clasp — NUNCA versionar
+.clasprc.json
+**/.clasprc.json
+
+node_modules/
+.DS_Store

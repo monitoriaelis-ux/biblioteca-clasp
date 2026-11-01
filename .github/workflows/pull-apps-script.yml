@@ -1,0 +1,51 @@
+# Baixa o código atual do Apps Script para a pasta src/ e faz commit.
+# Rodar manualmente: Actions → "Puxar do Apps Script" → Run workflow.
+name: Puxar do Apps Script
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar clasp
+        run: npm install -g @google/clasp@2.4.2
+
+      - name: Configurar credencial
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          if [ -z "$CLASPRC_JSON" ]; then
+            echo "::error::Secret CLASPRC_JSON não configurado. Veja o README."
+            exit 1
+          fi
+          printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
+
+      - name: clasp pull
+        run: clasp pull
+
+      - name: Commit das alterações
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src
+          if git diff --cached --quiet; then
+            echo "Nada mudou no Apps Script."
+          else
+            git commit -m "Sincroniza código a partir do Apps Script"
+            git push
+          fi
+
+      - name: Remover credencial
+        if: always()
+        run: rm -f ~/.clasprc.json
