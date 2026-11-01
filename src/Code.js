@@ -123,6 +123,9 @@ function updateObraAPI(JSONPayload) {
       let valor = campos[nome];
       if (nome === "Status") {
         if (STATUS_VALIDOS.indexOf(valor) < 0) throw new Error("Status inválido: " + valor);
+      } else if (nome === "Releituras") {
+        valor = Math.max(0, Math.floor(Number(valor) || 0));
+        if (valor === 0) valor = "";
       } else if (nome === "Nota") {
         if (valor !== "") {
           valor = Number(valor);
@@ -131,7 +134,13 @@ function updateObraAPI(JSONPayload) {
       } else {
         throw new Error("Campo não permitido: " + nome);
       }
-      const c = col(nome);
+      let c = col(nome);
+      if (c < 0 && nome === "Releituras") {
+        // Cria a coluna "Releituras" no fim da tabela na primeira vez
+        c = headers.length;
+        sheet.getRange(1, c + 1).setValue("Releituras");
+        headers.push("Releituras");
+      }
       if (c < 0) throw new Error("Coluna '" + nome + "' não encontrada na aba Base.");
       sheet.getRange(row, c + 1).setValue(valor);
     });

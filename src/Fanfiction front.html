@@ -45,11 +45,10 @@
       </button>
     </div>
 
-    <div class="obra-row obra-header">
-      <span></span><span></span><span>Título</span><span>Palavras</span><span>Fandom</span><span>Status</span><span>Nota</span>
-    </div>
-
     <div class="fanfic-list-scroll">
+      <div class="obra-row obra-header">
+        <span></span><span></span><span class="col-titulo">Título</span><span>Palavras</span><span>Fandom</span><span>Status</span><span>Nota</span>
+      </div>
       <div id="fanfic-cards-grid" class="obras-list">
         <div class="obras-vazio">Carregando suas obsessões...</div>
       </div>
@@ -200,10 +199,14 @@
   }
   .stat-card {
     border-radius: 12px;
-    padding: 8px 12px;
+    padding: 10px 8px;
     box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 3px;
   }
   .stat-card.stat-lidas { background: #e3ece8; }
   .stat-card.stat-nota { background: #fff9c4; }
@@ -218,10 +221,10 @@
   .stat-lidas .stat-label i { color: var(--cor-livro); }
   .stat-nota .stat-label i { color: #E2A03F; }
   .stat-value {
-    font-size: 22px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--texto-marrom);
-    line-height: 1.15;
+    line-height: 1.2;
   }
   .stat-sub { font-size: 10px; font-weight: 600; color: var(--texto-secundario); white-space: nowrap; }
 
@@ -371,20 +374,24 @@
   }
   .obra-row {
     display: grid;
-    grid-template-columns: 16px 40px minmax(0, 1fr) 90px 120px 120px 104px;
+    grid-template-columns: 16px 40px minmax(0, 1fr) 90px 130px 150px 110px;
     align-items: center;
     gap: 14px;
   }
   .obra-header {
-    flex-shrink: 0;
-    padding: 0 16px 0 19px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg-creme);
+    padding: 0 16px 6px 19px;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: var(--texto-secundario);
-    margin-bottom: -4px;
   }
+  .obra-header span { text-align: center; }
+  .obra-header .col-titulo { text-align: left; }
   .obra-card {
     --status-cor: var(--borda-bege);
     background: var(--bg-cards);
@@ -429,7 +436,9 @@
   .obra-card.st-lido { --status-cor: var(--cor-livro); }
   .obra-card.st-lendo { --status-cor: #F2D45C; }
   .obra-card.st-quero { --status-cor: var(--cor-fanfic); }
-  .obra-card.salvando { opacity: 0.6; pointer-events: none; }
+  .obra-card.salvando .obra-row > *:not(.obra-cel),
+  .obra-card.salvando .obra-status,
+  .obra-card.salvando .obra-nota { opacity: 0.6; pointer-events: none; }
 
   .obra-capa {
     width: 36px;
@@ -460,7 +469,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .obra-palavras { font-size: 12.5px; font-weight: 600; color: var(--texto-marrom); }
+  .obra-palavras { font-size: 12.5px; font-weight: 600; color: var(--texto-marrom); text-align: center; }
+  .obra-cel { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; }
+  .obra-titulo-bloco { justify-content: center; }
   .obra-fandom {
     font-size: 10.5px;
     font-weight: 600;
@@ -484,13 +495,14 @@
     border: 1px solid var(--status-cor);
     border-radius: 8px;
     padding: 5px 8px;
-    width: 100%;
+    width: 104px;
+    text-align: center;
     cursor: pointer;
     outline: none;
   }
   .obra-status:focus { box-shadow: 0 0 0 2px var(--hover-bege); }
 
-  .obra-nota { display: flex; gap: 3px; font-size: 15px; color: #E2A03F; }
+  .obra-nota { display: flex; justify-content: center; gap: 3px; font-size: 15px; color: #E2A03F; }
   .obra-nota i { transition: transform 0.1s; }
   .obra-nota.bloqueada { color: var(--borda-bege); cursor: not-allowed; }
   .obra-nota.editavel i { cursor: pointer; }
@@ -498,6 +510,59 @@
   /* Pré-visualização ao passar o mouse */
   .obra-nota.editavel:hover i { color: #E2A03F; }
   .obra-nota.editavel i:hover ~ i { color: var(--borda-bege); }
+
+  .obra-relida-wrap { position: relative; }
+  .obra-status-fixo {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--texto-marrom);
+    background: #e3ece8;
+    border: 1px solid var(--cor-livro);
+    border-radius: 8px;
+    padding: 4px 14px;
+  }
+  .obra-relida-btn {
+    border: none;
+    background: none;
+    padding: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--borda-bege);
+    transition: color 0.2s, transform 0.2s;
+  }
+  .obra-relida-btn i { font-size: 12px; }
+  .obra-relida-btn:hover { color: var(--cor-livro); transform: scale(1.1); }
+  .obra-relida-btn.ativo { color: #6f948a; }
+  .obra-relida-pop {
+    display: none;
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    background: var(--bg-cards);
+    border: 1px solid var(--borda-bege);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(90, 71, 54, 0.15);
+    padding: 8px 10px;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .obra-relida-pop.aberto { display: block; }
+  .obra-relida-pop .titulo { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texto-secundario); margin-bottom: 6px; }
+  .obra-relida-pop .stepper { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .obra-relida-pop button {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid var(--borda-bege); background: var(--bg-creme);
+    color: var(--texto-marrom); cursor: pointer; font-weight: 700;
+  }
+  .obra-relida-pop button:hover { background: var(--cor-livro); color: #fff; border-color: var(--cor-livro); }
+  .obra-relida-pop .valor { font-size: 16px; font-weight: 700; color: var(--texto-marrom); min-width: 18px; }
 
   .obras-vazio { text-align: center; color: var(--texto-secundario); padding: 40px; }
 
@@ -815,6 +880,7 @@
     const serieHtml = temSerie
       ? ` · <span class="obra-serie"><i class="fa-solid fa-layer-group"></i> ${fanficEsc(serie)}${volume ? `, vol. ${fanficEsc(volume)}` : ''}</span>`
       : '';
+    const releituras = Math.max(0, Math.floor(fanficNum(f['Releituras'])));
     const badges =
       (obs.favorita ? '<i class="fa-solid fa-heart obra-badge fav" title="Favorita"></i>' : '') +
       (obs.abandonada ? '<i class="fa-solid fa-ban obra-badge aband" title="Abandonada"></i>' : '');
@@ -839,16 +905,35 @@
           <span class="obra-autor">${fanficEsc(f['Autor'] || 'Autor desconhecido')}${serieHtml}</span>
         </div>
         <span class="obra-palavras">${f['Palavras'] ? fanficNum(f['Palavras']).toLocaleString('pt-BR') : '—'}</span>
-        <span><span class="obra-fandom" title="${fanficEsc(f['Fandom'])}">${fanficEsc(f['Fandom'] || '—')}</span></span>
-        <select class="obra-status" onchange="alterarStatusObra(${idx}, this.value)">
-          ${statusAtual ? '' : '<option value="" selected disabled>Selecione</option>'}
-          ${opcoes.map(o => `<option value="${fanficEsc(o)}"${fanficNorm(o) === fanficNorm(statusAtual) ? ' selected' : ''}>${fanficEsc(o)}</option>`).join('')}
-        </select>
-        <div class="obra-nota ${lida ? 'editavel' : 'bloqueada'}"
+        <span class="obra-cel"><span class="obra-fandom" title="${fanficEsc(f['Fandom'])}">${fanficEsc(f['Fandom'] || '—')}</span></span>
+        <div class="obra-cel">
+        ${lida ? `
+          <span class="obra-status-fixo">Lido</span>
+          <div class="obra-relida-wrap">
+            <button type="button" class="obra-relida-btn${releituras ? ' ativo' : ''}"
+                    title="${releituras ? `Relida ${releituras} ${releituras === 1 ? 'vez' : 'vezes'} — clique para alterar` : 'Marcar releitura'}"
+                    onclick="toggleRelidaPop(${idx}, event)">
+              <i class="fa-solid fa-rotate-right"></i>${releituras ? `<span>${releituras}</span>` : ''}
+            </button>
+            <div class="obra-relida-pop${relidaPopAberto === idx ? ' aberto' : ''}" id="relida-pop-${idx}" onclick="event.stopPropagation()">
+              <div class="titulo">Releituras</div>
+              <div class="stepper">
+                <button type="button" onclick="alterarReleituras(${idx}, -1)">−</button>
+                <span class="valor">${releituras}</span>
+                <button type="button" onclick="alterarReleituras(${idx}, 1)">+</button>
+              </div>
+            </div>
+          </div>` : `
+          <select class="obra-status" onchange="alterarStatusObra(${idx}, this.value)">
+            ${statusAtual ? '' : '<option value="" selected disabled>Selecione</option>'}
+            ${opcoes.map(o => `<option value="${fanficEsc(o)}"${fanficNorm(o) === fanficNorm(statusAtual) ? ' selected' : ''}>${fanficEsc(o)}</option>`).join('')}
+          </select>`}
+        </div>
+        <div class="obra-cel"><div class="obra-nota ${lida ? 'editavel' : 'bloqueada'}"
              title="${lida ? 'Clique para dar a nota (clique na mesma estrela para limpar)' : 'Marque como Lido para avaliar'}"
              ${lida ? `onclick="alterarNotaObra(${idx}, event)"` : ''}>
           ${estrelasHtml(f)}
-        </div>
+        </div></div>
       </div>
       ${plot ? `<div class="obra-plot">${fanficEsc(plot)}</div>` : ''}
       </div>
@@ -907,6 +992,34 @@
     f['Status'] = novoStatus;
     const virouLido = fanficNorm(novoStatus) === 'lido';
     salvarObra(idx, { Status: novoStatus }, anterior, { preencherDataFinal: virouLido });
+  }
+
+  // ===== Releituras =====
+  let relidaPopAberto = null; // índice da obra com o seletor aberto (sobrevive ao redesenho)
+
+  function fecharRelidaPops() {
+    relidaPopAberto = null;
+    document.querySelectorAll('.obra-relida-pop.aberto').forEach(p => p.classList.remove('aberto'));
+  }
+  document.addEventListener('click', fecharRelidaPops);
+
+  function toggleRelidaPop(idx, ev) {
+    ev.stopPropagation();
+    const pop = document.getElementById('relida-pop-' + idx);
+    const abrir = !pop.classList.contains('aberto');
+    fecharRelidaPops();
+    if (abrir) { pop.classList.add('aberto'); relidaPopAberto = idx; }
+  }
+
+  function alterarReleituras(idx, delta) {
+    const f = allBooks[idx];
+    if (!f || !fanficLida(f)) return;
+    const atual = Math.max(0, Math.floor(fanficNum(f['Releituras'])));
+    const novo = Math.max(0, atual + delta);
+    if (novo === atual) return;
+    const anterior = { Releituras: f['Releituras'] };
+    f['Releituras'] = novo || '';
+    salvarObra(idx, { Releituras: novo }, anterior);
   }
 
   function alterarNotaObra(idx, ev) {
