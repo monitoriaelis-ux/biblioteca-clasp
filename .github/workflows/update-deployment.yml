@@ -1,0 +1,68 @@
+# Atualiza a implantação do web app (o link /exec) para a versão atual do código.
+# Rodar manualmente: Actions → "Atualizar implantação (/exec)" → Run workflow.
+#  - modo "listar": só mostra as implantações existentes
+#  - modo "atualizar": cria uma nova versão e aponta a implantação informada para ela
+name: Atualizar implantação (/exec)
+
+on:
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "listar ou atualizar"
+        required: true
+        default: "listar"
+        type: choice
+        options: [listar, atualizar]
+      deployment_id:
+        description: "ID da implantação a atualizar (começa com AKfy...)"
+        required: false
+        default: ""
+      descricao:
+        description: "Descrição da nova versão"
+        required: false
+        default: "Atualização via GitHub"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar clasp
+        run: npm install -g @google/clasp@3
+
+      - name: Configurar credencial
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          if [ -z "$CLASPRC_JSON" ]; then
+            echo "::error::Secret CLASPRC_JSON não configurado. Veja o README."
+            exit 1
+          fi
+          printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
+
+      - name: Listar implantações
+        run: clasp list-deployments || clasp deployments
+
+      - name: Atualizar implantação
+        if: inputs.modo == 'atualizar'
+        env:
+          DEPLOYMENT_ID: ${{ inputs.deployment_id }}
+          DESCRICAO: ${{ inputs.descricao }}
+        run: |
+          if [ -z "$DEPLOYMENT_ID" ]; then
+            echo "::error::Informe o deployment_id."
+            exit 1
+          fi
+          clasp push --force
+          clasp update-deployment "$DEPLOYMENT_ID" --description "$DESCRICAO" \
+            || clasp deploy --deploymentId "$DEPLOYMENT_ID" --description "$DESCRICAO"
+          clasp list-deployments || clasp deployments
+
+      - name: Remover credencial
+        if: always()
+        run: rm -f ~/.clasprc.json
