@@ -35,10 +35,15 @@
     <div class="fanfic-toolbar">
       <div class="fanfic-search">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="fanfic-search" placeholder="Buscar por título ou autor..." autocomplete="off">
+        <input type="text" id="fanfic-search" placeholder="Buscar por título, autor ou série..." autocomplete="off">
         <button type="button" id="fanfic-search-clear" class="fanfic-search-clear" title="Limpar busca" hidden>
           <i class="fa-solid fa-xmark"></i>
         </button>
+      </div>
+      <div id="fanfic-serie-chip" class="fanfic-serie-chip" hidden>
+        <i class="fa-solid fa-layer-group"></i>
+        <span id="fanfic-serie-nome"></span>
+        <button type="button" id="fanfic-serie-clear" title="Sair da série"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="fanfic-seg" role="group" aria-label="Filtrar por leitura">
         <button type="button" class="fanfic-seg-btn active" data-leitura="todas">Todas</button>
@@ -364,6 +369,30 @@
   .fanfic-search-clear[hidden] { display: none; }
   .fanfic-search-clear:hover { background: var(--cor-fanfic); color: #fff; }
 
+  .fanfic-serie-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 6px 0 12px;
+    background: #e3ece8;
+    border: 1px solid var(--cor-livro);
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texto-marrom);
+    max-width: 240px;
+    flex-shrink: 0;
+  }
+  .fanfic-serie-chip[hidden] { display: none; }
+  .fanfic-serie-chip i.fa-layer-group { color: #6f948a; }
+  .fanfic-serie-chip span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fanfic-serie-chip button {
+    border: none; background: none; cursor: pointer; color: var(--texto-secundario);
+    width: 22px; height: 22px; border-radius: 50%; padding: 0; flex-shrink: 0;
+  }
+  .fanfic-serie-chip button:hover { background: var(--cor-livro); color: #fff; }
+
   .fanfic-seg {
     display: flex;
     height: 38px;
@@ -482,7 +511,8 @@
   .obra-badge.fav { color: #e0607e; }
   .obra-badge.aband { color: #a8968a; }
   .obra-card.abandonada .obra-titulo { color: var(--texto-secundario); }
-  .obra-serie { color: var(--texto-marrom); font-weight: 600; }
+  .obra-serie { color: var(--texto-marrom); font-weight: 600; cursor: pointer; border-radius: 4px; }
+  .obra-serie:hover { color: #6f948a; text-decoration: underline; }
   .obra-card.st-lido { --status-cor: var(--cor-livro); }
   .obra-card.st-lendo { --status-cor: #F2D45C; }
   .obra-card.st-quero { --status-cor: var(--cor-fanfic); }
@@ -542,7 +572,7 @@
     font-weight: 600;
     color: var(--texto-marrom);
     background: var(--bg-creme);
-    border: 1px solid var(--status-cor);
+    border: none;
     border-radius: 8px;
     padding: 5px 8px;
     width: 104px;
@@ -658,6 +688,48 @@
   let fanficOrdem = null;           // null | 'alfa' | 'palavras'
   let fanficOrdemAsc = true;        // direção da ordenação
   let fanficLeitura = 'todas';      // 'todas' | 'naolidas' (filtro só da lista)
+  let fanficSerie = null;           // nome da série selecionada (mostra a série toda)
+
+  function serieDaObra(f) {
+    const serie = (f['Série'] || '').toString().trim();
+    return serie && !['não', 'nao', 'n', '-'].includes(fanficNorm(serie)) ? serie : '';
+  }
+  function volumeDaObra(f) {
+    const v = parseFloat((f['Volume'] === undefined || f['Volume'] === null ? '' : f['Volume']).toString().replace(',', '.'));
+    return isNaN(v) ? Infinity : v;
+  }
+  // Mantém cada série junta, na posição do primeiro volume que aparece, em ordem de volume
+  function agruparSeries(list) {
+    const grupos = {};
+    list.forEach(f => {
+      const k = fanficNorm(serieDaObra(f));
+      if (k) (grupos[k] = grupos[k] || []).push(f);
+    });
+    Object.values(grupos).forEach(g => g.sort((a, b) => volumeDaObra(a) - volumeDaObra(b)));
+    const vistos = new Set();
+    const res = [];
+    list.forEach(f => {
+      const k = fanficNorm(serieDaObra(f));
+      if (!k) { res.push(f); return; }
+      if (vistos.has(k)) return;
+      vistos.add(k);
+      res.push(...grupos[k]);
+    });
+    return res;
+  }
+
+  function filtrarSerie(idx, ev) {
+    if (ev) ev.stopPropagation();
+    const f = allBooks[idx];
+    if (!f) return;
+    fanficSerie = serieDaObra(f);
+    // a série toda: limpa a busca para não esconder volumes
+    const busca = document.getElementById('fanfic-search');
+    busca.value = ''; fanficBusca = '';
+    document.getElementById('fanfic-search-clear').hidden = true;
+    renderFanficsConteudo();
+    document.querySelector('.fanfic-list-scroll').scrollTop = 0;
+  }
   let fanficEventosOk = false;
 
   function fanficNorm(v) { return (v || '').toString().trim().toLowerCase(); }
@@ -722,6 +794,7 @@
 
     document.getElementById('fandom-todos').addEventListener('click', () => {
       fandomFiltro = null;
+      fanficSerie = null;
       renderFanficsView();
     });
 
@@ -730,6 +803,7 @@
     busca.addEventListener('input', e => {
       fanficBusca = e.target.value;
       limpar.hidden = !fanficBusca;
+      if (fanficBusca) fanficSerie = null;
       renderFanficsConteudo();
     });
     limpar.addEventListener('click', () => {
@@ -738,6 +812,11 @@
       limpar.hidden = true;
       renderFanficsConteudo();
       busca.focus();
+    });
+
+    document.getElementById('fanfic-serie-clear').addEventListener('click', () => {
+      fanficSerie = null;
+      renderFanficsConteudo();
     });
 
     document.querySelectorAll('.fanfic-seg-btn').forEach(btn => {
@@ -795,6 +874,7 @@
       card.addEventListener('click', () => {
         const nome = card.dataset.fandom;
         fandomFiltro = (fandomFiltro === nome) ? null : nome; // clicar de novo remove o filtro
+        fanficSerie = null;
         renderFanficsView();
       });
     });
@@ -868,11 +948,21 @@
   function renderFanficsConteudo() {
     let list = getFanficsFiltradas();
 
-    if (fanficLeitura === 'naolidas') list = list.filter(f => !fanficLida(f));
+    // Filtro de série: mostra a série toda (todos os fandoms e status), por volume
+    const chip = document.getElementById('fanfic-serie-chip');
+    chip.hidden = !fanficSerie;
+    if (fanficSerie) {
+      document.getElementById('fanfic-serie-nome').textContent = fanficSerie;
+      list = getTodasFanfics().filter(f => fanficNorm(serieDaObra(f)) === fanficNorm(fanficSerie))
+        .sort((a, b) => volumeDaObra(a) - volumeDaObra(b));
+    }
+
+    if (!fanficSerie && fanficLeitura === 'naolidas') list = list.filter(f => !fanficLida(f));
 
     const termo = fanficSemAcento(fanficBusca);
     if (termo) {
-      list = list.filter(f => fanficSemAcento(f['Título']).includes(termo) || fanficSemAcento(f['Autor']).includes(termo));
+      list = list.filter(f => fanficSemAcento(f['Título']).includes(termo) || fanficSemAcento(f['Autor']).includes(termo) ||
+        fanficSemAcento(serieDaObra(f)).includes(termo));
     }
 
     if (fanficOrdem === 'alfa') {
@@ -881,6 +971,8 @@
       list = list.slice().sort((a, b) => fanficNum(a['Palavras']) - fanficNum(b['Palavras']));
     }
     if (fanficOrdem && !fanficOrdemAsc) list.reverse();
+    // Séries sempre juntas e em ordem de volume (exceto ao ordenar por palavras)
+    if (!fanficSerie && fanficOrdem !== 'palavras') list = agruparSeries(list);
 
     // Estado visual dos botões de ordenação
     const btnAlfa = document.getElementById('sort-alfa');
@@ -947,11 +1039,10 @@
     const idx = allBooks.indexOf(f);
     const obs = obsDaObra(f);
     const plot = (f['Plot'] || '').toString().trim();
-    const serie = (f['Série'] || '').toString().trim();
+    const serie = serieDaObra(f);
     const volume = (f['Volume'] === undefined || f['Volume'] === null ? '' : f['Volume']).toString().trim();
-    const temSerie = serie && !['não', 'nao', 'n'].includes(fanficNorm(serie));
-    const serieHtml = temSerie
-      ? ` · <span class="obra-serie"><i class="fa-solid fa-layer-group"></i> ${fanficEsc(serie)}${volume ? `, vol. ${fanficEsc(volume)}` : ''}</span>`
+    const serieHtml = serie
+      ? ` · <span class="obra-serie" title="Ver a série toda" onclick="filtrarSerie(${idx}, event)"><i class="fa-solid fa-layer-group"></i> ${fanficEsc(serie)}${volume ? `, vol. ${fanficEsc(volume)}` : ''}</span>`
       : '';
     const releituras = Math.max(0, Math.floor(fanficNum(f['Releituras'])));
     const badges =
