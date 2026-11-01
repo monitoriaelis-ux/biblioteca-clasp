@@ -2,16 +2,14 @@
      Mesmo esquema da página de fanfics: divisões à esquerda (filtro), estatísticas no meio, lista à direita. -->
 <div class="fanfic-layout">
 
-  <!-- Coluna 1 (fixa): divisões, funcionam como filtro -->
-  <aside class="fandom-sidebar">
+  <!-- Coluna de indicadores (fixa): divisões (filtro) e, abaixo, as estatísticas -->
+  <aside class="fandom-sidebar nr-sidebar">
     <button type="button" id="nr-todos" class="fandom-todos-btn">
       <i class="fa-solid fa-crown"></i> Todos <span id="nr-todos-total"></span>
     </button>
     <div id="nr-divisoes" class="fandom-cards-list"></div>
-  </aside>
 
-  <!-- Coluna 2 (fixa): estatísticas e top séries — obedecem ao filtro de divisão -->
-  <aside class="fanfic-stats">
+    <!-- Estatísticas (acompanham a divisão selecionada) -->
     <div class="stats-row">
       <div class="stat-card stat-lidas">
         <span class="stat-label"><i class="fa-solid fa-book-bookmark"></i> Lidas</span>
@@ -24,7 +22,6 @@
         <span class="stat-sub" id="nr-nota-sub"></span>
       </div>
     </div>
-
     <div class="stat-card nr-tenho-card">
       <div class="nr-tenho-topo">
         <span class="stat-label"><i class="fa-solid fa-bag-shopping"></i> Adquiridas</span>
@@ -32,14 +29,9 @@
       </div>
       <div class="split-bar"><div class="nr-tenho-bar" id="nr-tenho-bar"></div></div>
     </div>
-
-    <div class="autores-card">
-      <div class="autores-title"><i class="fa-solid fa-layer-group"></i> Top séries</div>
-      <div id="nr-series-list" class="autores-list"></div>
-    </div>
   </aside>
 
-  <!-- Coluna 3: busca/ordenação fixas + lista -->
+  <!-- Busca/ordenação fixas + lista -->
   <div class="fanfic-main">
     <div class="fanfic-toolbar">
       <div class="fanfic-search">
@@ -129,9 +121,9 @@
   .nr-tenho-valor strong { font-size: 15px; color: var(--texto-marrom); }
   .nr-tenho-bar { background: #6f948a; }
 
-  /* Top séries clicáveis */
-  #nr-series-list .autor-row { cursor: pointer; border-radius: 6px; }
-  #nr-series-list .autor-row:hover .autor-nome { color: #6f948a; text-decoration: underline; }
+  .nr-sidebar { width: 220px; }
+  .nr-sidebar .stats-row, .nr-sidebar .nr-tenho-card { flex-shrink: 0; }
+  .nr-sidebar .stat-value { font-size: 18px; }
 </style>
 
 <script>
@@ -141,7 +133,6 @@
     { id: 'series', nome: 'Séries' },
     { id: 'mortal', nome: 'Série Mortal' }
   ];
-  const NR_TOP_SERIES = 10;
   let nrObras = [];
   let nrCarregado = false, nrCarregando = false, nrEventosOk = false;
   let nrDivisao = null;                 // null = todas
@@ -217,7 +208,6 @@
   function nrRenderTudo() {
     nrRenderDivisoes();
     nrRenderStats();
-    nrRenderTopSeries();
     nrRenderLista();
   }
 
@@ -252,7 +242,7 @@
     }));
   }
 
-  // ===== Coluna 2: estatísticas =====
+  // ===== Estatísticas =====
   function nrRenderStats() {
     const base = nrDaDivisao();
     const lidas = base.filter(nrLida).length;
@@ -266,40 +256,6 @@
     document.getElementById('nr-tenho').textContent = tenho;
     document.getElementById('nr-tenho-sub').textContent = `${nrPct(tenho, base.length)}% · faltam ${base.length - tenho}`;
     document.getElementById('nr-tenho-bar').style.width = nrPct(tenho, base.length) + '%';
-  }
-
-  function nrRenderTopSeries() {
-    const porSerie = {};
-    nrDaDivisao().forEach(o => {
-      const s = nrSerie(o);
-      if (!s) return;
-      const k = nrNorm(s);
-      porSerie[k] = porSerie[k] || { nome: s, total: 0, lidas: 0 };
-      porSerie[k].total++;
-      if (nrLida(o)) porSerie[k].lidas++;
-    });
-    const top = Object.values(porSerie).sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR')).slice(0, NR_TOP_SERIES);
-    const el = document.getElementById('nr-series-list');
-    el.innerHTML = top.length ? top.map((s, i) => {
-      const pL = nrPct(s.lidas, s.total);
-      return `
-        <div class="autor-row" data-serie="${nrEsc(s.nome)}" title="${s.lidas} lidas · ${s.total - s.lidas} não lidas — clique para ver a série">
-          <div class="autor-top">
-            <span class="autor-nome"><span class="autor-pos">${i + 1}.</span>${nrEsc(s.nome)}</span>
-            <span class="autor-total">${s.total}</span>
-          </div>
-          <div class="split-bar"><div class="split-bar-lidas" style="width:${pL}%"></div><div class="split-bar-naolidas" style="width:${s.total ? 100 - pL : 0}%"></div></div>
-        </div>`;
-    }).join('') : '<div class="autores-vazio">Nenhuma série aqui.</div>';
-    el.querySelectorAll('.autor-row').forEach(r => r.addEventListener('click', () => nrAplicarSerie(r.dataset.serie)));
-    const card = el.parentElement;
-    if (!card.querySelector('.autores-legend')) {
-      card.insertAdjacentHTML('beforeend', `
-        <div class="autores-legend">
-          <span><span class="dot" style="background: var(--cor-livro);"></span>Lidas</span>
-          <span><span class="dot" style="background: var(--cor-fanfic);"></span>Não lidas</span>
-        </div>`);
-    }
   }
 
   // ===== Filtros =====
