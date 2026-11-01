@@ -11,22 +11,17 @@
 
   <!-- Coluna 2 (fixa): estatísticas e top autores — obedecem ao filtro de fandom -->
   <aside class="fanfic-stats">
-    <div class="stat-card stat-lidas">
-      <div class="stat-text">
-        <span class="stat-label">Obras lidas</span>
+    <div class="stats-row">
+      <div class="stat-card stat-lidas">
+        <span class="stat-label"><i class="fa-solid fa-book-bookmark"></i> Lidas</span>
         <span class="stat-value" id="stat-lidas">0</span>
         <span class="stat-sub" id="stat-lidas-sub"></span>
       </div>
-      <i class="fa-solid fa-book-bookmark stat-icon"></i>
-    </div>
-
-    <div class="stat-card stat-nota">
-      <div class="stat-text">
-        <span class="stat-label">Nota média</span>
+      <div class="stat-card stat-nota">
+        <span class="stat-label"><i class="fa-solid fa-star"></i> Nota média</span>
         <span class="stat-value" id="stat-nota">0.0</span>
         <span class="stat-sub" id="stat-nota-sub"></span>
       </div>
-      <i class="fa-solid fa-star stat-icon" style="color: #E2A03F;"></i>
     </div>
 
     <div class="autores-card">
@@ -50,11 +45,17 @@
       </button>
     </div>
 
+    <div class="obra-row obra-header">
+      <span></span><span></span><span>Título</span><span>Palavras</span><span>Fandom</span><span>Status</span><span>Nota</span>
+    </div>
+
     <div class="fanfic-list-scroll">
-      <div id="fanfic-cards-grid" class="fanfic-custom-grid">
-        <div style="color: var(--texto-secundario); padding: 20px;">Carregando suas obsessões...</div>
+      <div id="fanfic-cards-grid" class="obras-list">
+        <div class="obras-vazio">Carregando suas obsessões...</div>
       </div>
     </div>
+
+    <div id="fanfic-toast" class="fanfic-toast"></div>
   </div>
 </div>
 
@@ -191,40 +192,38 @@
     gap: 8px;
   }
 
-  .stat-card {
+  .stats-row {
     flex-shrink: 0;
-    background: var(--bg-cards);
-    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-card {
     border-radius: 12px;
+    padding: 8px 12px;
     box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
   }
-  .stat-card { padding: 14px; height: 84px; }
   .stat-card.stat-lidas { background: #e3ece8; }
   .stat-card.stat-nota { background: #fff9c4; }
-
-  .stat-text { display: flex; flex-direction: column; }
   .stat-label {
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 600;
     color: var(--texto-secundario);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
   }
+  .stat-lidas .stat-label i { color: var(--cor-livro); }
+  .stat-nota .stat-label i { color: #E2A03F; }
   .stat-value {
-    font-size: 19px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--texto-marrom);
-    line-height: 1.1;
-    margin-top: 2px;
+    line-height: 1.15;
   }
-  .fanfic-stats .stat-value { font-size: 28px; }
-  .stat-sub { font-size: 10.5px; font-weight: 600; color: var(--texto-secundario); }
-  .stat-icon { font-size: 18px; color: var(--cor-fanfic); opacity: 0.8; }
-  .fanfic-stats .stat-icon { font-size: 24px; }
-  .stat-lidas .stat-icon { color: var(--cor-livro); }
+  .stat-sub { font-size: 10px; font-weight: 600; color: var(--texto-secundario); white-space: nowrap; }
 
   .autores-card {
     flex: 1;
@@ -259,12 +258,15 @@
   .autor-row {
     flex: 1;
     min-height: 0;
-    max-height: 64px;
+    max-height: 72px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 5px;
+    gap: 6px;
+    padding: 0 2px;
+    border-bottom: 1px dashed var(--hover-bege);
   }
+  .autor-row:last-child { border-bottom: none; }
   .autor-top {
     display: flex;
     justify-content: space-between;
@@ -281,7 +283,7 @@
   }
   .autor-pos { color: var(--texto-secundario); font-weight: 700; margin-right: 4px; }
   .autor-total { font-weight: 700; color: var(--texto-marrom); white-space: nowrap; }
-  .autor-row .split-bar { height: 8px; }
+  .autor-row .split-bar { height: 6px; }
   .autores-legend {
     flex-shrink: 0;
     display: flex;
@@ -360,47 +362,164 @@
     padding-right: 4px;
   }
 
-  .fanfic-custom-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px;
-    padding-bottom: 20px;
-  }
-
-  .obsessao-card {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(131, 24, 67, 0.04);
-    border-left: 5px solid #ec4899;
+  /* ===== Obras em linha ===== */
+  .obras-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    transition: transform 0.2s ease;
-    border-top: 1px solid #f1f5f9;
-    border-right: 1px solid #f1f5f9;
-    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 20px;
   }
-  .obsessao-card:hover { transform: translateY(-2px); }
-  .obsessao-title { font-weight: 700; font-size: 14.5px; color: #1e293b; }
-  .obsessao-fandom {
+  .obra-row {
+    display: grid;
+    grid-template-columns: 16px 40px minmax(0, 1fr) 90px 120px 120px 104px;
+    align-items: center;
+    gap: 14px;
+  }
+  .obra-header {
+    flex-shrink: 0;
+    padding: 0 16px 0 19px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--texto-secundario);
+    margin-bottom: -4px;
+  }
+  .obra-card {
+    --status-cor: var(--borda-bege);
+    background: var(--bg-cards);
+    border-radius: 10px;
+    padding: 0 16px 0 14px;
+    box-shadow: 0 3px 10px rgba(155, 125, 97, 0.05);
+    border-left: 5px solid var(--status-cor);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .obra-card:hover { box-shadow: 0 4px 14px rgba(155, 125, 97, 0.1); }
+  .obra-card > .obra-row { height: 72px; }
+
+  .obra-expand {
+    border: none;
+    background: none;
+    padding: 0;
+    width: 16px;
+    color: var(--texto-secundario);
+    cursor: pointer;
+    font-size: 11px;
+    transition: transform 0.2s, color 0.2s;
+  }
+  .obra-expand:hover { color: var(--texto-marrom); }
+  .obra-card.aberta .obra-expand { transform: rotate(90deg); }
+  .obra-plot {
+    display: none;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--texto-marrom);
+    border-top: 1px dashed var(--hover-bege);
+    padding: 10px 4px 14px 70px;
+    white-space: pre-line;
+  }
+  .obra-card.aberta .obra-plot { display: block; }
+
+  .obra-titulo-linha { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .obra-badge { flex-shrink: 0; font-size: 11px; }
+  .obra-badge.fav { color: #e0607e; }
+  .obra-badge.aband { color: #a8968a; }
+  .obra-card.abandonada .obra-titulo { color: var(--texto-secundario); }
+  .obra-serie { color: var(--texto-marrom); font-weight: 600; }
+  .obra-card.st-lido { --status-cor: var(--cor-livro); }
+  .obra-card.st-lendo { --status-cor: #F2D45C; }
+  .obra-card.st-quero { --status-cor: var(--cor-fanfic); }
+  .obra-card.salvando { opacity: 0.6; pointer-events: none; }
+
+  .obra-capa {
+    width: 36px;
+    height: 54px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--hover-bege);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--texto-secundario);
+    font-size: 14px;
+  }
+  .obra-titulo-bloco { display: flex; flex-direction: column; min-width: 0; }
+  .obra-titulo {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--texto-marrom);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .obra-autor {
+    font-size: 11px;
+    color: var(--texto-secundario);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .obra-palavras { font-size: 12.5px; font-weight: 600; color: var(--texto-marrom); }
+  .obra-fandom {
     font-size: 10.5px;
     font-weight: 600;
-    background: #fdf2f8;
-    color: #db2777;
-    padding: 2px 8px;
+    background: var(--hover-bege);
+    color: var(--texto-marrom);
+    padding: 3px 9px;
     border-radius: 6px;
     width: fit-content;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .obsessao-detalhes {
+
+  .obra-status {
+    font-family: 'Poppins', sans-serif;
     font-size: 11.5px;
-    color: #64748b;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 4px;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 8px;
+    font-weight: 600;
+    color: var(--texto-marrom);
+    background: var(--bg-creme);
+    border: 1px solid var(--status-cor);
+    border-radius: 8px;
+    padding: 5px 8px;
+    width: 100%;
+    cursor: pointer;
+    outline: none;
   }
+  .obra-status:focus { box-shadow: 0 0 0 2px var(--hover-bege); }
+
+  .obra-nota { display: flex; gap: 3px; font-size: 15px; color: #E2A03F; }
+  .obra-nota i { transition: transform 0.1s; }
+  .obra-nota.bloqueada { color: var(--borda-bege); cursor: not-allowed; }
+  .obra-nota.editavel i { cursor: pointer; }
+  .obra-nota.editavel i:hover { transform: scale(1.2); }
+  /* Pré-visualização ao passar o mouse */
+  .obra-nota.editavel:hover i { color: #E2A03F; }
+  .obra-nota.editavel i:hover ~ i { color: var(--borda-bege); }
+
+  .obras-vazio { text-align: center; color: var(--texto-secundario); padding: 40px; }
+
+  .fanfic-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    background: var(--texto-marrom);
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(90, 71, 54, 0.25);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 200;
+  }
+  .fanfic-toast.show { opacity: 1; transform: translateY(0); }
+  .fanfic-toast.erro { background: #b4534b; }
 </style>
 
 <script>
@@ -554,7 +673,7 @@
 
     document.getElementById('stat-lidas').textContent = lidas.length.toLocaleString('pt-BR');
     document.getElementById('stat-lidas-sub').textContent =
-      base.length ? `de ${base.length} (${Math.round(lidas.length / base.length * 100)}%)` : 'nenhuma obra';
+      base.length ? `de ${base.length} · ${Math.round(lidas.length / base.length * 100)}%` : 'nenhuma obra';
 
     const avaliadas = base.filter(f => f['Nota'] !== '' && f['Nota'] !== undefined && !isNaN(parseFloat(f['Nota'].toString().replace(',', '.'))));
     const nota = avaliadas.length
@@ -642,20 +761,162 @@
       const msg = termo ? `Nenhuma fanfiction encontrada para "${fanficEsc(fanficBusca)}".`
         : fandomFiltro ? `Nenhuma fanfiction de ${fanficEsc(fandomFiltro)} cadastrada ainda.`
         : "Nenhuma fanfiction cadastrada na planilha com o tipo 'Fanfiction'.";
-      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--texto-secundario); padding: 40px;">${msg}</div>`;
+      grid.innerHTML = `<div class="obras-vazio">${msg}</div>`;
       return;
     }
 
-    grid.innerHTML = list.map(f => `
-      <div class="obsessao-card">
-        <span class="obsessao-fandom">${fanficEsc(f['Fandom'] || 'Fandom Geral')}</span>
-        <div class="obsessao-title">${fanficEsc(f['Título'] || 'Sem Título')}</div>
-        <div style="font-size: 12px; color: var(--texto-secundario);">Por: ${fanficEsc(f['Autor'] || 'Desconhecido')}</div>
-        <div class="obsessao-detalhes">
-          <span>Palavras: <strong>${f['Palavras'] ? fanficNum(f['Palavras']).toLocaleString('pt-BR') : 'N/A'}</strong></span>
-          <span>Status: <strong>${fanficEsc(f['Status'] || 'Acompanhando')}</strong></span>
+    grid.innerHTML = list.map(renderObraRow).join('');
+  }
+
+  // ===== Linha de obra =====
+  const STATUS_OPCOES = ['Lido', 'Lendo', 'Quero ler'];
+
+  function statusClasse(status) {
+    const st = fanficNorm(status);
+    return st === 'lido' ? 'st-lido' : st === 'lendo' ? 'st-lendo' : st === 'quero ler' ? 'st-quero' : '';
+  }
+
+  function notaValor(f) {
+    const v = parseFloat((f['Nota'] === undefined || f['Nota'] === null ? '' : f['Nota']).toString().replace(',', '.'));
+    return isNaN(v) ? 0 : v;
+  }
+
+  function estrelasHtml(f) {
+    const val = notaValor(f);
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+      const cls = val >= i ? 'fa-solid fa-star' : val >= i - 0.5 ? 'fa-solid fa-star-half-stroke' : 'fa-regular fa-star';
+      html += `<i class="${cls}" data-v="${i}"></i>`;
+    }
+    return html;
+  }
+
+  const obrasAbertas = new Set(); // linhas com o plot expandido
+
+  function toggleObra(idx) {
+    if (obrasAbertas.has(idx)) obrasAbertas.delete(idx); else obrasAbertas.add(idx);
+    const card = document.querySelector(`.obra-card[data-idx="${idx}"]`);
+    if (card) card.classList.toggle('aberta', obrasAbertas.has(idx));
+  }
+
+  // Coluna O da planilha: "favorita" / "abandonada"
+  function obsDaObra(f) {
+    const o = fanficSemAcento(f._obs);
+    return { favorita: o.includes('favorit'), abandonada: o.includes('abandon') };
+  }
+
+  function renderObraRow(f) {
+    const idx = allBooks.indexOf(f);
+    const obs = obsDaObra(f);
+    const plot = (f['Plot'] || '').toString().trim();
+    const serie = (f['Série'] || '').toString().trim();
+    const volume = (f['Volume'] === undefined || f['Volume'] === null ? '' : f['Volume']).toString().trim();
+    const temSerie = serie && !['não', 'nao', 'n'].includes(fanficNorm(serie));
+    const serieHtml = temSerie
+      ? ` · <span class="obra-serie"><i class="fa-solid fa-layer-group"></i> ${fanficEsc(serie)}${volume ? `, vol. ${fanficEsc(volume)}` : ''}</span>`
+      : '';
+    const badges =
+      (obs.favorita ? '<i class="fa-solid fa-heart obra-badge fav" title="Favorita"></i>' : '') +
+      (obs.abandonada ? '<i class="fa-solid fa-ban obra-badge aband" title="Abandonada"></i>' : '');
+    const lida = fanficLida(f);
+    const statusAtual = (f['Status'] || '').toString().trim();
+    const opcoes = STATUS_OPCOES.slice();
+    if (statusAtual && !opcoes.some(o => fanficNorm(o) === fanficNorm(statusAtual))) opcoes.unshift(statusAtual);
+    const capa = f['URL da imagem']
+      ? `<img class="obra-capa" src="${fanficEsc(f['URL da imagem'])}" loading="lazy" alt="">`
+      : `<div class="obra-capa"><i class="fa-solid fa-book"></i></div>`;
+
+    return `
+      <div class="obra-card ${statusClasse(statusAtual)}${obrasAbertas.has(idx) ? ' aberta' : ''}${obs.abandonada ? ' abandonada' : ''}" data-idx="${idx}">
+      <div class="obra-row">
+        ${plot ? `<button type="button" class="obra-expand" onclick="toggleObra(${idx})" title="Ver plot"><i class="fa-solid fa-chevron-right"></i></button>` : '<span></span>'}
+        ${capa}
+        <div class="obra-titulo-bloco">
+          <div class="obra-titulo-linha">
+            <span class="obra-titulo" title="${fanficEsc(f['Título'])}">${fanficEsc(f['Título'] || 'Sem título')}</span>
+            ${badges}
+          </div>
+          <span class="obra-autor">${fanficEsc(f['Autor'] || 'Autor desconhecido')}${serieHtml}</span>
+        </div>
+        <span class="obra-palavras">${f['Palavras'] ? fanficNum(f['Palavras']).toLocaleString('pt-BR') : '—'}</span>
+        <span><span class="obra-fandom" title="${fanficEsc(f['Fandom'])}">${fanficEsc(f['Fandom'] || '—')}</span></span>
+        <select class="obra-status" onchange="alterarStatusObra(${idx}, this.value)">
+          ${statusAtual ? '' : '<option value="" selected disabled>Selecione</option>'}
+          ${opcoes.map(o => `<option value="${fanficEsc(o)}"${fanficNorm(o) === fanficNorm(statusAtual) ? ' selected' : ''}>${fanficEsc(o)}</option>`).join('')}
+        </select>
+        <div class="obra-nota ${lida ? 'editavel' : 'bloqueada'}"
+             title="${lida ? 'Clique para dar a nota (clique na mesma estrela para limpar)' : 'Marque como Lido para avaliar'}"
+             ${lida ? `onclick="alterarNotaObra(${idx}, event)"` : ''}>
+          ${estrelasHtml(f)}
         </div>
       </div>
-    `).join('');
+      ${plot ? `<div class="obra-plot">${fanficEsc(plot)}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // ===== Gravação na planilha =====
+  let toastTimer = null;
+  function fanficToast(msg, erro) {
+    const t = document.getElementById('fanfic-toast');
+    t.textContent = msg;
+    t.classList.toggle('erro', !!erro);
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), erro ? 5000 : 1800);
+  }
+
+  // Atualiza a tela inteira depois de uma mudança (Obsessões + painel do Prefácio)
+  function atualizarTelasAposEdicao() {
+    renderFanficsView();
+    if (typeof renderDashboard === 'function') renderDashboard();
+    if (typeof renderRecentReads === 'function') renderRecentReads();
+  }
+
+  function salvarObra(idx, campos, anterior, opcoes) {
+    const f = allBooks[idx];
+    const card = document.querySelector(`.obra-card[data-idx="${idx}"]`);
+    if (card) card.classList.add('salvando');
+    fanficToast('Salvando...');
+
+    const payload = Object.assign({ row: f._row, titulo: f['Título'], autor: f['Autor'], campos }, opcoes || {});
+    google.script.run
+      .withSuccessHandler(raw => {
+        const r = JSON.parse(raw);
+        if (r.row) f._row = r.row;
+        if (r.dataFinal) f['Data final'] = r.dataFinal;
+        atualizarTelasAposEdicao();
+        fanficToast('Salvo na planilha ✓');
+      })
+      .withFailureHandler(err => {
+        Object.assign(f, anterior); // desfaz na tela
+        atualizarTelasAposEdicao();
+        fanficToast('Não foi possível salvar: ' + (err && err.message ? err.message : err), true);
+      })
+      .updateObraAPI(JSON.stringify(payload));
+
+    atualizarTelasAposEdicao(); // mostra a mudança na hora (com a linha em "salvando")
+    const novoCard = document.querySelector(`.obra-card[data-idx="${idx}"]`);
+    if (novoCard) novoCard.classList.add('salvando');
+  }
+
+  function alterarStatusObra(idx, novoStatus) {
+    const f = allBooks[idx];
+    if (!f || !novoStatus || novoStatus === f['Status']) return;
+    const anterior = { Status: f['Status'] };
+    f['Status'] = novoStatus;
+    const virouLido = fanficNorm(novoStatus) === 'lido';
+    salvarObra(idx, { Status: novoStatus }, anterior, { preencherDataFinal: virouLido });
+  }
+
+  function alterarNotaObra(idx, ev) {
+    const v = ev.target && ev.target.dataset ? Number(ev.target.dataset.v) : 0;
+    const f = allBooks[idx];
+    if (!v || !f || !fanficLida(f)) return;
+    const atual = notaValor(f);
+    const nova = (atual === v) ? '' : v; // clicar na mesma estrela limpa a nota
+    const anterior = { Nota: f['Nota'] };
+    f['Nota'] = nova;
+    salvarObra(idx, { Nota: nova }, anterior);
   }
 </script>

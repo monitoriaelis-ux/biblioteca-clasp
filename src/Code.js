@@ -16,9 +16,11 @@ function getHomeDataAPI() {
     const data = sheetObras.getDataRange().getValues();
     const headers = data[0].map(h => h.toString().trim());
     
-    const obras = data.slice(1).map(row => {
+    const obras = data.slice(1).map((row, idx) => {
       let rowData = {};
       headers.forEach((h, i) => rowData[h] = row[i]);
+      rowData._row = idx + 2; // número da linha na planilha (usado para atualizar a obra)
+      rowData._obs = row[14] !== undefined ? row[14] : ""; // coluna O (Obs: favorita / abandonada)
       return rowData;
     });
     
@@ -80,6 +82,76 @@ function saveNewBookAPI(JSONPayload) {
   } catch (error) {
     Logger.log("Erro ao salvar: " + error.toString());
     throw new Error(error.message);
+  }
+}
+
+// Atualiza campos de uma obra já cadastrada (Status, Nota, Data final).
+// payload: { row, titulo, autor, campos: { Status?, Nota? }, preencherDataFinal? }
+function updateObraAPI(JSONPayload) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const p = JSON.parse(JSONPayload);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Base");
+    if (!sheet) throw new Error("A aba 'Base' não foi encontrada.");
+
+    const lastRow = sheet.getLastRow();
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => h.toString().trim());
+    const col = name => headers.indexOf(name);
+    const norm = v => (v === null || v === undefined ? "" : v.toString()).trim().toLowerCase();
+
+    const colTitulo = col("Título");
+    const colAutor = col("Autor");
+    if (colTitulo < 0) throw new Error("Coluna 'Título' não encontrada na aba Base.");
+
+    // Confere se a linha ainda é da mesma obra (a planilha pode ter sido reordenada)
+    let row = Number(p.row);
+    const linhaConfere = row >= 2 && row <= lastRow &&
+      norm(sheet.getRange(row, colTitulo + 1).getValue()) === norm(p.titulo);
+
+    if (!linhaConfere) {
+      const values = sheet.getRange(2, 1, Math.max(lastRow - 1, 1), headers.length).getValues();
+      const i = values.findIndex(r => norm(r[colTitulo]) === norm(p.titulo) &&
+        (colAutor < 0 || norm(r[colAutor]) === norm(p.autor)));
+      if (i < 0) throw new Error("Obra '" + p.titulo + "' não encontrada na aba Base.");
+      row = i + 2;
+    }
+
+    const STATUS_VALIDOS = ["Lido", "Lendo", "Quero ler"];
+    const campos = p.campos || {};
+    Object.keys(campos).forEach(nome => {
+      let valor = campos[nome];
+      if (nome === "Status") {
+        if (STATUS_VALIDOS.indexOf(valor) < 0) throw new Error("Status inválido: " + valor);
+      } else if (nome === "Nota") {
+        if (valor !== "") {
+          valor = Number(valor);
+          if (isNaN(valor) || valor < 0 || valor > 5) throw new Error("Nota inválida: " + campos[nome]);
+        }
+      } else {
+        throw new Error("Campo não permitido: " + nome);
+      }
+      const c = col(nome);
+      if (c < 0) throw new Error("Coluna '" + nome + "' não encontrada na aba Base.");
+      sheet.getRange(row, c + 1).setValue(valor);
+    });
+
+    // Ao marcar como lido, preenche "Data final" com hoje se estiver vazia
+    let dataFinal = null;
+    const colData = col("Data final");
+    if (p.preencherDataFinal && colData >= 0) {
+      const cell = sheet.getRange(row, colData + 1);
+      if (cell.getValue() === "") {
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        cell.setValue(hoje);
+        dataFinal = hoje.toISOString();
+      }
+    }
+
+    return JSON.stringify({ success: true, row: row, dataFinal: dataFinal });
+  } finally {
+    lock.releaseLock();
   }
 }
 
