@@ -232,8 +232,8 @@
   let epEditando = null;              // id do post em edição
   let epImagens = [];                 // imagens do post sendo escrito
   const epF = { busca: '', tag: null, obra: null };
-  const EP_HUMORES = ['😍 apaixonada', '🥰 quentinha', '😭 chorando', '💔 de coração partido', '🤯 surtando', '😱 em choque',
-    '😤 revoltada', '😏 shippando', '🔥 com calor', '😌 em paz', '🤔 pensativa', '😴 sonolenta', '🤓 nerd', '🥲 nostálgica', '📚 sem conseguir parar'];
+  const EP_HUMORES = ['\u{1F60D} apaixonada', '\u{1F970} quentinha', '\u{1F62D} chorando', '\u{1F494} de coração partido', '\u{1F92F} surtando', '\u{1F631} em choque',
+    '\u{1F624} revoltada', '\u{1F60F} shippando', '\u{1F525} com calor', '\u{1F60C} em paz', '\u{1F914} pensativa', '\u{1F634} sonolenta', '\u{1F913} nerd', '\u{1F972} nostálgica', '\u{1F4DA} sem conseguir parar'];
   const EP_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   const epNorm = v => (v === undefined || v === null ? '' : String(v)).trim().toLowerCase();
@@ -285,6 +285,15 @@
 
   // ===== Carregamento =====
   function renderEpilogo() {
+    try { renderEpilogoInterno(); }
+    catch (e) {
+      document.getElementById('ep-posts').innerHTML =
+        `<div class="obras-vazio">Ops, algo deu errado ao abrir o diário: ${epEsc(e && e.message ? e.message : e)}</div>`;
+      console.error(e);
+    }
+  }
+
+  function renderEpilogoInterno() {
     if (!epIniciado) epIniciar();
     epPreencherObras();
     // garante as obras da Nora para o vínculo (sem depender de abrir a página dela)
@@ -422,7 +431,7 @@
 
   function epRender() {
     document.getElementById('ep-busca-x').hidden = !epF.busca;
-    const filtroAtivo = epF.tag ? `#${epF.tag}` : epF.obra ? `📖 ${epF.obra}` : '';
+    const filtroAtivo = epF.tag ? `#${epF.tag}` : epF.obra ? `\u{1F4D6} ${epF.obra}` : '';
     document.getElementById('ep-filtro-ativo').hidden = !filtroAtivo;
     document.getElementById('ep-filtro-texto').textContent = filtroAtivo ? `Mostrando: ${filtroAtivo}` : '';
 
@@ -489,6 +498,9 @@
       ? obrasL.map(o => `<div class="ep-obra-item${epNorm(epF.obra) === epNorm(o.nome) ? ' ativo' : ''}" onclick="epFiltrarObra(${epArg(o.nome)})"><span>${epEsc(o.nome)}</span><span>${o.n}</span></div>`).join('')
       : '<span class="ep-vazio-mini">Nenhuma obra comentada ainda.</span>';
   }
+
+  // Ativa os controles já no carregamento (não depende da navegação)
+  try { if (!epIniciado) epIniciar(); } catch (e) { console.error('Epílogo:', e); }
 
   let epToastTimer = null;
   function epToast(msg, erro) {
