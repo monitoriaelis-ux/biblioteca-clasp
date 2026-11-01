@@ -4,30 +4,29 @@
 
   <!-- Coluna de indicadores (fixa): divisões (filtro) e, abaixo, as estatísticas -->
   <aside class="fandom-sidebar nr-sidebar">
-    <button type="button" id="nr-todos" class="fandom-todos-btn">
-      <i class="fa-solid fa-crown"></i> Todos <span id="nr-todos-total"></span>
-    </button>
-    <div id="nr-divisoes" class="fandom-cards-list"></div>
-
-    <!-- Estatísticas (acompanham a divisão selecionada) -->
-    <div class="stats-row">
-      <div class="stat-card stat-lidas">
-        <span class="stat-label"><i class="fa-solid fa-book-bookmark"></i> Lidas</span>
-        <span class="stat-value" id="nr-lidas">0</span>
-        <span class="stat-sub" id="nr-lidas-sub"></span>
-      </div>
-      <div class="stat-card stat-nota">
-        <span class="stat-label"><i class="fa-solid fa-star"></i> Nota média</span>
-        <span class="stat-value" id="nr-nota">0.0</span>
-        <span class="stat-sub" id="nr-nota-sub"></span>
-      </div>
-    </div>
     <div class="stat-card nr-tenho-card">
       <div class="nr-tenho-topo">
         <span class="stat-label"><i class="fa-solid fa-bag-shopping"></i> Adquiridas</span>
         <span class="nr-tenho-valor"><strong id="nr-tenho">0</strong> <span id="nr-tenho-sub"></span></span>
       </div>
       <div class="split-bar"><div class="nr-tenho-bar" id="nr-tenho-bar"></div></div>
+    </div>
+
+    <button type="button" id="nr-todos" class="fandom-todos-btn">
+      <i class="fa-solid fa-crown"></i> Todos <span id="nr-todos-total"></span>
+    </button>
+    <div id="nr-divisoes" class="fandom-cards-list"></div>
+
+    <!-- Estatísticas (acompanham a divisão selecionada) -->
+    <div class="stat-card stat-lidas nr-stat-linha">
+      <span class="stat-label"><i class="fa-solid fa-book-bookmark"></i> Lidas</span>
+      <span class="stat-value" id="nr-lidas">0</span>
+      <span class="stat-sub" id="nr-lidas-sub"></span>
+    </div>
+    <div class="stat-card stat-nota nr-stat-linha">
+      <span class="stat-label"><i class="fa-solid fa-star"></i> Nota média</span>
+      <span class="stat-value" id="nr-nota">0.0</span>
+      <span class="stat-sub" id="nr-nota-sub"></span>
     </div>
   </aside>
 
@@ -124,7 +123,7 @@
   .nr-sidebar { width: 220px; }
   .nr-qtd-series { font-size: 10.5px; font-weight: 600; color: var(--texto-secundario); margin-top: -2px; }
   .nr-qtd-series i { color: #A0763F; margin-right: 3px; font-size: 9.5px; }
-  .nr-sidebar .stats-row, .nr-sidebar .nr-tenho-card { flex-shrink: 0; }
+  .nr-sidebar .nr-stat-linha, .nr-sidebar .nr-tenho-card { flex-shrink: 0; }
   .nr-sidebar .stat-value { font-size: 18px; }
 </style>
 
