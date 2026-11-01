@@ -42,6 +42,10 @@
         <i class="fa-solid fa-filter"></i><span id="nr-chip-nome"></span>
         <button type="button" id="nr-chip-x" title="Remover filtro"><i class="fa-solid fa-xmark"></i></button>
       </div>
+      <div class="fanfic-seg" id="nr-modo" hidden>
+        <button type="button" class="fanfic-seg-btn active" data-nr-modo="lista" title="Lista de obras"><i class="fa-solid fa-list"></i> Lista</button>
+        <button type="button" class="fanfic-seg-btn" data-nr-modo="cards" title="Um card por série"><i class="fa-solid fa-layer-group"></i> Por série</button>
+      </div>
       <div class="fanfic-seg">
         <button type="button" class="fanfic-seg-btn active" data-nr-leitura="todas">Todas</button>
         <button type="button" class="fanfic-seg-btn" data-nr-leitura="naolidas">Não lidas</button>
@@ -52,7 +56,7 @@
     </div>
 
     <div class="fanfic-list-scroll" id="nr-scroll">
-      <div class="nr-row nr-header">
+      <div class="nr-row nr-header" id="nr-header">
         <span></span><span class="col-titulo">Título</span><span>Ano</span><span>Páginas</span><span>Obs.</span><span>Status</span><span>Nota</span><span></span><span></span>
       </div>
       <div id="nr-lista" class="obras-list"><div class="obras-vazio">Carregando obras da Nora...</div></div>
@@ -66,7 +70,8 @@
   /* Linha de obra da Nora (colunas próprias; demais estilos vêm da página de fanfics) */
   .nr-row {
     display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) 52px 66px 92px 140px 104px 22px 22px;
+    /* título fica com a maior parte, mas Ano/Páginas/Obs. dividem o espaço que sobra */
+    grid-template-columns: 40px minmax(200px, 2.4fr) minmax(52px, 0.5fr) minmax(64px, 0.6fr) minmax(120px, 1.1fr) 140px 104px 22px 22px;
     align-items: center;
     gap: 12px;
   }
@@ -121,6 +126,39 @@
   .nr-tenho-bar { background: #6f948a; }
 
   .nr-sidebar { width: 220px; }
+  #nr-modo[hidden] { display: none; }
+  .fanfic-seg-btn i { margin-right: 4px; }
+
+  /* Modo "Por série": um card por série, expansível */
+  .nr-serie-card {
+    --prog-cor: var(--cor-fanfic);
+    background: var(--bg-cards); border-radius: 10px; box-shadow: 0 3px 10px rgba(155, 125, 97, 0.05);
+    border-left: 5px solid var(--prog-cor);
+  }
+  .nr-serie-card.prog-parcial { --prog-cor: #F2D45C; }
+  .nr-serie-card.prog-completa { --prog-cor: var(--cor-livro); }
+  .nr-serie-head {
+    display: grid; grid-template-columns: 34px minmax(0, 1fr) 70px 170px 90px 104px 22px;
+    align-items: center; gap: 12px; min-height: 64px; padding: 0 12px 0 14px; cursor: pointer;
+  }
+  .nr-serie-head:hover .nr-serie-nome { color: #6f948a; }
+  .nr-serie-icone {
+    width: 34px; height: 34px; border-radius: 8px; background: var(--hover-bege); color: #A0763F;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .nr-serie-nome { font-weight: 700; font-size: 13.5px; color: var(--texto-marrom); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.15s; }
+  .nr-serie-meta { font-size: 11px; color: var(--texto-secundario); }
+  .nr-serie-qtd { text-align: center; font-size: 12px; color: var(--texto-secundario); }
+  .nr-serie-qtd strong { display: block; font-size: 16px; color: var(--texto-marrom); line-height: 1.1; }
+  .nr-serie-prog { display: flex; flex-direction: column; gap: 4px; }
+  .nr-serie-prog .fandom-legend { font-size: 9.5px; }
+  .nr-serie-tenho { text-align: center; font-size: 11.5px; font-weight: 600; color: var(--texto-marrom); white-space: nowrap; }
+  .nr-serie-tenho i { color: #6f948a; margin-right: 4px; }
+  .nr-serie-card .obra-expand { transition: transform 0.2s; }
+  .nr-serie-card.aberta .nr-serie-head .obra-expand { transform: rotate(180deg); }
+  .nr-serie-livros { display: none; padding: 4px 10px 10px; border-top: 1px dashed var(--hover-bege); flex-direction: column; gap: 6px; }
+  .nr-serie-card.aberta .nr-serie-livros { display: flex; }
+  .nr-serie-livros .nr-card { box-shadow: none; background: var(--bg-creme); }
   .nr-qtd-series { font-size: 10.5px; font-weight: 600; color: var(--texto-secundario); margin-top: -2px; }
   .nr-qtd-series i { color: #A0763F; margin-right: 3px; font-size: 9.5px; }
   .nr-sidebar .nr-stat-linha, .nr-sidebar .nr-tenho-card { flex-shrink: 0; }
@@ -139,6 +177,8 @@
   let nrDivisao = null;                 // null = todas
   const nrF = { busca: '', leitura: 'todas', ordem: null, asc: true, serie: null, obs: null };
   let nrStatusAberto = null, nrAberta = null;
+  let nrModo = 'lista';                 // 'lista' | 'cards' (só na divisão Séries)
+  const nrSeriesAbertas = new Set();
 
   // ===== Utilidades =====
   const nrNorm = v => (v === undefined || v === null ? '' : String(v)).trim().toLowerCase();
@@ -270,6 +310,7 @@
     document.getElementById('nr-busca-x').addEventListener('click', () => { busca.value = ''; nrF.busca = ''; nrRenderLista(); busca.focus(); });
     document.getElementById('nr-chip-x').addEventListener('click', () => { nrF.serie = null; nrF.obs = null; nrRenderLista(); });
     document.querySelectorAll('[data-nr-leitura]').forEach(b => b.addEventListener('click', () => { nrF.leitura = b.dataset.nrLeitura; nrRenderLista(); }));
+    document.querySelectorAll('[data-nr-modo]').forEach(b => b.addEventListener('click', () => { nrModo = b.dataset.nrModo; nrRenderLista(); }));
     document.querySelectorAll('[data-nr-ordem]').forEach(b => b.addEventListener('click', () => {
       // 1º clique ativa, 2º inverte, 3º remove — A-Z e Ano crescentes; Páginas: maiores primeiro
       const tipo = b.dataset.nrOrdem, ascPadrao = tipo !== 'paginas';
@@ -340,8 +381,15 @@
       b.title = !ativo ? 'Ordenar' : 'Clique para inverter; o 3º clique remove a ordenação';
     });
 
+    const modoSerie = nrDivisao === 'series' && !nrF.serie;
+    document.getElementById('nr-modo').hidden = !modoSerie;
+    document.querySelectorAll('[data-nr-modo]').forEach(b => b.classList.toggle('active', b.dataset.nrModo === nrModo));
+    const cards = modoSerie && nrModo === 'cards';
+    document.getElementById('nr-header').style.display = cards ? 'none' : '';
+
     const lista = nrListaFiltrada();
     const el = document.getElementById('nr-lista');
+    if (cards && lista.length) { el.innerHTML = nrRenderCardsSerie(lista); return; }
     if (!lista.length) {
       el.innerHTML = `<div class="obras-vazio">${nrF.busca ? `Nada encontrado para "${nrEsc(nrF.busca)}".` : 'Nenhuma obra aqui.'}</div>`;
       return;
@@ -398,6 +446,67 @@
         </div>
         ${plot ? `<div class="nr-plot">${nrEsc(plot)}</div>` : ''}
       </div>`;
+  }
+
+  // ===== Modo "Por série" =====
+  function nrRenderCardsSerie(lista) {
+    // Agrupa as obras (já filtradas) por série
+    const grupos = [], porNome = {};
+    lista.forEach(o => {
+      const k = nrNorm(nrSerie(o));
+      if (!porNome[k]) { porNome[k] = { nome: nrSerie(o), obras: [] }; grupos.push(porNome[k]); }
+      porNome[k].obras.push(o);
+    });
+    grupos.forEach(g => g.obras.sort((a, b) => nrOrdemSerie(a) - nrOrdemSerie(b)));
+
+    // Ordenação das séries: A-Z (padrão), Ano (do 1º livro) ou Páginas (total)
+    const anoIni = g => Math.min(...g.obras.map(o => nrAno(o) || Infinity));
+    const pags = g => g.obras.reduce((t, o) => t + (nrPaginas(o) || 0), 0);
+    if (nrF.ordem === 'ano') grupos.sort((a, b) => anoIni(a) - anoIni(b));
+    else if (nrF.ordem === 'paginas') grupos.sort((a, b) => pags(a) - pags(b));
+    else grupos.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+    if (nrF.ordem && !nrF.asc) grupos.reverse();
+
+    return grupos.map(g => {
+      const total = g.obras.length, lidas = g.obras.filter(nrLida).length, tenho = g.obras.filter(nrTenho).length;
+      const notas = g.obras.map(nrNota).filter(n => n !== null && n > 0);
+      const media = notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
+      const pL = nrPct(lidas, total), pN = total ? 100 - pL : 0;
+      const anos = g.obras.map(nrAno).filter(Boolean);
+      const periodo = anos.length ? (Math.min(...anos) === Math.max(...anos) ? `${Math.min(...anos)}` : `${Math.min(...anos)}–${Math.max(...anos)}`) : '';
+      const prog = lidas === total ? 'prog-completa' : lidas ? 'prog-parcial' : '';
+      let stars = '';
+      for (let v = 1; v <= 5; v++) stars += `<i class="${media >= v ? 'fa-solid fa-star' : media >= v - 0.5 ? 'fa-solid fa-star-half-stroke' : 'fa-regular fa-star'}"></i>`;
+      const k = nrNorm(g.nome);
+      return `
+        <div class="nr-serie-card ${prog}${nrSeriesAbertas.has(k) ? ' aberta' : ''}" data-serie="${nrEsc(k)}">
+          <div class="nr-serie-head" onclick="nrToggleSerieCard(this)">
+            <div class="nr-serie-icone"><i class="fa-solid fa-layer-group"></i></div>
+            <div style="min-width:0">
+              <div class="nr-serie-nome" title="${nrEsc(g.nome)}">${nrEsc(g.nome)}</div>
+              <div class="nr-serie-meta">${periodo}${periodo ? ' · ' : ''}${lidas} de ${total} ${total === 1 ? 'lido' : 'lidos'}</div>
+            </div>
+            <div class="nr-serie-qtd"><strong>${total}</strong>${total === 1 ? 'livro' : 'livros'}</div>
+            <div class="nr-serie-prog">
+              <div class="split-bar"><div class="split-bar-lidas" style="width:${pL}%"></div><div class="split-bar-naolidas" style="width:${pN}%"></div></div>
+              <div class="fandom-legend">
+                <span><span class="dot" style="background: var(--cor-livro);"></span>Lidas ${pL}%</span>
+                <span><span class="dot" style="background: var(--cor-fanfic);"></span>Não lidas ${pN}%</span>
+              </div>
+            </div>
+            <div class="nr-serie-tenho" title="Adquiridos"><i class="fa-solid fa-bag-shopping"></i>${tenho}/${total}</div>
+            <div class="obra-nota ${notas.length ? '' : 'bloqueada'}" style="justify-content:center" title="${notas.length ? `Nota média ${media.toFixed(1)}` : 'Sem avaliações'}">${stars}</div>
+            <button type="button" class="obra-expand" title="Ver livros"><i class="fa-solid fa-chevron-down"></i></button>
+          </div>
+          <div class="nr-serie-livros">${g.obras.map(nrRenderLinha).join('')}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function nrToggleSerieCard(head) {
+    const card = head.parentElement, k = card.dataset.serie;
+    if (nrSeriesAbertas.has(k)) nrSeriesAbertas.delete(k); else nrSeriesAbertas.add(k);
+    card.classList.toggle('aberta', nrSeriesAbertas.has(k));
   }
 
   // ===== Plot expansível (uma obra por vez) =====
