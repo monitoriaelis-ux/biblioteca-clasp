@@ -318,7 +318,7 @@ function getNoraDataAPI() {
     const data = range.getValues();
     const formulas = range.getFormulas();
     const headers = data[0].map(h => h.toString().trim());
-    const colCapa = headers.indexOf("Capa");
+    const colCapa = 14; // coluna O: link da capa
 
     const obras = [];
     data.slice(1).forEach((row, idx) => {
@@ -329,8 +329,8 @@ function getNoraDataAPI() {
       headers.forEach((h, i) => o[h] = row[i] instanceof Date ? row[i].toISOString() : row[i]);
       o._row = idx + 2;
       // Capa: link direto ou o link de dentro de =IMAGE("...")
-      if (colCapa >= 0) {
-        const v = (row[colCapa] || "").toString();
+      if (row.length > colCapa) {
+        const v = (row[colCapa] || "").toString().trim();
         const m = (formulas[idx + 1][colCapa] || "").match(/"(https?:[^"]+)"/);
         o._capa = /^https?:/i.test(v) ? v : (m ? m[1] : "");
       }
