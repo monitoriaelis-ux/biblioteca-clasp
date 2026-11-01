@@ -176,10 +176,13 @@ function updateObraAPI(JSONPayload) {
   }
 }
 
-// Inclui várias fanfics de uma vez (página "Incluir obras").
-// rows: [{ titulo, autor, fandom, serie: bool, nomeSerie, volume, genero, orientacao, palavras, plot,
+// Inclui várias obras de uma vez (página "Incluir obras").
+// rows: [{ tipo: "Fanfiction" | "Ebook" | "Livro", titulo, autor, fandom, serie: bool, nomeSerie, volume,
+//          genero, orientacao, idioma, palavras (fanfic), paginas (livro/ebook), plot,
 //          status, dataFim: "yyyy-mm-dd", nota, favorita: bool, abandonada: bool, capaUrl }]
-function saveFanficsBatchAPI(JSONPayload) {
+function saveFanficsBatchAPI(JSONPayload) { return saveObrasBatchAPI(JSONPayload); }
+
+function saveObrasBatchAPI(JSONPayload) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
@@ -241,12 +244,15 @@ function saveFanficsBatchAPI(JSONPayload) {
       const titulo = (r.titulo || "").toString().trim();
       if (!titulo) throw new Error("Linha " + (i + 1) + ": título obrigatório.");
       const status = STATUS_VALIDOS.indexOf(r.status) >= 0 ? r.status : "Quero ler";
-      const palavras = Number(r.palavras) || 0;
+      const tipo = ["Fanfiction", "Ebook", "Livro"].indexOf(r.tipo) >= 0 ? r.tipo : "Fanfiction";
+      const fanfic = tipo === "Fanfiction";
+      const palavras = fanfic ? (Number(r.palavras) || 0) : 0;
+      const paginas = fanfic ? (palavras ? Math.ceil(palavras / 300) : "") : (Number(r.paginas) || "");
 
-      put(C.tipo, i, "Fanfiction");
+      put(C.tipo, i, tipo);
       put(C.titulo, i, titulo);
       put(C.autor, i, (r.autor || "").trim());
-      put(C.fandom, i, (r.fandom || "").trim());
+      if (fanfic) put(C.fandom, i, (r.fandom || "").trim());
       if (r.serie) {
         if (C.nomeSerie >= 0) { put(C.serie, i, "Sim"); put(C.nomeSerie, i, (r.nomeSerie || "").trim()); }
         else put(C.serie, i, (r.nomeSerie || "").trim() || "Sim");
@@ -254,9 +260,9 @@ function saveFanficsBatchAPI(JSONPayload) {
       } // sem série: coluna Série fica em branco
       put(C.genero, i, r.genero || "Romance");
       put(C.orientacao, i, r.orientacao || "Straight");
-      put(C.idioma, i, "Inglês");
-      put(C.palavras, i, palavras || "");
-      put(C.paginas, i, palavras ? Math.ceil(palavras / 300) : "");
+      put(C.idioma, i, fanfic ? "Inglês" : (r.idioma || "Português"));
+      if (fanfic) put(C.palavras, i, palavras || "");
+      put(C.paginas, i, paginas);
       put(C.plot, i, (r.plot || "").trim());
       put(C.status, i, status);
       if (status === "Lido" && r.dataFim) {

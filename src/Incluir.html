@@ -8,7 +8,7 @@
       <button type="button" class="inc-tab" data-inc-tab="livros"><i class="fa-solid fa-book"></i> E-book / Livros</button>
     </div>
 
-    <div class="inc-actions" id="inc-actions-fanfic">
+    <div class="inc-actions">
       <span class="inc-count" id="inc-count"></span>
       <button type="button" class="inc-btn" onclick="incAddLinhas(1)"><i class="fa-solid fa-plus"></i> Linha</button>
       <button type="button" class="inc-btn" onclick="incAddLinhas(5)"><i class="fa-solid fa-plus"></i> 5 linhas</button>
@@ -19,50 +19,14 @@
     </div>
   </div>
 
-  <!-- Aba Fanfiction: tabela estilo planilha -->
-  <div class="inc-panel" id="inc-panel-fanfic">
-    <div class="inc-dica">
-      <i class="fa-solid fa-lightbulb"></i>
-      Idioma vai sempre como <strong>Inglês</strong> e as páginas são calculadas (palavras ÷ 300).
-      Dá para colar várias linhas copiadas de uma planilha direto na coluna <strong>Título</strong>.
-      O rascunho fica guardado neste navegador até você salvar.
-    </div>
-    <div class="inc-table-wrap">
-      <table class="inc-table">
-        <colgroup>
-          <col style="width: 30px"><col><col style="width: 9%"><col style="width: 8%">
-          <col style="width: 8.5%"><col style="width: 7.5%"><col style="width: 7%"><col style="width: 5.5%">
-          <col style="width: 12%"><col style="width: 9.5%"><col style="width: 56px"><col style="width: 7.5%"><col style="width: 32px">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th class="th-left">Título *</th>
-            <th>Autor *</th>
-            <th>Fandom *</th>
-            <th>Série</th>
-            <th>Gênero</th>
-            <th>Orientação</th>
-            <th>Palavras</th>
-            <th>Plot</th>
-            <th>Status</th>
-            <th title="Favorita / Abandonada"><i class="fa-solid fa-heart" style="color:#e0607e"></i> <i class="fa-solid fa-ban" style="color:#C9675C"></i></th>
-            <th>Link da capa</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="inc-tbody"></tbody>
-      </table>
-    </div>
-  </div>
+  <div class="inc-dica" id="inc-dica"></div>
 
-  <!-- Aba E-book / Livros -->
-  <div class="inc-panel" id="inc-panel-livros" hidden>
-    <div class="placeholder-card">
-      <i class="fa-solid fa-book"></i>
-      <h2>E-book / Livros</h2>
-      <p>Em construção. Me diga quais campos você quer aqui.</p>
-    </div>
+  <div class="inc-table-wrap">
+    <table class="inc-table">
+      <colgroup id="inc-colgroup"></colgroup>
+      <thead><tr id="inc-thead"></tr></thead>
+      <tbody id="inc-tbody"></tbody>
+    </table>
   </div>
 
   <datalist id="inc-dl-autores"></datalist>
@@ -74,52 +38,25 @@
 <style>
   .inc-layout { height: 100%; display: flex; flex-direction: column; gap: 12px; }
 
-  .inc-topbar {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
+  .inc-topbar { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .inc-tabs {
-    display: flex;
-    gap: 2px;
-    background: var(--bg-cards);
-    border-radius: 10px;
-    padding: 3px;
+    display: flex; gap: 2px; background: var(--bg-cards); border-radius: 10px; padding: 3px;
     box-shadow: 0 2px 8px rgba(155, 125, 97, 0.06);
   }
   .inc-tab {
-    border: none;
-    background: none;
-    font-family: 'Poppins', sans-serif;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--texto-secundario);
-    padding: 8px 16px;
-    border-radius: 7px;
-    cursor: pointer;
+    border: none; background: none; font-family: 'Poppins', sans-serif; font-size: 12.5px; font-weight: 600;
+    color: var(--texto-secundario); padding: 8px 16px; border-radius: 7px; cursor: pointer;
   }
   .inc-tab i { margin-right: 6px; }
   .inc-tab:hover { color: var(--texto-marrom); }
   .inc-tab.active { background: var(--cor-fanfic); color: #fff; }
 
   .inc-actions { display: flex; align-items: center; gap: 8px; }
-  .inc-actions[hidden] { display: none; }
   .inc-count { font-size: 12px; font-weight: 600; color: var(--texto-secundario); margin-right: 4px; }
   .inc-btn {
-    height: 36px;
-    padding: 0 14px;
-    border: none;
-    border-radius: 10px;
-    background: var(--bg-cards);
-    box-shadow: 0 2px 8px rgba(155, 125, 97, 0.06);
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--texto-secundario);
-    cursor: pointer;
-    white-space: nowrap;
+    height: 36px; padding: 0 14px; border: none; border-radius: 10px; background: var(--bg-cards);
+    box-shadow: 0 2px 8px rgba(155, 125, 97, 0.06); font-family: 'Poppins', sans-serif; font-size: 12px;
+    font-weight: 600; color: var(--texto-secundario); cursor: pointer; white-space: nowrap;
   }
   .inc-btn i { margin-right: 5px; }
   .inc-btn:hover { background: var(--hover-bege); color: var(--texto-marrom); }
@@ -127,117 +64,139 @@
   .inc-btn-primary:hover { background: #7b968d; color: #fff; }
   .inc-btn:disabled { opacity: 0.6; cursor: wait; }
 
-  .inc-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
-  .inc-panel[hidden] { display: none; }
-  .inc-dica {
-    flex-shrink: 0;
-    font-size: 11.5px;
-    color: var(--texto-secundario);
-    background: var(--bg-cards);
-    border-radius: 10px;
-    padding: 8px 14px;
-  }
+  .inc-dica { flex-shrink: 0; font-size: 11.5px; color: var(--texto-secundario); background: var(--bg-cards); border-radius: 10px; padding: 8px 14px; }
   .inc-dica i { color: #E2A03F; margin-right: 6px; }
 
   .inc-table-wrap {
-    flex: 1;
-    min-height: 0;
-    overflow: auto;
-    background: var(--bg-cards);
-    border-radius: 12px;
+    flex: 1; min-height: 0; overflow: auto; background: var(--bg-cards); border-radius: 12px;
     box-shadow: 0 4px 12px rgba(155, 125, 97, 0.05);
   }
   .inc-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1100px; table-layout: fixed; font-size: 12px; }
-  .inc-table th.th-left { text-align: left; padding-left: 10px; }
-  .inc-table td.c-num, .inc-table td.c-del { vertical-align: middle; }
   .inc-table th {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background: var(--hover-bege);
-    color: var(--texto-marrom);
-    font-size: 10.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 9px 8px;
-    text-align: center;
-    white-space: nowrap;
+    position: sticky; top: 0; z-index: 4; background: var(--hover-bege); color: var(--texto-marrom);
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 9px 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  .inc-table th.th-left { text-align: left; padding-left: 10px; }
   .inc-table td {
-    border-bottom: 1px solid var(--hover-bege);
-    padding: 4px 3px;
-    vertical-align: top;
-    text-align: center;
+    border-bottom: 1px solid var(--hover-bege); padding: 4px 3px; vertical-align: top; text-align: center;
     background: var(--bg-cards);
   }
+  .inc-table td.c-num, .inc-table td.c-del { vertical-align: middle; }
   .inc-table tr.inc-lido td { background: #f4f8f6; }
   .inc-table tr:hover td { background: var(--bg-creme); }
-
   .c-num { color: var(--texto-secundario); font-weight: 600; }
+
+  .inc-in {
+    width: 100%; border: none; background: transparent; font-family: 'Poppins', sans-serif; font-size: 12px;
+    color: var(--texto-marrom); padding: 6px 6px; border-radius: 6px; outline: none;
+  }
+  .inc-in:focus { background: #fff; box-shadow: 0 0 0 2px rgba(218, 163, 143, 0.45); }
+  .inc-in.centro { text-align: center; }
+  textarea.inc-in { resize: none; height: 30px; line-height: 1.4; display: block; }
+  textarea.inc-in:focus { height: 90px; position: relative; z-index: 3; box-shadow: 0 4px 14px rgba(90, 71, 54, 0.15), 0 0 0 2px rgba(218, 163, 143, 0.45); }
+  .inc-in.erro { background: #fbe7e4; }
 
   /* Campos que aparecem só quando necessários (dentro da célula) */
   .inc-sub { display: flex; flex-direction: column; gap: 3px; margin-top: 3px; }
-  .inc-sub-linha { display: flex; gap: 3px; align-items: center; }
+  .inc-sub-linha { display: flex; gap: 3px; align-items: center; justify-content: center; }
   .inc-sub .inc-in { background: var(--bg-creme); font-size: 11.5px; padding: 4px 6px; }
   .inc-sub .inc-in.vol { width: 52px; flex-shrink: 0; }
   .inc-sub-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: var(--texto-secundario); letter-spacing: 0.4px; }
 
-  /* Favorita / Abandonada como ícones */
-  .inc-marcas { display: flex; justify-content: center; gap: 8px; }
-  .inc-marca {
-    border: none; background: none; padding: 2px; cursor: pointer;
-    font-size: 14px; color: var(--borda-bege); transition: transform 0.1s, color 0.15s;
+  /* Menus de seleção próprios: texto centralizado e sem contorno */
+  .inc-dd { position: relative; }
+  .inc-dd-btn {
+    width: 100%; border: none; background: transparent; font-family: 'Poppins', sans-serif; font-size: 12px;
+    color: var(--texto-marrom); padding: 6px 4px; border-radius: 6px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; overflow: hidden;
   }
+  .inc-dd-btn span { overflow: hidden; text-overflow: ellipsis; }
+  .inc-dd-btn i { font-size: 8.5px; color: var(--texto-secundario); flex-shrink: 0; transition: transform 0.2s; }
+  .inc-dd-btn:hover { background: var(--hover-bege); }
+  .inc-dd.aberto .inc-dd-btn { background: #fff; }
+  .inc-dd.aberto .inc-dd-btn i { transform: rotate(180deg); }
+  .inc-dd-menu {
+    display: none; position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+    z-index: 30; min-width: 100%; max-height: 220px; overflow-y: auto; background: var(--bg-cards);
+    border-radius: 10px; box-shadow: 0 6px 20px rgba(90, 71, 54, 0.18); padding: 4px;
+  }
+  .inc-dd.aberto .inc-dd-menu { display: block; }
+  .inc-dd.pra-cima .inc-dd-menu { top: auto; bottom: calc(100% + 4px); }
+  .inc-dd-menu button {
+    display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border: none;
+    background: none; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 500;
+    color: var(--texto-marrom); padding: 6px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap;
+  }
+  .inc-dd-menu button:hover { background: var(--hover-bege); }
+  .inc-dd-menu button.atual { background: var(--bg-creme); font-weight: 700; }
+  .inc-dd-menu .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .inc-dd.st-lido .inc-dd-btn span { color: #6f948a; font-weight: 700; }
+  .inc-dd.st-lendo .inc-dd-btn span { color: #b8962a; font-weight: 700; }
+
+  .inc-stars { display: flex; justify-content: center; gap: 3px; font-size: 13px; color: #E2A03F; cursor: pointer; padding: 2px 0; }
+  .inc-stars i:hover { transform: scale(1.15); }
+
+  /* Favorita / Abandonada como ícones */
+  .inc-marcas { display: flex; justify-content: center; gap: 8px; padding-top: 4px; }
+  .inc-marca { border: none; background: none; padding: 2px; cursor: pointer; font-size: 14px; color: var(--borda-bege); transition: transform 0.1s, color 0.15s; }
   .inc-marca:hover { transform: scale(1.15); }
   .inc-marca.fav.on { color: #e0607e; }
   .inc-marca.aband.on { color: #C9675C; }
 
-  .inc-in {
-    width: 100%;
-    border: none;
-    background: transparent;
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-    color: var(--texto-marrom);
-    padding: 6px 6px;
-    border-radius: 6px;
-    outline: none;
-  }
-  .inc-in:focus { background: #fff; box-shadow: 0 0 0 2px rgba(218, 163, 143, 0.45); }
-  .inc-in.num, .inc-in[data-f="autor"], .inc-in[data-f="fandom"] { text-align: center; }
-  select.inc-in { cursor: pointer; text-align: center; }
-  textarea.inc-in { resize: none; height: 30px; line-height: 1.4; display: block; }
-  textarea.inc-in:focus { height: 90px; position: relative; z-index: 3; box-shadow: 0 4px 14px rgba(90, 71, 54, 0.15), 0 0 0 2px rgba(218, 163, 143, 0.45); }
-  .inc-in.erro { background: #fbe7e4; }
-  .inc-in:disabled { opacity: 0.35; }
-  .inc-vazio { color: var(--borda-bege); }
-
-  .inc-stars { display: flex; justify-content: center; gap: 3px; font-size: 13px; color: #E2A03F; cursor: pointer; padding: 2px 0; }
-  .inc-stars i:hover { transform: scale(1.15); }
-  .inc-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--cor-fanfic); }
-  .inc-del {
-    border: none; background: none; color: var(--borda-bege); cursor: pointer;
-    width: 26px; height: 26px; border-radius: 50%;
-  }
+  .inc-del { border: none; background: none; color: var(--borda-bege); cursor: pointer; width: 26px; height: 26px; border-radius: 50%; }
   .inc-del:hover { background: #fbe7e4; color: #C9675C; }
-  .inc-status-lido { color: #6f948a; font-weight: 700; }
-  .inc-status-lendo { color: #b8962a; font-weight: 700; }
 </style>
 
 <script>
-  // ===== Estado =====
-  const INC_STORAGE = 'incluirFanficsRascunho';
+  // ===== Configuração das abas =====
   const INC_STATUS = ['Quero ler', 'Lendo', 'Lido'];
-  let incLinhas = [];
-  let incSalvando = false;
+  const INC_ABAS = {
+    fanfic: {
+      storage: 'incluirFanficsRascunho',
+      dica: 'Idioma vai sempre como <strong>Inglês</strong> e as páginas são calculadas (palavras ÷ 300).',
+      // [campo, título da coluna, largura] — a coluna de título fica com o restante
+      cols: [
+        ['num', '#', '30px'], ['titulo', 'Título *', null], ['autor', 'Autor *', '9%'], ['fandom', 'Fandom *', '8%'],
+        ['serie', 'Série', '8.5%'], ['genero', 'Gênero', '7.5%'], ['orientacao', 'Orientação', '7%'], ['palavras', 'Palavras', '5.5%'],
+        ['plot', 'Plot', '12%'], ['status', 'Status', '9.5%'], ['marcas', '', '56px'], ['capaUrl', 'Link da capa', '7.5%'], ['del', '', '32px']
+      ],
+      colar: ['titulo', 'autor', 'fandom', 'serie', 'nomeSerie', 'volume', 'genero', 'orientacao', 'palavras', 'plot', 'status', 'dataFim', 'nota', 'favorita', 'abandonada', 'capaUrl'],
+      obrigatorios: ['titulo', 'autor', 'fandom']
+    },
+    livros: {
+      storage: 'incluirLivrosRascunho',
+      dica: 'Escolha se é <strong>E-book</strong> ou <strong>Livro</strong> (padrão: E-book).',
+      cols: [
+        ['num', '#', '30px'], ['tipo', 'Tipo', '7%'], ['titulo', 'Título *', null], ['autor', 'Autor *', '10%'],
+        ['serie', 'Série', '8.5%'], ['genero', 'Gênero', '8%'], ['orientacao', 'Orientação', '7%'], ['idioma', 'Idioma', '7%'],
+        ['paginas', 'Páginas', '5.5%'], ['plot', 'Plot', '12%'], ['status', 'Status', '9.5%'], ['marcas', '', '56px'],
+        ['capaUrl', 'Link da capa', '7.5%'], ['del', '', '32px']
+      ],
+      colar: ['tipo', 'titulo', 'autor', 'serie', 'nomeSerie', 'volume', 'genero', 'orientacao', 'idioma', 'paginas', 'plot', 'status', 'dataFim', 'nota', 'favorita', 'abandonada', 'capaUrl'],
+      obrigatorios: ['titulo', 'autor']
+    }
+  };
+  const INC_TIPOS_LIVRO = [{ v: 'Ebook', t: 'E-book' }, { v: 'Livro', t: 'Livro' }];
+  const INC_IDIOMAS = ['Português', 'Inglês'];
 
-  function incNovaLinha() {
-    return { titulo: '', autor: '', fandom: '', serie: false, nomeSerie: '', volume: '', genero: 'Romance', orientacao: 'Straight',
-             palavras: '', plot: '', status: 'Quero ler', dataFim: '', nota: 0, favorita: false, abandonada: false, capaUrl: '' };
+  let incAba = 'fanfic';
+  const incDados = { fanfic: [], livros: [] };
+  let incSalvando = false;
+  let incIniciado = false;
+
+  function incLinhas() { return incDados[incAba]; }
+
+  function incNovaLinha(aba) {
+    const base = { titulo: '', autor: '', serie: false, nomeSerie: '', volume: '', genero: 'Romance', orientacao: 'Straight',
+                   plot: '', status: 'Quero ler', dataFim: '', nota: 0, favorita: false, abandonada: false, capaUrl: '' };
+    return (aba || incAba) === 'fanfic'
+      ? Object.assign(base, { tipo: 'Fanfiction', fandom: '', palavras: '' })
+      : Object.assign(base, { tipo: 'Ebook', idioma: 'Português', paginas: '' });
   }
   function incLinhaVazia(r) {
-    return !r.titulo.trim() && !r.autor.trim() && !r.fandom.trim() && !r.plot.trim() && !String(r.palavras).trim() && !r.capaUrl.trim();
+    return !r.titulo.trim() && !r.autor.trim() && !(r.fandom || '').trim() && !r.plot.trim() &&
+      !String(r.palavras || r.paginas || '').trim() && !r.capaUrl.trim();
   }
   function incHoje() {
     const d = new Date();
@@ -246,27 +205,26 @@
   function incEsc(v) { return (v === undefined || v === null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
   function incGuardar() {
-    try { localStorage.setItem(INC_STORAGE, JSON.stringify(incLinhas)); } catch (e) {}
+    try { localStorage.setItem(INC_ABAS[incAba].storage, JSON.stringify(incLinhas())); } catch (e) {}
   }
-  function incCarregar() {
+  function incCarregar(aba) {
     try {
-      const salvo = JSON.parse(localStorage.getItem(INC_STORAGE) || 'null');
-      if (Array.isArray(salvo) && salvo.length) incLinhas = salvo.map(r => Object.assign(incNovaLinha(), r));
+      const salvo = JSON.parse(localStorage.getItem(INC_ABAS[aba].storage) || 'null');
+      if (Array.isArray(salvo) && salvo.length) incDados[aba] = salvo.map(r => Object.assign(incNovaLinha(aba), r));
     } catch (e) {}
-    if (!incLinhas.length) incLinhas = [incNovaLinha(), incNovaLinha(), incNovaLinha()];
+    if (!incDados[aba].length) incDados[aba] = [incNovaLinha(aba), incNovaLinha(aba), incNovaLinha(aba)];
   }
 
-  // Gêneros existentes na planilha (Romance sempre presente e padrão)
+  // Opções vindas da planilha
+  function incValoresBase(campo) {
+    return (typeof allBooks !== 'undefined' ? allBooks : []).map(b => (b[campo] || '').toString().trim()).filter(Boolean);
+  }
   function incGeneros() {
-    const base = (typeof allBooks !== 'undefined' ? allBooks : []).map(b => (b['Gênero'] || b['Genero'] || '').toString().trim()).filter(Boolean);
-    const set = [...new Set(['Romance'].concat(base))];
-    return ['Romance'].concat(set.filter(g => g !== 'Romance').sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    const outros = [...new Set(incValoresBase('Gênero'))].filter(g => g !== 'Romance').sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    return ['Romance'].concat(outros);
   }
-
-  // Orientação: Straight (padrão) e Sapphic, mais outras que já existam na planilha
   function incOrientacoes() {
-    const base = (typeof allBooks !== 'undefined' ? allBooks : []).map(b => (b['Orientação'] || '').toString().trim()).filter(Boolean);
-    const extras = [...new Set(base)].filter(o => !['straight', 'sapphic'].includes(o.toLowerCase())).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const extras = [...new Set(incValoresBase('Orientação'))].filter(o => !['straight', 'sapphic'].includes(o.toLowerCase())).sort((a, b) => a.localeCompare(b, 'pt-BR'));
     return ['Straight', 'Sapphic'].concat(extras);
   }
 
@@ -281,164 +239,210 @@
   }
 
   // ===== Renderização =====
-  let incIniciado = false;
   function renderIncluir() {
     if (!incIniciado) {
       incIniciado = true;
-      incCarregar();
+      incCarregar('fanfic');
+      incCarregar('livros');
       document.querySelectorAll('.inc-tab').forEach(t => t.addEventListener('click', () => incTrocarAba(t.dataset.incTab)));
+      document.addEventListener('click', incFecharMenus);
     }
     incPreencherDatalists();
     incRenderTabela();
   }
 
   function incTrocarAba(aba) {
+    incAba = aba;
     document.querySelectorAll('.inc-tab').forEach(t => t.classList.toggle('active', t.dataset.incTab === aba));
-    document.getElementById('inc-panel-fanfic').hidden = aba !== 'fanfic';
-    document.getElementById('inc-panel-livros').hidden = aba !== 'livros';
-    document.getElementById('inc-actions-fanfic').hidden = aba !== 'fanfic';
+    incRenderTabela();
+  }
+
+  // Menu de seleção próprio
+  function incDropdown(campo, valorAtual, opcoes, extraClasse) {
+    const ops = opcoes.map(o => typeof o === 'string' ? { v: o, t: o } : o);
+    if (!ops.some(o => o.v === valorAtual) && valorAtual) ops.unshift({ v: valorAtual, t: valorAtual });
+    const atual = ops.find(o => o.v === valorAtual) || ops[0];
+    const dot = v => campo === 'status' ? `<span class="dot" style="background:${v === 'Lido' ? 'var(--cor-livro)' : v === 'Lendo' ? '#F2D45C' : 'var(--cor-fanfic)'}"></span>` : '';
+    return `
+      <div class="inc-dd ${extraClasse || ''}" data-dd="${campo}">
+        <button type="button" class="inc-dd-btn"><span>${incEsc(atual.t)}</span><i class="fa-solid fa-chevron-down"></i></button>
+        <div class="inc-dd-menu">
+          ${ops.map(o => `<button type="button" data-v="${incEsc(o.v)}" class="${o.v === atual.v ? 'atual' : ''}">${dot(o.v)}${incEsc(o.t)}</button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function incCelula(campo, r, i, ctx) {
+    const lido = r.status === 'Lido';
+    switch (campo) {
+      case 'num': return `<td class="c-num">${i + 1}</td>`;
+      case 'del': return `<td class="c-del"><button type="button" class="inc-del" title="Remover linha" onclick="incRemover(${i})"><i class="fa-solid fa-xmark"></i></button></td>`;
+      case 'titulo': return `<td><input class="inc-in" data-f="titulo" value="${incEsc(r.titulo)}" placeholder="Título"></td>`;
+      case 'autor': return `<td><input class="inc-in centro" data-f="autor" value="${incEsc(r.autor)}" list="inc-dl-autores" placeholder="Autor"></td>`;
+      case 'fandom': return `<td><input class="inc-in centro" data-f="fandom" value="${incEsc(r.fandom)}" list="inc-dl-fandoms" placeholder="Fandom"></td>`;
+      case 'tipo': return `<td>${incDropdown('tipo', r.tipo, INC_TIPOS_LIVRO)}</td>`;
+      case 'genero': return `<td>${incDropdown('genero', r.genero, ctx.generos)}</td>`;
+      case 'orientacao': return `<td>${incDropdown('orientacao', r.orientacao, ctx.orientacoes)}</td>`;
+      case 'idioma': return `<td>${incDropdown('idioma', r.idioma, INC_IDIOMAS)}</td>`;
+      case 'palavras': return `<td><input class="inc-in centro" data-f="palavras" type="number" min="0" step="1" value="${incEsc(r.palavras)}" placeholder="0"></td>`;
+      case 'paginas': return `<td><input class="inc-in centro" data-f="paginas" type="number" min="0" step="1" value="${incEsc(r.paginas)}" placeholder="0"></td>`;
+      case 'plot': return `<td><textarea class="inc-in" data-f="plot" placeholder="Plot">${incEsc(r.plot)}</textarea></td>`;
+      case 'capaUrl': return `<td><input class="inc-in" data-f="capaUrl" type="url" value="${incEsc(r.capaUrl)}" placeholder="https://..."></td>`;
+      case 'serie': return `<td>
+          ${incDropdown('serie', r.serie ? 'Sim' : 'Não', ['Não', 'Sim'])}
+          ${r.serie ? `
+            <div class="inc-sub">
+              <input class="inc-in centro" data-f="nomeSerie" value="${incEsc(r.nomeSerie)}" list="inc-dl-series" placeholder="Nome da série">
+              <div class="inc-sub-linha">
+                <span class="inc-sub-label">Vol.</span>
+                <input class="inc-in centro vol" data-f="volume" type="number" min="1" value="${incEsc(r.volume)}">
+              </div>
+            </div>` : ''}
+        </td>`;
+      case 'status': {
+        let stars = '';
+        for (let v = 1; v <= 5; v++) stars += `<i class="${r.nota >= v ? 'fa-solid' : 'fa-regular'} fa-star" data-v="${v}"></i>`;
+        return `<td>
+          ${incDropdown('status', r.status, INC_STATUS, lido ? 'st-lido' : r.status === 'Lendo' ? 'st-lendo' : '')}
+          ${lido ? `
+            <div class="inc-sub">
+              <input class="inc-in centro" data-f="dataFim" type="date" value="${incEsc(r.dataFim)}" title="Data em que terminou">
+              <div class="inc-stars" title="Nota (clique na mesma estrela para limpar)">${stars}</div>
+            </div>` : ''}
+        </td>`;
+      }
+      case 'marcas': return `<td>
+          <div class="inc-marcas">
+            <button type="button" class="inc-marca fav${r.favorita ? ' on' : ''}" data-marca="favorita" title="Favorita"><i class="fa-solid fa-heart"></i></button>
+            <button type="button" class="inc-marca aband${r.abandonada ? ' on' : ''}" data-marca="abandonada" title="Abandonada"><i class="fa-solid fa-ban"></i></button>
+          </div>
+        </td>`;
+    }
+    return '<td></td>';
   }
 
   function incRenderTabela() {
-    const generos = incGeneros();
-    const orientacoes = incOrientacoes();
-    document.getElementById('inc-tbody').innerHTML = incLinhas.map((r, i) => {
-      const oris = orientacoes.includes(r.orientacao) ? orientacoes : [r.orientacao].concat(orientacoes);
-      const lido = r.status === 'Lido';
-      const gens = generos.includes(r.genero) ? generos : [r.genero].concat(generos);
-      let stars = '';
-      for (let v = 1; v <= 5; v++) stars += `<i class="${r.nota >= v ? 'fa-solid' : 'fa-regular'} fa-star" data-v="${v}"></i>`;
-      return `
-        <tr data-i="${i}" class="${lido ? 'inc-lido' : ''}">
-          <td class="c-num">${i + 1}</td>
-          <td><input class="inc-in" data-f="titulo" value="${incEsc(r.titulo)}" placeholder="Título"></td>
-          <td><input class="inc-in" data-f="autor" value="${incEsc(r.autor)}" list="inc-dl-autores" placeholder="Autor"></td>
-          <td><input class="inc-in" data-f="fandom" value="${incEsc(r.fandom)}" list="inc-dl-fandoms" placeholder="Fandom"></td>
-          <td>
-            <select class="inc-in" data-f="serie" data-tipo="bool">
-              <option value="0"${r.serie ? '' : ' selected'}>Não</option>
-              <option value="1"${r.serie ? ' selected' : ''}>Sim</option>
-            </select>
-            ${r.serie ? `
-              <div class="inc-sub">
-                <input class="inc-in" data-f="nomeSerie" value="${incEsc(r.nomeSerie)}" list="inc-dl-series" placeholder="Nome da série">
-                <div class="inc-sub-linha">
-                  <span class="inc-sub-label">Vol.</span>
-                  <input class="inc-in num vol" data-f="volume" type="number" min="1" value="${incEsc(r.volume)}">
-                </div>
-              </div>` : ''}
-          </td>
-          <td>
-            <select class="inc-in" data-f="genero">
-              ${gens.map(g => `<option value="${incEsc(g)}"${g === r.genero ? ' selected' : ''}>${incEsc(g)}</option>`).join('')}
-            </select>
-          </td>
-          <td>
-            <select class="inc-in" data-f="orientacao">
-              ${oris.map(o => `<option value="${incEsc(o)}"${o === r.orientacao ? ' selected' : ''}>${incEsc(o)}</option>`).join('')}
-            </select>
-          </td>
-          <td><input class="inc-in num" data-f="palavras" type="number" min="0" step="1" value="${incEsc(r.palavras)}" placeholder="0"></td>
-          <td><textarea class="inc-in" data-f="plot" placeholder="Plot">${incEsc(r.plot)}</textarea></td>
-          <td>
-            <select class="inc-in ${r.status === 'Lido' ? 'inc-status-lido' : r.status === 'Lendo' ? 'inc-status-lendo' : ''}" data-f="status">
-              ${INC_STATUS.map(st => `<option value="${st}"${st === r.status ? ' selected' : ''}>${st}</option>`).join('')}
-            </select>
-            ${lido ? `
-              <div class="inc-sub">
-                <input class="inc-in num" data-f="dataFim" type="date" value="${incEsc(r.dataFim)}" title="Data em que terminou">
-                <div class="inc-stars" data-i="${i}" title="Nota (clique na mesma estrela para limpar)">${stars}</div>
-              </div>` : ''}
-          </td>
-          <td>
-            <div class="inc-marcas">
-              <button type="button" class="inc-marca fav${r.favorita ? ' on' : ''}" data-marca="favorita" title="Favorita"><i class="fa-solid fa-heart"></i></button>
-              <button type="button" class="inc-marca aband${r.abandonada ? ' on' : ''}" data-marca="abandonada" title="Abandonada"><i class="fa-solid fa-ban"></i></button>
-            </div>
-          </td>
-          <td><input class="inc-in" data-f="capaUrl" type="url" value="${incEsc(r.capaUrl)}" placeholder="https://..."></td>
-          <td class="c-del"><button type="button" class="inc-del" title="Remover linha" onclick="incRemover(${i})"><i class="fa-solid fa-xmark"></i></button></td>
-        </tr>`;
+    const cfg = INC_ABAS[incAba];
+    document.getElementById('inc-dica').innerHTML = `<i class="fa-solid fa-lightbulb"></i>${cfg.dica}
+      Dá para colar várias linhas copiadas de uma planilha direto na coluna <strong>Título</strong>. O rascunho fica guardado neste navegador até você salvar.`;
+    document.getElementById('inc-colgroup').innerHTML = cfg.cols.map(c => `<col${c[2] ? ` style="width:${c[2]}"` : ''}>`).join('');
+    document.getElementById('inc-thead').innerHTML = cfg.cols.map(c => {
+      if (c[0] === 'marcas') return `<th title="Favorita / Abandonada"><i class="fa-solid fa-heart" style="color:#e0607e"></i> <i class="fa-solid fa-ban" style="color:#C9675C"></i></th>`;
+      return `<th${c[0] === 'titulo' ? ' class="th-left"' : ''}>${c[1]}</th>`;
     }).join('');
+
+    const ctx = { generos: incGeneros(), orientacoes: incOrientacoes() };
+    document.getElementById('inc-tbody').innerHTML = incLinhas().map((r, i) =>
+      `<tr data-i="${i}" class="${r.status === 'Lido' ? 'inc-lido' : ''}">${cfg.cols.map(c => incCelula(c[0], r, i, ctx)).join('')}</tr>`
+    ).join('');
     incAtualizarContador();
     incLigarEventos();
   }
 
   function incAtualizarContador() {
-    const n = incLinhas.filter(r => !incLinhaVazia(r)).length;
+    const n = incLinhas().filter(r => !incLinhaVazia(r)).length;
     document.getElementById('inc-count').textContent = n ? `${n} ${n === 1 ? 'obra preenchida' : 'obras preenchidas'}` : '';
     document.getElementById('inc-salvar').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Salvar na planilha${n ? ` (${n})` : ''}`;
   }
 
-  // Campos que mudam a estrutura da linha (mostram/escondem células) redesenham a tabela
-  const INC_ESTRUTURAIS = ['serie', 'status'];
+  // ===== Eventos =====
+  function incFecharMenus() {
+    document.querySelectorAll('.inc-dd.aberto').forEach(d => d.classList.remove('aberto', 'pra-cima'));
+  }
+
+  function incAplicarValor(i, campo, valor) {
+    const r = incLinhas()[i];
+    if (campo === 'serie') r.serie = valor === 'Sim';
+    else r[campo] = valor;
+    if (campo === 'status' && valor === 'Lido' && !r.dataFim) r.dataFim = incHoje();
+    if (campo === 'status' && valor !== 'Lido') r.nota = 0;
+    incGuardar();
+  }
 
   function incLigarEventos() {
     const tbody = document.getElementById('inc-tbody');
+
     tbody.querySelectorAll('[data-f]').forEach(el => {
-      const evento = (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'date') ? 'change' : 'input';
+      const evento = el.type === 'date' ? 'change' : 'input';
       el.addEventListener(evento, () => {
-        const i = Number(el.closest('tr').dataset.i);
-        const f = el.dataset.f;
-        let v = el.type === 'checkbox' ? el.checked : el.dataset.tipo === 'bool' ? el.value === '1' : el.value;
-        incLinhas[i][f] = v;
+        incLinhas()[Number(el.closest('tr').dataset.i)][el.dataset.f] = el.value;
         el.classList.remove('erro');
-        if (f === 'status' && v === 'Lido' && !incLinhas[i].dataFim) incLinhas[i].dataFim = incHoje();
-        if (f === 'status' && v !== 'Lido') incLinhas[i].nota = 0;
         incGuardar();
-        if (INC_ESTRUTURAIS.includes(f)) incRenderTabela(); else incAtualizarContador();
+        incAtualizarContador();
       });
     });
+
+    tbody.querySelectorAll('.inc-dd').forEach(dd => {
+      dd.querySelector('.inc-dd-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        const abrir = !dd.classList.contains('aberto');
+        incFecharMenus();
+        if (!abrir) return;
+        dd.classList.add('aberto');
+        const wrap = document.querySelector('.inc-table-wrap').getBoundingClientRect();
+        if (dd.querySelector('.inc-dd-menu').getBoundingClientRect().bottom > wrap.bottom) dd.classList.add('pra-cima');
+      });
+      dd.querySelectorAll('.inc-dd-menu button').forEach(op => {
+        op.addEventListener('click', e => {
+          e.stopPropagation();
+          incAplicarValor(Number(dd.closest('tr').dataset.i), dd.dataset.dd, op.dataset.v);
+          incRenderTabela();
+        });
+      });
+    });
+
     tbody.querySelectorAll('.inc-stars').forEach(el => {
       el.addEventListener('click', e => {
         const v = Number(e.target.dataset && e.target.dataset.v);
         if (!v) return;
-        const r = incLinhas[Number(el.dataset.i)];
+        const r = incLinhas()[Number(el.closest('tr').dataset.i)];
         r.nota = r.nota === v ? 0 : v;
         incGuardar();
         incRenderTabela();
       });
     });
+
     tbody.querySelectorAll('.inc-marca').forEach(btn => {
       btn.addEventListener('click', () => {
-        const r = incLinhas[Number(btn.closest('tr').dataset.i)];
-        const campo = btn.dataset.marca;
-        r[campo] = !r[campo];
-        btn.classList.toggle('on', r[campo]);
+        const r = incLinhas()[Number(btn.closest('tr').dataset.i)];
+        r[btn.dataset.marca] = !r[btn.dataset.marca];
+        btn.classList.toggle('on', r[btn.dataset.marca]);
         incGuardar();
       });
     });
+
     // Colar várias linhas (copiadas de uma planilha) a partir de qualquer célula de texto
     tbody.querySelectorAll('input.inc-in, textarea.inc-in').forEach(el => {
       el.addEventListener('paste', e => incColar(e, el));
     });
   }
 
-  // Ordem das colunas para colagem (igual à tabela)
-  const INC_COLS_COLAR = ['titulo', 'autor', 'fandom', 'serie', 'nomeSerie', 'volume', 'genero', 'orientacao', 'palavras', 'plot', 'status', 'dataFim', 'nota', 'favorita', 'abandonada', 'capaUrl'];
-
   function incColar(e, el) {
     const texto = (e.clipboardData || window.clipboardData).getData('text');
-    if (!texto || (texto.indexOf('\t') < 0 && texto.indexOf('\n') < 0)) return; // colagem simples: deixa o navegador fazer
+    if (!texto || (texto.indexOf('\t') < 0 && texto.indexOf('\n') < 0)) return; // colagem simples
     e.preventDefault();
+    const ordem = INC_ABAS[incAba].colar;
     const linhas = texto.replace(/\r/g, '').replace(/\n$/, '').split('\n').map(l => l.split('\t'));
     const i0 = Number(el.closest('tr').dataset.i);
-    const c0 = INC_COLS_COLAR.indexOf(el.dataset.f);
-    const simNao = v => ['sim', 's', 'x', 'true', '1', 'yes'].includes(v.trim().toLowerCase());
+    const c0 = ordem.indexOf(el.dataset.f);
+    const simNao = v => ['sim', 's', 'x', 'true', '1', 'yes', 'verdadeiro'].includes(v.trim().toLowerCase());
+    const dados = incLinhas();
     linhas.forEach((cels, k) => {
       const i = i0 + k;
-      if (!incLinhas[i]) incLinhas.push(incNovaLinha());
-      const r = incLinhas[i];
+      if (!dados[i]) dados.push(incNovaLinha());
+      const r = dados[i];
       cels.forEach((valor, j) => {
-        const campo = INC_COLS_COLAR[c0 + j];
+        const campo = ordem[c0 + j];
         if (!campo) return;
         valor = valor.trim();
         if (campo === 'serie' || campo === 'favorita' || campo === 'abandonada') r[campo] = simNao(valor);
         else if (campo === 'status') r.status = INC_STATUS.find(s => s.toLowerCase() === valor.toLowerCase()) || r.status;
-        else if (campo === 'palavras' || campo === 'volume') r[campo] = valor.replace(/[^\d]/g, '');
+        else if (campo === 'tipo') r.tipo = /livro/i.test(valor) ? 'Livro' : 'Ebook';
+        else if (['palavras', 'paginas', 'volume'].includes(campo)) r[campo] = valor.replace(/[^\d]/g, '');
         else if (campo === 'nota') r.nota = Math.max(0, Math.min(5, Math.round(Number(valor.replace(',', '.')) || 0)));
         else r[campo] = valor;
       });
+      if (r.nomeSerie && !r.serie) r.serie = true;
       if (r.status === 'Lido' && !r.dataFim) r.dataFim = incHoje();
     });
     incGuardar();
@@ -447,7 +451,7 @@
 
   // ===== Ações =====
   function incAddLinhas(n) {
-    for (let k = 0; k < n; k++) incLinhas.push(incNovaLinha());
+    for (let k = 0; k < n; k++) incLinhas().push(incNovaLinha());
     incGuardar();
     incRenderTabela();
     const wrap = document.querySelector('.inc-table-wrap');
@@ -455,16 +459,16 @@
   }
 
   function incRemover(i) {
-    incLinhas.splice(i, 1);
-    if (!incLinhas.length) incLinhas.push(incNovaLinha());
+    incLinhas().splice(i, 1);
+    if (!incLinhas().length) incLinhas().push(incNovaLinha());
     incGuardar();
     incRenderTabela();
   }
 
   function incLimpar() {
-    const n = incLinhas.filter(r => !incLinhaVazia(r)).length;
+    const n = incLinhas().filter(r => !incLinhaVazia(r)).length;
     if (n && !confirm(`Apagar as ${n} linhas preenchidas? Elas ainda não foram salvas na planilha.`)) return;
-    incLinhas = [incNovaLinha(), incNovaLinha(), incNovaLinha()];
+    incDados[incAba] = [incNovaLinha(), incNovaLinha(), incNovaLinha()];
     incGuardar();
     incRenderTabela();
   }
@@ -486,11 +490,9 @@
       const el = document.querySelector(`#inc-tbody tr[data-i="${i}"] [data-f="${f}"]`);
       if (el) el.classList.add('erro');
     };
-    incLinhas.forEach((r, i) => {
+    incLinhas().forEach((r, i) => {
       if (incLinhaVazia(r)) return;
-      if (!r.titulo.trim()) marcar(i, 'titulo');
-      if (!r.autor.trim()) marcar(i, 'autor');
-      if (!r.fandom.trim()) marcar(i, 'fandom');
+      INC_ABAS[incAba].obrigatorios.forEach(f => { if (!(r[f] || '').trim()) marcar(i, f); });
       if (r.serie && !r.nomeSerie.trim()) marcar(i, 'nomeSerie');
       if (r.serie && !String(r.volume).trim()) marcar(i, 'volume');
       if (r.status === 'Lido' && !r.dataFim) marcar(i, 'dataFim');
@@ -500,7 +502,8 @@
 
   function incSalvar() {
     if (incSalvando) return;
-    const preenchidas = incLinhas.map((r, i) => ({ r, i })).filter(x => !incLinhaVazia(x.r));
+    const aba = incAba;
+    const preenchidas = incLinhas().map((r, i) => ({ r, i })).filter(x => !incLinhaVazia(x.r));
     if (!preenchidas.length) { incToast('Nenhuma obra preenchida para salvar.', true); return; }
     if (!incValidar()) { incToast('Preencha os campos destacados em vermelho.', true); return; }
 
@@ -509,23 +512,24 @@
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
 
-    const payload = preenchidas.map(x => Object.assign({}, x.r, { palavras: Number(x.r.palavras) || 0 }));
+    const payload = preenchidas.map(x => Object.assign({}, x.r, {
+      palavras: Number(x.r.palavras) || 0,
+      paginas: Number(x.r.paginas) || 0
+    }));
     google.script.run
       .withSuccessHandler(raw => {
         const res = JSON.parse(raw);
         incSalvando = false;
         btn.disabled = false;
-        // Remove da tabela só as linhas salvas
         const salvas = new Set(preenchidas.map(x => x.i));
-        incLinhas = incLinhas.filter((r, i) => !salvas.has(i));
-        if (!incLinhas.length) incLinhas = [incNovaLinha(), incNovaLinha(), incNovaLinha()];
-        incGuardar();
+        incDados[aba] = incDados[aba].filter((r, i) => !salvas.has(i));
+        if (!incDados[aba].length) incDados[aba] = [incNovaLinha(aba), incNovaLinha(aba), incNovaLinha(aba)];
+        try { localStorage.setItem(INC_ABAS[aba].storage, JSON.stringify(incDados[aba])); } catch (e) {}
         incRenderTabela();
         const msg = `${res.salvas} ${res.salvas === 1 ? 'obra salva' : 'obras salvas'} na planilha ✓`;
         if (res.avisos && res.avisos.length) incToast(msg + ' — atenção: ' + res.avisos.join('; '), true);
         else incToast(msg);
-        // Recarrega os dados para atualizar as outras seções
-        google.script.run.withSuccessHandler(init).getHomeDataAPI();
+        google.script.run.withSuccessHandler(init).getHomeDataAPI(); // atualiza as outras seções
       })
       .withFailureHandler(err => {
         incSalvando = false;
@@ -533,6 +537,6 @@
         incAtualizarContador();
         incToast('Não foi possível salvar: ' + (err && err.message ? err.message : err), true);
       })
-      .saveFanficsBatchAPI(JSON.stringify(payload));
+      .saveObrasBatchAPI(JSON.stringify(payload));
   }
 </script>
