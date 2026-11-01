@@ -29,26 +29,26 @@
     </div>
     <div class="inc-table-wrap">
       <table class="inc-table">
+        <colgroup>
+          <col style="width: 30px"><col><col style="width: 9%"><col style="width: 8%">
+          <col style="width: 8.5%"><col style="width: 7.5%"><col style="width: 7%"><col style="width: 5.5%">
+          <col style="width: 12%"><col style="width: 9.5%"><col style="width: 56px"><col style="width: 7.5%"><col style="width: 32px">
+        </colgroup>
         <thead>
           <tr>
-            <th class="c-num">#</th>
-            <th class="c-titulo">Título *</th>
-            <th class="c-autor">Autor *</th>
-            <th class="c-fandom">Fandom *</th>
-            <th class="c-serie">Série?</th>
-            <th class="c-nomeserie">Nome da série</th>
-            <th class="c-vol">Vol.</th>
-            <th class="c-genero">Gênero</th>
-            <th class="c-orient">Orientação</th>
-            <th class="c-palavras">Palavras</th>
-            <th class="c-plot">Plot</th>
-            <th class="c-status">Status</th>
-            <th class="c-data">Data fim</th>
-            <th class="c-nota">Nota</th>
-            <th class="c-check" title="Favorita"><i class="fa-solid fa-heart" style="color:#e0607e"></i></th>
-            <th class="c-check" title="Abandonada"><i class="fa-solid fa-ban" style="color:#C9675C"></i></th>
-            <th class="c-capa">Link da capa</th>
-            <th class="c-del"></th>
+            <th>#</th>
+            <th class="th-left">Título *</th>
+            <th>Autor *</th>
+            <th>Fandom *</th>
+            <th>Série</th>
+            <th>Gênero</th>
+            <th>Orientação</th>
+            <th>Palavras</th>
+            <th>Plot</th>
+            <th>Status</th>
+            <th title="Favorita / Abandonada"><i class="fa-solid fa-heart" style="color:#e0607e"></i> <i class="fa-solid fa-ban" style="color:#C9675C"></i></th>
+            <th>Link da capa</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="inc-tbody"></tbody>
@@ -147,7 +147,9 @@
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(155, 125, 97, 0.05);
   }
-  .inc-table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 12px; }
+  .inc-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1100px; table-layout: fixed; font-size: 12px; }
+  .inc-table th.th-left { text-align: left; padding-left: 10px; }
+  .inc-table td.c-num, .inc-table td.c-del { vertical-align: middle; }
   .inc-table th {
     position: sticky;
     top: 0;
@@ -164,26 +166,32 @@
   }
   .inc-table td {
     border-bottom: 1px solid var(--hover-bege);
-    padding: 4px;
-    vertical-align: middle;
+    padding: 4px 3px;
+    vertical-align: top;
     text-align: center;
     background: var(--bg-cards);
   }
   .inc-table tr.inc-lido td { background: #f4f8f6; }
   .inc-table tr:hover td { background: var(--bg-creme); }
 
-  /* Larguras */
-  .c-num { width: 34px; color: var(--texto-secundario); font-weight: 600; }
-  .c-titulo { width: 210px; } .c-autor { width: 140px; } .c-fandom { width: 120px; }
-  .c-serie { width: 72px; } .c-nomeserie { width: 150px; } .c-vol { width: 60px; }
-  .c-genero { width: 115px; } .c-orient { width: 105px; } .c-palavras { width: 90px; } .c-plot { width: 220px; }
-  .c-status { width: 105px; } .c-data { width: 130px; } .c-nota { width: 110px; }
-  .c-check { width: 40px; } .c-capa { width: 170px; } .c-del { width: 36px; }
+  .c-num { color: var(--texto-secundario); font-weight: 600; }
 
-  /* Colunas # e Título congeladas à esquerda */
-  .inc-table th:nth-child(1), .inc-table td:nth-child(1) { position: sticky; left: 0; z-index: 1; min-width: 34px; }
-  .inc-table th:nth-child(2), .inc-table td:nth-child(2) { position: sticky; left: 34px; z-index: 1; min-width: 210px; box-shadow: 4px 0 6px -4px rgba(90, 71, 54, 0.15); }
-  .inc-table th:nth-child(1), .inc-table th:nth-child(2) { z-index: 3; }
+  /* Campos que aparecem só quando necessários (dentro da célula) */
+  .inc-sub { display: flex; flex-direction: column; gap: 3px; margin-top: 3px; }
+  .inc-sub-linha { display: flex; gap: 3px; align-items: center; }
+  .inc-sub .inc-in { background: var(--bg-creme); font-size: 11.5px; padding: 4px 6px; }
+  .inc-sub .inc-in.vol { width: 52px; flex-shrink: 0; }
+  .inc-sub-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: var(--texto-secundario); letter-spacing: 0.4px; }
+
+  /* Favorita / Abandonada como ícones */
+  .inc-marcas { display: flex; justify-content: center; gap: 8px; }
+  .inc-marca {
+    border: none; background: none; padding: 2px; cursor: pointer;
+    font-size: 14px; color: var(--borda-bege); transition: transform 0.1s, color 0.15s;
+  }
+  .inc-marca:hover { transform: scale(1.15); }
+  .inc-marca.fav.on { color: #e0607e; }
+  .inc-marca.aband.on { color: #C9675C; }
 
   .inc-in {
     width: 100%;
@@ -197,7 +205,7 @@
     outline: none;
   }
   .inc-in:focus { background: #fff; box-shadow: 0 0 0 2px rgba(218, 163, 143, 0.45); }
-  .inc-in.num { text-align: center; }
+  .inc-in.num, .inc-in[data-f="autor"], .inc-in[data-f="fandom"] { text-align: center; }
   select.inc-in { cursor: pointer; text-align: center; }
   textarea.inc-in { resize: none; height: 30px; line-height: 1.4; display: block; }
   textarea.inc-in:focus { height: 90px; position: relative; z-index: 3; box-shadow: 0 4px 14px rgba(90, 71, 54, 0.15), 0 0 0 2px rgba(218, 163, 143, 0.45); }
@@ -205,7 +213,7 @@
   .inc-in:disabled { opacity: 0.35; }
   .inc-vazio { color: var(--borda-bege); }
 
-  .inc-stars { display: flex; justify-content: center; gap: 3px; font-size: 14px; color: #E2A03F; cursor: pointer; }
+  .inc-stars { display: flex; justify-content: center; gap: 3px; font-size: 13px; color: #E2A03F; cursor: pointer; padding: 2px 0; }
   .inc-stars i:hover { transform: scale(1.15); }
   .inc-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--cor-fanfic); }
   .inc-del {
@@ -311,9 +319,15 @@
               <option value="0"${r.serie ? '' : ' selected'}>Não</option>
               <option value="1"${r.serie ? ' selected' : ''}>Sim</option>
             </select>
+            ${r.serie ? `
+              <div class="inc-sub">
+                <input class="inc-in" data-f="nomeSerie" value="${incEsc(r.nomeSerie)}" list="inc-dl-series" placeholder="Nome da série">
+                <div class="inc-sub-linha">
+                  <span class="inc-sub-label">Vol.</span>
+                  <input class="inc-in num vol" data-f="volume" type="number" min="1" value="${incEsc(r.volume)}">
+                </div>
+              </div>` : ''}
           </td>
-          <td>${r.serie ? `<input class="inc-in" data-f="nomeSerie" value="${incEsc(r.nomeSerie)}" list="inc-dl-series" placeholder="Nome da série">` : '<span class="inc-vazio">—</span>'}</td>
-          <td>${r.serie ? `<input class="inc-in num" data-f="volume" type="number" min="1" value="${incEsc(r.volume)}">` : '<span class="inc-vazio">—</span>'}</td>
           <td>
             <select class="inc-in" data-f="genero">
               ${gens.map(g => `<option value="${incEsc(g)}"${g === r.genero ? ' selected' : ''}>${incEsc(g)}</option>`).join('')}
@@ -328,15 +342,22 @@
           <td><textarea class="inc-in" data-f="plot" placeholder="Plot">${incEsc(r.plot)}</textarea></td>
           <td>
             <select class="inc-in ${r.status === 'Lido' ? 'inc-status-lido' : r.status === 'Lendo' ? 'inc-status-lendo' : ''}" data-f="status">
-              ${INC_STATUS.map(s => `<option value="${s}"${s === r.status ? ' selected' : ''}>${s}</option>`).join('')}
+              ${INC_STATUS.map(st => `<option value="${st}"${st === r.status ? ' selected' : ''}>${st}</option>`).join('')}
             </select>
+            ${lido ? `
+              <div class="inc-sub">
+                <input class="inc-in num" data-f="dataFim" type="date" value="${incEsc(r.dataFim)}" title="Data em que terminou">
+                <div class="inc-stars" data-i="${i}" title="Nota (clique na mesma estrela para limpar)">${stars}</div>
+              </div>` : ''}
           </td>
-          <td>${lido ? `<input class="inc-in num" data-f="dataFim" type="date" value="${incEsc(r.dataFim)}">` : '<span class="inc-vazio">—</span>'}</td>
-          <td>${lido ? `<div class="inc-stars" data-i="${i}" title="Clique na mesma estrela para limpar">${stars}</div>` : '<span class="inc-vazio">—</span>'}</td>
-          <td><input type="checkbox" class="inc-check" data-f="favorita"${r.favorita ? ' checked' : ''}></td>
-          <td><input type="checkbox" class="inc-check" data-f="abandonada"${r.abandonada ? ' checked' : ''}></td>
+          <td>
+            <div class="inc-marcas">
+              <button type="button" class="inc-marca fav${r.favorita ? ' on' : ''}" data-marca="favorita" title="Favorita"><i class="fa-solid fa-heart"></i></button>
+              <button type="button" class="inc-marca aband${r.abandonada ? ' on' : ''}" data-marca="abandonada" title="Abandonada"><i class="fa-solid fa-ban"></i></button>
+            </div>
+          </td>
           <td><input class="inc-in" data-f="capaUrl" type="url" value="${incEsc(r.capaUrl)}" placeholder="https://..."></td>
-          <td><button type="button" class="inc-del" title="Remover linha" onclick="incRemover(${i})"><i class="fa-solid fa-xmark"></i></button></td>
+          <td class="c-del"><button type="button" class="inc-del" title="Remover linha" onclick="incRemover(${i})"><i class="fa-solid fa-xmark"></i></button></td>
         </tr>`;
     }).join('');
     incAtualizarContador();
@@ -376,6 +397,15 @@
         r.nota = r.nota === v ? 0 : v;
         incGuardar();
         incRenderTabela();
+      });
+    });
+    tbody.querySelectorAll('.inc-marca').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const r = incLinhas[Number(btn.closest('tr').dataset.i)];
+        const campo = btn.dataset.marca;
+        r[campo] = !r[campo];
+        btn.classList.toggle('on', r[campo]);
+        incGuardar();
       });
     });
     // Colar várias linhas (copiadas de uma planilha) a partir de qualquer célula de texto
