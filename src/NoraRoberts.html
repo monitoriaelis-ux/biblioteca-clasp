@@ -11,7 +11,7 @@
     </div>
     <div class="nr-chart-card">
       <div class="nr-chart-head">
-        <span class="nr-chart-title">Obras por década de lançamento</span>
+        <span class="nr-chart-title">Por década de lançamento</span>
         <span class="nr-legend">
           <span><i class="nr-leg-line" style="background:#6E4C8C"></i>Lançadas</span>
           <span><i class="nr-leg-line" style="background:#D46A84"></i>Lidas</span>
@@ -67,8 +67,8 @@
   .nr-layout { height: 100%; display: flex; flex-direction: column; gap: 12px; }
 
   /* ===== Topo ===== */
-  .nr-top { flex-shrink: 0; display: flex; gap: 12px; height: 100px; }
-  .nr-kpis { display: grid; grid-template-columns: repeat(2, 104px); grid-template-rows: repeat(2, 1fr); gap: 6px; }
+  .nr-top { flex-shrink: 0; display: flex; gap: 12px; height: 78px; }
+  .nr-kpis { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
   .nr-kpi {
     background: var(--bg-cards); border-radius: 10px; box-shadow: 0 3px 8px rgba(155, 125, 97, 0.04);
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; text-align: center; padding: 2px 4px;
@@ -76,19 +76,19 @@
   .nr-kpi-lidas { background: #e3ece8; }
   .nr-kpi-tenho { background: #f3ece1; }
   .nr-kpi-nota { background: #fff9c4; }
-  .nr-kpi-label { font-size: 8.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texto-secundario); }
-  .nr-kpi-valor { font-size: 14px; font-weight: 700; color: var(--texto-marrom); line-height: 1.15; }
+  .nr-kpi-label { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texto-secundario); white-space: nowrap; }
+  .nr-kpi-valor { font-size: 17px; font-weight: 700; color: var(--texto-marrom); line-height: 1.2; white-space: nowrap; }
   .nr-kpi-sub { display: none; }
 
   .nr-chart-card {
-    flex: 1; min-width: 0; position: relative; background: var(--bg-cards); border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(155, 125, 97, 0.04); padding: 8px 14px 4px; display: flex; flex-direction: column;
+    flex: 0 0 50%; min-width: 0; position: relative; background: var(--bg-cards); border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(155, 125, 97, 0.04); padding: 6px 12px 2px; display: flex; flex-direction: column;
   }
   .nr-chart-head { display: flex; justify-content: space-between; align-items: center; }
-  .nr-chart-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--texto-marrom); }
-  .nr-legend { display: flex; gap: 14px; font-size: 11px; font-weight: 600; color: var(--texto-secundario); }
+  .nr-chart-title { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texto-secundario); }
+  .nr-legend { display: flex; gap: 10px; font-size: 9.5px; font-weight: 600; color: var(--texto-secundario); }
   .nr-legend span { display: flex; align-items: center; gap: 6px; }
-  .nr-leg-line { display: inline-block; width: 16px; height: 3px; border-radius: 2px; }
+  .nr-leg-line { display: inline-block; width: 12px; height: 2px; border-radius: 2px; }
   .nr-chart { flex: 1; min-height: 0; }
   .nr-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
   .nr-tooltip {
@@ -295,7 +295,7 @@
     const xs = Object.keys(porDecada).map(Number).sort((a, b) => a - b);
 
     const W = el.clientWidth || 600, H = el.clientHeight || 90;
-    const pad = { l: 26, r: 46, t: 8, b: 18 };
+    const pad = { l: 8, r: 8, t: 5, b: 13 };
     const max = Math.max(1, ...xs.map(d => porDecada[d].lancadas));
     const passo = Math.pow(10, Math.floor(Math.log10(max)));
     const topo = Math.ceil(max / passo) * passo;
@@ -306,21 +306,14 @@
 
     let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Obras lançadas e lidas por década">`;
     ticks.forEach(t => {
-      svg += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(t)}" y2="${y(t)}" stroke="#EFE6DA" stroke-width="1"/>`;
-      svg += `<text x="${pad.l - 6}" y="${y(t) + 3}" text-anchor="end" font-size="9" fill="#9B7D61">${Math.round(t)}</text>`;
+      svg += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(t)}" y2="${y(t)}" stroke="#F3ECE1" stroke-width="1"/>`;
     });
-    xs.forEach((d, i) => { svg += `<text x="${x(i)}" y="${H - 4}" text-anchor="middle" font-size="9.5" fill="#9B7D61">${String(d).slice(2)}s</text>`; });
+    xs.forEach((d, i) => { svg += `<text x="${x(i)}" y="${H - 4}" text-anchor="middle" font-size="8" fill="#B8A089">${String(d).slice(2)}s</text>`; });
     svg += `<line id="nr-cross" x1="0" x2="0" y1="${pad.t}" y2="${H - pad.b}" stroke="#D9C8B4" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>`;
     [['lancadas', NR_COR_LANCADAS], ['lidas', NR_COR_LIDAS]].forEach(([k, cor]) => {
-      svg += `<path d="${linha(k)}" fill="none" stroke="${cor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-      xs.forEach((d, i) => { svg += `<circle cx="${x(i)}" cy="${y(porDecada[d][k])}" r="4" fill="${cor}" stroke="#fff" stroke-width="2"/>`; });
+      svg += `<path d="${linha(k)}" fill="none" stroke="${cor}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;
+      xs.forEach((d, i) => { svg += `<circle cx="${x(i)}" cy="${y(porDecada[d][k])}" r="2.5" fill="${cor}" stroke="#fff" stroke-width="1.5"/>`; });
     });
-    // rótulo direto no fim de cada linha
-    const ult = xs.length - 1, dU = xs[ult];
-    const yL = y(porDecada[dU].lancadas), yR = y(porDecada[dU].lidas);
-    const sep = Math.abs(yL - yR) < 11 ? (yL <= yR ? [-5, 6] : [6, -5]) : [0, 0];
-    svg += `<text x="${x(ult) + 8}" y="${yL + 3 + sep[0]}" font-size="10" font-weight="600" fill="#5A4736">${porDecada[dU].lancadas}</text>`;
-    svg += `<text x="${x(ult) + 8}" y="${yR + 3 + sep[1]}" font-size="10" font-weight="600" fill="#5A4736">${porDecada[dU].lidas}</text>`;
     // áreas de hover por década (maiores que os pontos)
     const larg = xs.length > 1 ? (W - pad.l - pad.r) / (xs.length - 1) : W;
     xs.forEach((d, i) => { svg += `<rect data-i="${i}" x="${x(i) - larg / 2}" y="0" width="${larg}" height="${H}" fill="transparent"/>`; });
@@ -339,7 +332,7 @@
         const card = el.parentElement.getBoundingClientRect(), svgBox = el.getBoundingClientRect();
         const px = svgBox.left - card.left + x(i) * (svgBox.width / W);
         tip.style.left = Math.min(Math.max(px - 60, 4), card.width - 130) + 'px';
-        tip.style.top = '26px';
+        tip.style.top = '18px';
         tip.classList.add('show');
       });
       r.addEventListener('mouseleave', () => { tip.classList.remove('show'); cross.setAttribute('opacity', 0); });
