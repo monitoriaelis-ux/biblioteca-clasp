@@ -435,6 +435,7 @@
   .fanfic-sort-btn i { margin-right: 4px; }
   .fanfic-sort-btn:hover { color: var(--texto-marrom); background: var(--hover-bege); }
   .fanfic-sort-btn.active { background: var(--cor-fanfic); color: #fff; }
+  .fanfic-sort-btn:disabled { opacity: 0.45; cursor: default; background: var(--bg-cards); color: var(--texto-secundario); }
 
   .fanfic-list-scroll {
     flex: 1;
@@ -867,14 +868,16 @@
       });
     });
 
-    // 1º clique ativa; cliques seguintes invertem a direção
+    // 1º clique ativa; 2º inverte; 3º remove
     document.getElementById('sort-alfa').addEventListener('click', () => toggleOrdem('alfa', true));
     document.getElementById('sort-palavras').addEventListener('click', () => toggleOrdem('palavras', false));
   }
 
+  // 1º clique ativa, 2º inverte a direção, 3º remove a ordenação (volta à ordem da planilha)
   function toggleOrdem(tipo, ascPadrao) {
-    if (fanficOrdem === tipo) fanficOrdemAsc = !fanficOrdemAsc;
-    else { fanficOrdem = tipo; fanficOrdemAsc = ascPadrao; }
+    if (fanficOrdem !== tipo) { fanficOrdem = tipo; fanficOrdemAsc = ascPadrao; }
+    else if (fanficOrdemAsc === ascPadrao) fanficOrdemAsc = !ascPadrao;
+    else fanficOrdem = null;
     renderFanficsConteudo();
   }
 
@@ -1005,12 +1008,14 @@
         fanficSemAcento(serieDaObra(f)).includes(termo));
     }
 
-    if (fanficOrdem === 'alfa') {
+    if (fanficSerie) {
+      // série selecionada: sempre em ordem de volume, ignora a ordenação
+    } else if (fanficOrdem === 'alfa') {
       list = list.slice().sort((a, b) => (a['Título'] || '').toString().localeCompare((b['Título'] || '').toString(), 'pt-BR', { sensitivity: 'base' }));
     } else if (fanficOrdem === 'palavras') {
       list = list.slice().sort((a, b) => fanficNum(a['Palavras']) - fanficNum(b['Palavras']));
     }
-    if (fanficOrdem && !fanficOrdemAsc) list.reverse();
+    if (!fanficSerie && fanficOrdem && !fanficOrdemAsc) list.reverse();
     // Séries sempre juntas e em ordem de volume (exceto ao ordenar por palavras)
     if (!fanficSerie && fanficOrdem !== 'palavras') list = agruparSeries(list);
 
@@ -1022,7 +1027,14 @@
     btnAlfa.querySelector('span').textContent = (fanficOrdem === 'alfa' && !fanficOrdemAsc) ? 'Z-A' : 'A-Z';
     btnAlfa.querySelector('i').className = (fanficOrdem === 'alfa' && !fanficOrdemAsc) ? 'fa-solid fa-arrow-up-z-a' : 'fa-solid fa-arrow-down-a-z';
     btnPal.querySelector('i').className = (fanficOrdem === 'palavras' && fanficOrdemAsc) ? 'fa-solid fa-arrow-up-short-wide' : 'fa-solid fa-arrow-down-wide-short';
-    btnPal.title = (fanficOrdem === 'palavras' && fanficOrdemAsc) ? 'Menos palavras primeiro' : 'Mais palavras primeiro';
+    btnAlfa.title = fanficOrdem !== 'alfa' ? 'Ordenar de A a Z'
+      : fanficOrdemAsc ? 'A-Z (clique para Z-A)' : 'Z-A (clique para remover a ordenação)';
+    btnPal.title = fanficOrdem !== 'palavras' ? 'Mais palavras primeiro'
+      : !fanficOrdemAsc ? 'Mais palavras primeiro (clique para inverter)' : 'Menos palavras primeiro (clique para remover a ordenação)';
+    // Na série a ordem é fixa por volume: botões ficam apagados
+    btnAlfa.classList.toggle('active', !fanficSerie && fanficOrdem === 'alfa');
+    btnPal.classList.toggle('active', !fanficSerie && fanficOrdem === 'palavras');
+    btnAlfa.disabled = btnPal.disabled = !!fanficSerie;
 
     const grid = document.getElementById('fanfic-cards-grid');
     if (list.length === 0) {
