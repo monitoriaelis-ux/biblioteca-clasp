@@ -86,7 +86,7 @@ function saveNewBookAPI(JSONPayload) {
 }
 
 // Atualiza campos de uma obra já cadastrada (Status, Nota, Data final).
-// payload: { row, titulo, autor, campos: { Status?, Nota? }, preencherDataFinal? }
+// payload: { row, titulo, autor, campos: { Status?, Nota?, Releituras? }, marcarLeitura? }
 function updateObraAPI(JSONPayload) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -145,20 +145,32 @@ function updateObraAPI(JSONPayload) {
       sheet.getRange(row, c + 1).setValue(valor);
     });
 
-    // Ao marcar como lido, preenche "Data final" com hoje se estiver vazia
-    let dataFinal = null;
-    const colData = col("Data final");
-    if (p.preencherDataFinal && colData >= 0) {
-      const cell = sheet.getRange(row, colData + 1);
-      if (cell.getValue() === "") {
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        cell.setValue(hoje);
-        dataFinal = hoje.toISOString();
+    // Ao marcar como lido: grava a data de hoje em "Data final" e o ano em "Ano da leitura"
+    const resultado = { success: true, row: row, avisos: [] };
+    if (p.marcarLeitura) {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      const colData = col("Data final");
+      if (colData >= 0) {
+        sheet.getRange(row, colData + 1).setValue(hoje);
+        resultado.dataFinal = hoje.toISOString();
+      } else {
+        resultado.avisos.push("coluna 'Data final' não encontrada");
+      }
+
+      const nomesAno = ["ano da leitura", "ano de leitura", "ano leitura", "ano"];
+      const colAno = headers.findIndex(h => nomesAno.indexOf(norm(h)) >= 0);
+      if (colAno >= 0) {
+        sheet.getRange(row, colAno + 1).setValue(hoje.getFullYear());
+        resultado.ano = hoje.getFullYear();
+        resultado.colunaAno = headers[colAno];
+      } else {
+        resultado.avisos.push("coluna 'Ano da leitura' não encontrada");
       }
     }
 
-    return JSON.stringify({ success: true, row: row, dataFinal: dataFinal });
+    return JSON.stringify(resultado);
   } finally {
     lock.releaseLock();
   }

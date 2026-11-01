@@ -452,7 +452,7 @@
   }
   .obra-row {
     display: grid;
-    grid-template-columns: 14px 40px minmax(0, 1fr) 90px 130px 150px 110px;
+    grid-template-columns: 22px 40px minmax(0, 1fr) 90px 130px 150px 110px;
     align-items: center;
     gap: 14px;
   }
@@ -461,7 +461,7 @@
     top: 0;
     z-index: 5;
     background: var(--bg-creme);
-    padding: 0 16px 6px 9px;
+    padding: 0 16px 6px 5px;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
@@ -474,7 +474,7 @@
     --status-cor: var(--borda-bege);
     background: var(--bg-cards);
     border-radius: 10px;
-    padding: 0 16px 0 4px;
+    padding: 0 16px 0 0;
     box-shadow: 0 3px 10px rgba(155, 125, 97, 0.05);
     border-left: 5px solid var(--status-cor);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -486,7 +486,8 @@
     border: none;
     background: none;
     padding: 0;
-    width: 14px;
+    width: 22px;
+    height: 72px;
     justify-self: start;
     color: var(--texto-secundario);
     cursor: pointer;
@@ -494,7 +495,7 @@
     transition: transform 0.2s, color 0.2s;
   }
   .obra-expand:hover { color: var(--texto-marrom); }
-  .obra-card.aberta .obra-expand { transform: rotate(90deg); }
+  .obra-card.aberta .obra-expand { transform: rotate(180deg); }
   .obra-plot {
     display: none;
     font-size: 12.5px;
@@ -566,6 +567,7 @@
     text-overflow: ellipsis;
   }
 
+  .status-dd { position: relative; }
   .obra-status {
     font-family: 'Poppins', sans-serif;
     font-size: 11.5px;
@@ -574,13 +576,53 @@
     background: var(--bg-creme);
     border: none;
     border-radius: 8px;
-    padding: 5px 8px;
+    padding: 5px 10px;
     width: 104px;
-    text-align: center;
     cursor: pointer;
-    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
-  .obra-status:focus { box-shadow: 0 0 0 2px var(--hover-bege); }
+  .obra-status i { font-size: 9px; color: var(--texto-secundario); transition: transform 0.2s; }
+  .status-dd.aberto .obra-status i { transform: rotate(180deg); }
+  .obra-status:hover { background: var(--hover-bege); }
+  .status-dd-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    min-width: 120px;
+    background: var(--bg-cards);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(90, 71, 54, 0.18);
+    padding: 4px;
+  }
+  .status-dd.aberto .status-dd-menu { display: block; }
+  .status-dd.pra-cima .status-dd-menu { top: auto; bottom: calc(100% + 4px); }
+  .status-dd-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    border: none;
+    background: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texto-marrom);
+    padding: 7px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .status-dd-menu button:hover { background: var(--hover-bege); }
+  .status-dd-menu button.atual { background: var(--bg-creme); }
+  .status-dd-menu .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
 
   .obra-nota { display: flex; justify-content: center; gap: 3px; font-size: 15px; color: #E2A03F; }
   .obra-nota i { transition: transform 0.1s; }
@@ -998,6 +1040,11 @@
   // ===== Linha de obra =====
   const STATUS_OPCOES = ['Lido', 'Lendo', 'Quero ler'];
 
+  function corStatus(status) {
+    const st = fanficNorm(status);
+    return st === 'lido' ? 'var(--cor-livro)' : st === 'lendo' ? '#F2D45C' : st === 'quero ler' ? 'var(--cor-fanfic)' : 'var(--borda-bege)';
+  }
+
   function statusClasse(status) {
     const st = fanficNorm(status);
     return st === 'lido' ? 'st-lido' : st === 'lendo' ? 'st-lendo' : st === 'quero ler' ? 'st-quero' : '';
@@ -1057,7 +1104,7 @@
     return `
       <div class="obra-card ${statusClasse(statusAtual)}${obraAberta === idx ? ' aberta' : ''}${obs.abandonada ? ' abandonada' : ''}" data-idx="${idx}">
       <div class="obra-row">
-        ${plot ? `<button type="button" class="obra-expand" onclick="toggleObra(${idx})" title="Ver plot"><i class="fa-solid fa-chevron-right"></i></button>` : '<span></span>'}
+        ${plot ? `<button type="button" class="obra-expand" onclick="toggleObra(${idx})" title="Ver plot"><i class="fa-solid fa-chevron-down"></i></button>` : '<span></span>'}
         ${capa}
         <div class="obra-titulo-bloco">
           <div class="obra-titulo-linha">
@@ -1086,10 +1133,16 @@
               </div>
             </div>
           </div>` : `
-          <select class="obra-status" onchange="alterarStatusObra(${idx}, this.value)">
-            ${statusAtual ? '' : '<option value="" selected disabled>Selecione</option>'}
-            ${opcoes.map(o => `<option value="${fanficEsc(o)}"${fanficNorm(o) === fanficNorm(statusAtual) ? ' selected' : ''}>${fanficEsc(o)}</option>`).join('')}
-          </select>`}
+          <div class="status-dd${statusDDAberto === idx ? ' aberto' : ''}" id="status-dd-${idx}">
+            <button type="button" class="obra-status" onclick="toggleStatusDD(${idx}, event)">
+              ${fanficEsc(statusAtual || 'Selecione')} <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="status-dd-menu" onclick="event.stopPropagation()">
+              ${opcoes.map(o => `<button type="button" class="${fanficNorm(o) === fanficNorm(statusAtual) ? 'atual' : ''}"
+                  onclick="escolherStatus(${idx}, '${fanficEsc(o).replace(/'/g, "\\'")}')">
+                  <span class="dot" style="background:${corStatus(o)}"></span>${fanficEsc(o)}</button>`).join('')}
+            </div>
+          </div>`}
         </div>
         <div class="obra-cel"><div class="obra-nota ${lida ? 'editavel' : 'bloqueada'}"
              title="${lida ? 'Clique para dar a nota (clique na mesma estrela para limpar)' : 'Marque como Lido para avaliar'}"
@@ -1132,8 +1185,10 @@
         const r = JSON.parse(raw);
         if (r.row) f._row = r.row;
         if (r.dataFinal) f['Data final'] = r.dataFinal;
+        if (r.ano && r.colunaAno) f[r.colunaAno] = r.ano;
         atualizarTelasAposEdicao();
-        fanficToast('Salvo na planilha ✓');
+        if (r.avisos && r.avisos.length) fanficToast('Salvo, mas: ' + r.avisos.join('; '), true);
+        else fanficToast('Salvo na planilha ✓');
       })
       .withFailureHandler(err => {
         Object.assign(f, anterior); // desfaz na tela
@@ -1153,14 +1208,39 @@
     const anterior = { Status: f['Status'] };
     f['Status'] = novoStatus;
     const virouLido = fanficNorm(novoStatus) === 'lido';
-    salvarObra(idx, { Status: novoStatus }, anterior, { preencherDataFinal: virouLido });
+    salvarObra(idx, { Status: novoStatus }, anterior, { marcarLeitura: virouLido });
   }
 
   // ===== Releituras =====
   let relidaPopAberto = null; // índice da obra com o seletor aberto (sobrevive ao redesenho)
 
+  let statusDDAberto = null;
+
+  function toggleStatusDD(idx, ev) {
+    ev.stopPropagation();
+    const dd = document.getElementById('status-dd-' + idx);
+    const abrir = !dd.classList.contains('aberto');
+    fecharRelidaPops();
+    if (abrir) {
+      dd.classList.add('aberto');
+      statusDDAberto = idx;
+      // Abre para cima se não houver espaço abaixo dentro da lista
+      const lista = document.querySelector('.fanfic-list-scroll').getBoundingClientRect();
+      const menu = dd.querySelector('.status-dd-menu');
+      dd.classList.remove('pra-cima');
+      if (menu.getBoundingClientRect().bottom > lista.bottom) dd.classList.add('pra-cima');
+    }
+  }
+
+  function escolherStatus(idx, valor) {
+    fecharRelidaPops();
+    alterarStatusObra(idx, valor);
+  }
+
   function fecharRelidaPops() {
     relidaPopAberto = null;
+    statusDDAberto = null;
+    document.querySelectorAll('.status-dd.aberto').forEach(d => d.classList.remove('aberto'));
     document.querySelectorAll('.obra-relida-pop.aberto').forEach(p => p.classList.remove('aberto'));
   }
   document.addEventListener('click', fecharRelidaPops);
