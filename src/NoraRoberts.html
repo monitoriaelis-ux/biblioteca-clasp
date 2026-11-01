@@ -43,8 +43,8 @@
         <button type="button" id="nr-chip-x" title="Remover filtro"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="fanfic-seg" id="nr-modo" hidden>
-        <button type="button" class="fanfic-seg-btn active" data-nr-modo="lista" title="Lista de obras"><i class="fa-solid fa-list"></i> Lista</button>
-        <button type="button" class="fanfic-seg-btn" data-nr-modo="cards" title="Um card por série"><i class="fa-solid fa-layer-group"></i> Por série</button>
+        <button type="button" class="fanfic-seg-btn" data-nr-modo="lista" title="Lista de obras"><i class="fa-solid fa-list"></i> Lista</button>
+        <button type="button" class="fanfic-seg-btn active" data-nr-modo="cards" title="Um card por série"><i class="fa-solid fa-layer-group"></i> Por série</button>
       </div>
       <div class="fanfic-seg">
         <button type="button" class="fanfic-seg-btn active" data-nr-leitura="todas">Todas</button>
@@ -127,6 +127,7 @@
 
   .nr-sidebar { width: 220px; }
   #nr-modo[hidden] { display: none; }
+  #nr-modo .fanfic-seg-btn.active { background: #6f948a; color: #fff; }
   .fanfic-seg-btn i { margin-right: 4px; }
 
   /* Modo "Por série": um card por série, expansível */
@@ -177,7 +178,7 @@
   let nrDivisao = null;                 // null = todas
   const nrF = { busca: '', leitura: 'todas', ordem: null, asc: true, serie: null, obs: null };
   let nrStatusAberto = null, nrAberta = null;
-  let nrModo = 'lista';                 // 'lista' | 'cards' (só na divisão Séries)
+  let nrModo = 'cards';                 // 'cards' (padrão) | 'lista' — só na divisão Séries
   const nrSeriesAbertas = new Set();
 
   // ===== Utilidades =====
