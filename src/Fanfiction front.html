@@ -96,16 +96,16 @@
     letter-spacing: 1px;
     color: var(--texto-secundario);
     background: var(--bg-cards);
-    border: 2px solid transparent;
+    border: none;
     border-radius: 12px;
-    padding: 8px 12px;
+    padding: 10px 12px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
-    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    transition: color 0.2s, background 0.2s;
   }
   .fandom-todos-btn i { margin-right: 6px; }
-  .fandom-todos-btn:hover { border-color: var(--borda-bege); color: var(--texto-marrom); }
-  .fandom-todos-btn.selected { background: var(--cor-fanfic); color: #fff; border-color: var(--cor-fanfic); }
+  .fandom-todos-btn:hover { background: var(--hover-bege); color: var(--texto-marrom); }
+  .fandom-todos-btn.selected { background: var(--cor-fanfic); color: #fff; }
 
   .fandom-cards-list {
     flex: 1;
@@ -122,17 +122,16 @@
     border-radius: 12px;
     padding: 8px 12px;
     box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03);
-    border: 2px solid transparent;
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 6px;
     cursor: pointer;
-    transition: border-color 0.2s, opacity 0.2s, transform 0.2s;
+    transition: background 0.2s, box-shadow 0.2s, opacity 0.2s, transform 0.2s;
     user-select: none;
   }
-  .fandom-card:hover { transform: translateX(2px); border-color: var(--borda-bege); }
-  .fandom-card.selected { border-color: var(--cor-fanfic); }
+  .fandom-card:hover { transform: translateX(2px); box-shadow: 0 4px 14px rgba(155, 125, 97, 0.12); }
+  .fandom-card.selected { background: #fbeee8; box-shadow: 0 4px 14px rgba(218, 163, 143, 0.3); }
   .fandom-cards-list.has-selection .fandom-card:not(.selected) { opacity: 0.55; }
 
   .fandom-card-top {
@@ -335,10 +334,10 @@
     align-items: center;
     gap: 8px;
     background: var(--bg-cards);
-    border: 1px solid var(--borda-bege);
     border-radius: 10px;
     padding: 0 12px;
     height: 38px;
+    box-shadow: 0 2px 8px rgba(155, 125, 97, 0.06);
   }
   .fanfic-search i { color: var(--texto-secundario); font-size: 13px; }
   .fanfic-search input {
@@ -350,7 +349,7 @@
     font-size: 13px;
     color: var(--texto-marrom);
   }
-  .fanfic-search:focus-within { border-color: var(--cor-fanfic); }
+  .fanfic-search:focus-within { box-shadow: 0 2px 10px rgba(218, 163, 143, 0.35); }
   .fanfic-search-clear {
     border: none;
     background: var(--hover-bege);
@@ -376,7 +375,6 @@
     height: 38px;
     padding: 0 6px 0 12px;
     background: #e3ece8;
-    border: 1px solid var(--cor-livro);
     border-radius: 10px;
     font-size: 12px;
     font-weight: 600;
@@ -397,9 +395,9 @@
     display: flex;
     height: 38px;
     background: var(--bg-cards);
-    border: 1px solid var(--borda-bege);
     border-radius: 10px;
     padding: 3px;
+    box-shadow: 0 2px 8px rgba(155, 125, 97, 0.06);
     gap: 2px;
     flex-shrink: 0;
   }
@@ -427,15 +425,16 @@
     font-weight: 600;
     color: var(--texto-secundario);
     background: var(--bg-cards);
-    border: 1px solid var(--borda-bege);
+    border: none;
     border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(155, 125, 97, 0.06);
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.2s;
   }
   .fanfic-sort-btn i { margin-right: 4px; }
   .fanfic-sort-btn:hover { color: var(--texto-marrom); background: var(--hover-bege); }
-  .fanfic-sort-btn.active { background: var(--cor-fanfic); border-color: var(--cor-fanfic); color: #fff; }
+  .fanfic-sort-btn.active { background: var(--cor-fanfic); color: #fff; }
 
   .fanfic-list-scroll {
     flex: 1;
@@ -598,7 +597,6 @@
     font-weight: 600;
     color: var(--texto-marrom);
     background: #e3ece8;
-    border: 1px solid var(--cor-livro);
     border-radius: 8px;
     padding: 4px 14px;
   }
@@ -627,7 +625,6 @@
     transform: translateX(-50%);
     z-index: 20;
     background: var(--bg-cards);
-    border: 1px solid var(--borda-bege);
     border-radius: 10px;
     box-shadow: 0 6px 20px rgba(90, 71, 54, 0.15);
     padding: 8px 10px;
@@ -639,10 +636,10 @@
   .obra-relida-pop .stepper { display: flex; align-items: center; justify-content: center; gap: 10px; }
   .obra-relida-pop button {
     width: 26px; height: 26px; border-radius: 50%;
-    border: 1px solid var(--borda-bege); background: var(--bg-creme);
+    border: none; background: var(--hover-bege);
     color: var(--texto-marrom); cursor: pointer; font-weight: 700;
   }
-  .obra-relida-pop button:hover { background: var(--cor-livro); color: #fff; border-color: var(--cor-livro); }
+  .obra-relida-pop button:hover { background: var(--cor-livro); color: #fff; }
   .obra-relida-pop .valor { font-size: 16px; font-weight: 700; color: var(--texto-marrom); min-width: 18px; }
 
   .obras-vazio { text-align: center; color: var(--texto-secundario); padding: 40px; }
