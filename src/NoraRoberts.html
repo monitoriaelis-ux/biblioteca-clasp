@@ -122,6 +122,8 @@
   .nr-tenho-bar { background: #6f948a; }
 
   .nr-sidebar { width: 220px; }
+  .nr-qtd-series { font-size: 10.5px; font-weight: 600; color: var(--texto-secundario); margin-top: -2px; }
+  .nr-qtd-series i { color: #A0763F; margin-right: 3px; font-size: 9.5px; }
   .nr-sidebar .stats-row, .nr-sidebar .nr-tenho-card { flex-shrink: 0; }
   .nr-sidebar .stat-value { font-size: 18px; }
 </style>
@@ -221,12 +223,14 @@
       const lista = nrObras.filter(o => nrDivisaoDe(o) === d.id);
       const total = lista.length, lidas = lista.filter(nrLida).length;
       const pL = nrPct(lidas, total), pN = total ? 100 - pL : 0;
+      const qtdSeries = d.id === 'series' ? new Set(lista.map(o => nrNorm(nrSerie(o)))).size : 0;
       return `
         <div class="fandom-card${nrDivisao === d.id ? ' selected' : ''}" data-div="${d.id}" title="${lidas} lidas · ${total - lidas} não lidas">
           <div class="fandom-card-top">
             <span class="fandom-name">${d.nome}</span>
             <span class="fandom-total">${total}<small>${total === 1 ? 'obra' : 'obras'}</small></span>
           </div>
+          ${d.id === 'series' ? `<div class="nr-qtd-series"><i class="fa-solid fa-layer-group"></i> ${qtdSeries} ${qtdSeries === 1 ? 'série diferente' : 'séries diferentes'}</div>` : ''}
           <div class="split-bar"><div class="split-bar-lidas" style="width:${pL}%"></div><div class="split-bar-naolidas" style="width:${pN}%"></div></div>
           <div class="fandom-legend">
             <span><span class="dot" style="background: var(--cor-livro);"></span>Lidas ${pL}%</span>
