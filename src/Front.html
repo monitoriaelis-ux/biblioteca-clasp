@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    :root {
+      --cor-livro: #92ADA4;   
+      --cor-ebook: #FED8A6;   
+      --cor-fanfic: #DAA38F;  
+      --bg-creme: #F9F6F0;        
+      --bg-cards: #FFFFFF;        
+      --texto-marrom: #5A4736;    
+      --texto-secundario: #9B7D61;
+      --borda-bege: #E9D7C0;      
+      --hover-bege: #F3ECE1;      
+    }
+
+    * { box-sizing: border-box; }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--hover-bege); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--texto-secundario); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--texto-marrom); }
+
+    body { 
+      margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg-creme); color: var(--texto-marrom); overflow: hidden; height: 100vh;
+    }
+
+    .top-header {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 50; background: var(--bg-cards); box-shadow: 0 4px 15px rgba(155, 125, 97, 0.08);
+    }
+
+    .header-image {
+      width: 100%; height: 55px; background-image: url('https://i.ibb.co/h1nNjGyf/Design-sem-nome-6.png'); background-size: auto 100%; background-repeat: repeat-x; background-position: center bottom; 
+    }
+
+    .nav-menu {
+      display: flex; justify-content: center; align-items: center; height: 38px; gap: 25px; 
+    }
+    .nav-item {
+      text-decoration: none; color: var(--texto-secundario); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; height: 100%; display: flex; align-items: center; position: relative; transition: color 0.3s;
+    }
+
+    .nav-item:hover, .nav-item.active { color: var(--texto-marrom); }
+    .nav-item::after {
+      content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--cor-fanfic); transform: scaleX(0); transition: transform 0.3s ease; border-radius: 3px 3px 0 0;
+    }
+    .nav-item:hover::after, .nav-item.active::after { transform: scaleX(1); }
+
+    .nav-add-btn {
+      background: var(--hover-bege); color: var(--texto-marrom); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; border: 1px solid var(--borda-bege);
+    }
+    .nav-add-btn:hover { background: var(--cor-fanfic); color: white; transform: scale(1.1); }
+
+    .main-container { 
+      margin-top: 93px; padding: 16px; height: calc(100vh - 93px); display: flex; gap: 16px; overflow: hidden;
+    }
+    
+    .left-sidebar { width: 230px; height: 100%; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+
+    .status-card {
+      background: var(--bg-cards); padding: 10px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(155, 125, 97, 0.03); flex: 1; min-height: 0;
+    }
+
+    .status-card.pages-special-card { background: #ffd1c1; }
+    .status-card.rating-special-card { background: #fff9c4; }
+
+    .card-text { display: flex; flex-direction: column; text-align: left; }
+    .card-label { font-size: 10.5px; font-weight: 600; color: var(--texto-secundario); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;}
+    .card-value { font-size: 19px; font-weight: 700; color: var(--texto-marrom); line-height: 1; margin-top: 2px; }
+
+    .proportional-star {
+      font-size: 22px; font-family: "Font Awesome 5 Free"; font-weight: 900; position: relative; display: inline-block; background: linear-gradient(90deg, #E2A03F var(--star-fill, 0%), var(--borda-bege) var(--star-fill, 0%)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .donut-container { position: relative; width: 30px; height: 30px; border-radius: 50%; background: var(--borda-bege); flex-shrink: 0; cursor: pointer; }
+    .donut-hole { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 18px; height: 18px; background: var(--bg-cards); border-radius: 50%; z-index: 2; }
+
+    .donut-tooltip {
+      visibility: hidden; opacity: 0; position: absolute; bottom: 140%; right: -10px; background: var(--bg-cards); color: var(--texto-marrom); padding: 10px 14px; border-radius: 10px; box-shadow: 0 6px 20px rgba(90, 71, 54, 0.15); border: 1px solid var(--borda-bege); z-index: 99; white-space: nowrap; font-size: 11px; display: flex; flex-direction: column; gap: 5px; transition: opacity 0.2s ease, visibility 0.2s ease; pointer-events: none; 
+    }
+    .donut-tooltip::after { content: ""; position: absolute; top: 100%; right: 20px; border-width: 6px; border-style: solid; border-color: var(--bg-cards) transparent transparent transparent; }
+    .donut-tooltip::before { content: ""; position: absolute; top: 100%; right: 19px; border-width: 7px; border-style: solid; border-color: var(--borda-bege) transparent transparent transparent; z-index: -1; }
+    .donut-container:hover .donut-tooltip { visibility: visible; opacity: 1; }
+    .tooltip-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .tooltip-label { display: flex; align-items: center; font-weight: 500; color: var(--texto-secundario); }
+    .tooltip-dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; display: inline-block; }
+    .tooltip-value { font-weight: 700; color: var(--texto-marrom); }
+
+    .right-content { flex: 1; display: flex; flex-direction: column; gap: 16px; height: 100%; min-width: 0; }
+
+    .goal-card {
+      background: var(--bg-cards); padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(155, 125, 97, 0.04); display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-shrink: 0;
+    }
+    .goal-title-wrapper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .goal-title { font-size: 13.5px; font-weight: 700; color: var(--texto-marrom); }
+    .goal-track-container { flex: 1; display: flex; align-items: center; gap: 12px; }
+    .goal-track { flex: 1; height: 10px; background: var(--hover-bege); border-radius: 6px; position: relative; overflow: hidden; }
+    .goal-fill {
+      height: 100%; background-color: var(--cor-livro); background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.25) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.25) 75%, transparent 75%, transparent); background-size: 15px 15px; border-radius: 6px; width: 0%; transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .goal-subtitle { font-size: 11.5px; font-weight: 600; color: var(--texto-secundario); flex-shrink: 0; min-width: 120px; text-align: right; }
+
+    .bottom-cards-row { display: grid; grid-template-columns: 32% 68%; gap: 16px; flex: 1; min-height: 0; width: 100%; }
+    .section-card {
+      background: var(--bg-cards); padding: 16px; border-radius: 14px; box-shadow: 0 4px 12px rgba(155, 125, 97, 0.04); display: flex; flex-direction: column; height: 100%; overflow: hidden; 
+    }
+    .section-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 12px; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; border-bottom: 1px solid var(--hover-bege);
+    }
+    .scrollable-list { flex: 1; overflow-y: auto; overflow-x: hidden; padding-right: 6px; padding-top: 10px; }
+
+    .vertical-stack-list { display: flex; flex-direction: column; gap: 10px; }
+    .list-row-item { display: flex; align-items: center; padding: 6px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .list-row-item:hover { background: var(--bg-creme); }
+    .list-mini-cover { width: 24px; aspect-ratio: 2 / 3; border-radius: 4px; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.06); flex-shrink: 0; }
+    .list-info-block { margin-left: 10px; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .list-inline-text { font-size: 12px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--texto-secundario); }
+    .title-span { font-weight: 700; }
+    .fandom-span { font-size: 10px; font-weight: 600; color: var(--texto-secundario); margin-left: 3px; }
+    .author-span { font-weight: 400; margin-left: 3px; }
+    .list-info-block .stars-container { margin-top: 1px; font-size: 8px; color: #E2A03F; display: flex; gap: 1px; }
+
+    .favorites-three-columns-grid { 
+      display: grid; 
+      grid-template-columns: repeat(3, minmax(0, 1fr)); 
+      gap: 12px; 
+      align-content: start; 
+      width: 100%; 
+      padding-bottom: 16px; /* Dá um respiro para o último livro antes do fundo branco acabar */
+    }
+
+    .fav-card { 
+      cursor: pointer; 
+      transition: transform 0.2s, background 0.2s; 
+      display: flex; 
+      flex-direction: row; 
+      align-items: center; 
+      padding: 6px; 
+      border-radius: 8px; 
+      border: 1px solid transparent; 
+      background: var(--bg-cards); 
+      min-width: 0; 
+      width: 100%;
+    }
+
+    .fav-card:hover { 
+      transform: translateY(-2px); 
+      background: var(--hover-bege); 
+      border-color: var(--borda-bege); 
+    }
+
+    .capa-container { 
+      width: 36px; 
+      aspect-ratio: 2 / 3; 
+      border-radius: 5px; 
+      overflow: hidden; 
+      position: relative; 
+      box-shadow: 0 2px 5px rgba(155, 125, 97, 0.1); 
+      background: var(--borda-bege); 
+      border-left: 3px solid transparent; 
+      flex-shrink: 0; 
+      margin-right: 6px;
+    }
+
+    .capa-img { 
+      position: absolute; 
+      top: 0; left: 0; 
+      width: 100%; height: 100%; 
+      object-fit: cover; 
+    }
+
+    .fav-info { 
+      margin-left: 10px; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: center; 
+      flex: 1; 
+      min-width: 0; 
+      width: 100%; 
+    }
+
+    .stars-container { 
+      color: #E2A03F; 
+      font-size: 9px; 
+      display: flex; 
+      gap: 1px; 
+      margin-bottom: 2px; 
+    }
+
+    .fav-titulo { 
+      font-weight: 700; 
+      font-size: 11.5px; 
+      line-height: 1.2; 
+      margin-bottom: 1px; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      width: 100%; 
+    }
+
+    .fav-autor { 
+      font-weight: 400; 
+      font-size: 10.5px; 
+      color: var(--texto-secundario); 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      width: 100%; 
+    }
+
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(155, 125, 97, 0.6); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center;
+    }
+    .modal-content {
+      background: var(--bg-cards); width: 700px; max-height: 90vh; border-radius: 24px; padding: 40px; display: flex; flex-direction: column; gap: 24px; position: relative; animation: zoomIn 0.3s; overflow-y: auto; box-shadow: 0 10px 25px rgba(90, 70, 52, 0.15);
+    }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .modal-close { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: var(--texto-secundario); transition: 0.2s;}
+    .modal-close:hover { color: var(--texto-marrom); }
+    
+    .modal-header-info { display: flex; gap: 24px; align-items: flex-start; }
+    .modal-capa { width: 130px; height: 195px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(155, 125, 97, 0.2); flex-shrink: 0; }
+    .modal-basic-info { display: flex; flex-direction: column; justify-content: center; margin-top: 10px; }
+    .modal-titulo { font-size: 26px; font-weight: 700; margin: 0; line-height: 1.2; }
+    .modal-autor { font-size: 16px; color: var(--texto-secundario); margin-top: 4px; margin-bottom: 12px; }
+    .modal-plot { line-height: 1.6; color: var(--texto-marrom); font-size: 14px; text-align: justify; padding-top: 10px; }
+    .tag-tipo { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--texto-marrom); margin-bottom: 10px; width: fit-content; }
+
+    .form-title { font-size: 18px; font-weight: 700; color: var(--texto-marrom); border-bottom: 2px solid var(--hover-bege); padding-bottom: 8px; margin: 0; display: flex; align-items: center; gap: 10px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full-width { grid-column: span 2; }
+    .form-group label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texto-secundario); }
+    
+    .form-control {
+      width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--borda-bege); background: var(--bg-creme); color: var(--texto-marrom); font-family: 'Poppins', sans-serif; font-size: 12.5px; transition: border-color 0.2s;
+    }
+    .form-control:focus { outline: none; border-color: var(--texto-secundario); background: #fff; }
+    textarea.form-control { resize: vertical; min-height: 70px; }
+
+    .form-tags-wrapper {
+      border: 1px solid var(--borda-bege); background: var(--bg-creme); border-radius: 8px; padding: 10px; max-height: 95px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+    }
+    .tag-checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--texto-marrom); cursor: pointer; }
+    .tag-checkbox-label input { accent-color: var(--cor-fanfic); }
+
+    .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; }
+    .btn { padding: 9px 20px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-secondary { background: var(--hover-bege); color: var(--texto-secundario); }
+    .btn-secondary:hover { background: var(--borda-bege); color: var(--texto-marrom); }
+    .btn-primary { background: var(--cor-livro); color: white; }
+    .btn-primary:hover { background: #7b968d; box-shadow: 0 4px 10px rgba(146, 173, 164, 0.3); }
+  </style>
+</head>
+<body>
+
+<div class="top-header">
+  <div class="header-image"></div>
+  <div class="nav-menu">
+    <a href="#" class="nav-item active"><i class="fa-solid fa-house" style="margin-right: 6px;"></i> Prefácio</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-book" style="margin-right: 6px;"></i> Minha estante</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-tablet-screen-button" style="margin-right: 6px;"></i> Meu kindle</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-fire" style="margin-right: 6px;"></i> Minhas obsessões</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-crown" style="margin-right: 6px;"></i> Nora Roberts</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i> Epílogo</a>
+    <div class="nav-add-btn" onclick="openAddModal()" title="Adicionar Nova Obra"><i class="fa-solid fa-plus"></i></div>
+  </div>
+</div>
+
+<div class="main-container">
+  <div id="left-sidebar-cards" class="left-sidebar"></div>
+  <div class="right-content">
+    <div id="goal-container"></div>
+    <div class="bottom-cards-row">
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-clock-rotate-left" style="color: var(--cor-livro);"></i> Últimas Leituras</div>
+        <div class="scrollable-list">
+          <div id="recent-reads-list" class="vertical-stack-list">Carregando...</div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-star" style="color: #E2A03F;"></i> Meus Favoritos</div>
+        <div class="scrollable-list">
+          <div id="favorites-grid" class="favorites-three-columns-grid">Carregando...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalhes -->
+<div id="bookModal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+    <div class="modal-header-info">
+      <img id="mCapa" class="modal-capa" src="">
+      <div class="modal-basic-info">
+        <div id="mTag" class="tag-tipo"></div>
+        <h2 id="mTitulo" class="modal-titulo"></h2>
+        <div id="mAutor" class="modal-autor"></div>
+        <div id="mStars" class="stars-container" style="font-size: 18px; justify-content: flex-start; margin-bottom: 0;"></div>
+      </div>
+    </div>
+    <div id="mPlot" class="modal-plot"></div>
+  </div>
+</div>
+
+<!-- Modal Inclusão -->
+<div id="addBookModal" class="modal">
+  <div class="modal-content" style="width: 650px;">
+    <span class="modal-close" onclick="closeAddModal()">&times;</span>
+    <h3 class="form-title"><i class="fa-solid fa-bookmark" style="color: var(--cor-fanfic);"></i> Incluir Nova Obra</h3>
+    
+    <form id="newBookForm" onsubmit="submitNewBook(event)">
+      <div class="form-grid">
+        
+        <div class="form-group">
+          <label for="addTipo">Tipo</label>
+          <select id="addTipo" class="form-control" onchange="handleTipoChange()" required>
+            <option value="Livro">Livro</option>
+            <option value="Ebook">Ebook</option>
+            <option value="Fanfiction">Fanfiction</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="lblPaginas" for="addPaginas">Número de páginas</label>
+          <input type="number" id="addPaginas" class="form-control" min="1" required>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="addTitulo">Título</label>
+          <input type="text" id="addTitulo" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="addAutor">Autor</label>
+          <input type="text" id="addAutor" class="form-control" list="autoresDatalist" required>
+          <datalist id="autoresDatalist"></datalist>
+        </div>
+
+        <div class="form-group">
+          <label for="addGenero">Gênero</label>
+          <select id="addGenero" class="form-control" required></select>
+        </div>
+
+        <div class="form-group">
+          <label for="addIdioma">Idioma</label>
+          <select id="addIdioma" class="form-control" required>
+            <option value="Português">Português</option>
+            <option value="Inglês">Inglês</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="addSerie">Possui Série?</label>
+          <select id="addSerie" class="form-control" onchange="handleSerieChange()">
+            <option value="Não">Não</option>
+            <option value="Sim">Sim</option>
+          </select>
+        </div>
+
+        <div id="wrapperSerie" class="form-group full-width form-grid" style="display: none; gap: 16px; padding: 0;">
+          <div class="form-group">
+            <label for="addNomeSerie">Nome da Série</label>
+            <input type="text" id="addNomeSerie" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="addVolume">Volume</label>
+            <input type="number" id="addVolume" class="form-control" min="1">
+          </div>
+        </div>
+
+        <div id="wrapperFandom" class="form-group full-width" style="display: none;">
+          <label for="addFandom">Fandom</label>
+          <input type="text" id="addFandom" class="form-control">
+        </div>
+
+        <div class="form-group full-width">
+          <label id="lblTags">Tags (Selecione Múltiplas)</label>
+          <div id="tagsContainer" class="form-tags-wrapper"></div>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="addCapa">URL da Capa</label>
+          <input type="url" id="addCapa" class="form-control" placeholder="https://...">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="addPlot">Plot</label>
+          <textarea id="addPlot" class="form-control" rows="3"></textarea>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar Obra</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script {nonce}>
+  let allBooks = [];
+
+  window.onload = function () {
+    google.script.run.withSuccessHandler(init).getHomeDataAPI();
+  };
+
+  function norm(v) { return (v || "").toString().trim().toLowerCase(); }
+
+  function init(raw) {
+    const data = JSON.parse(raw);
+    allBooks = data.obras || [];
+    renderDashboard();
+    renderGoal();
+    renderFavorites(allBooks);
+    renderRecentReads();
+    setupFormDropdowns(data.tagsGlossario); 
+  }
+
+  function setupFormDropdowns(glossarioTags) {
+    const autores = [...new Set(allBooks.map(b => b.Autor || b["Autor"]).filter(Boolean))].sort();
+    const autoresDatalist = document.getElementById('autoresDatalist');
+    if (autoresDatalist) autoresDatalist.innerHTML = autores.map(a => `<option value="${a}">`).join('');
+
+    const generos = [...new Set(allBooks.map(b => b.Gênero || b.Genero || b["Gênero"]).filter(Boolean))].sort();
+    const generoSelect = document.getElementById('addGenero');
+    if (generoSelect) {
+      if (generos.length > 0) {
+        generoSelect.innerHTML = generos.map(g => `<option value="${g}">${g}</option>`).join('');
+      } else {
+        generoSelect.innerHTML = `<option value="Geral">Geral</option>`;
+      }
+    }
+
+    let tags = [];
+    if (glossarioTags && glossarioTags.length > 0) {
+      tags = glossarioTags;
+    } else {
+      tags = [...new Set(allBooks.flatMap(b => (b.Tags || b["Tags"] || "").split(',').map(t => t.trim())).filter(Boolean))].sort();
+    }
+    const tagsContainer = document.getElementById('tagsContainer');
+    if (tagsContainer) {
+      if (tags.length > 0) {
+        tagsContainer.innerHTML = tags.map((t, idx) => `
+          <label class="tag-checkbox-label">
+            <input type="checkbox" name="formTags" value="${t}"> ${t}
+          </label>
+        `).join('');
+      } else {
+        tagsContainer.innerHTML = `<span style="font-size:11px; color:var(--texto-secundario);">Nenhuma tag encontrada</span>`;
+      }
+    }
+  }
+
+  function handleTipoChange() {
+    const tipo = document.getElementById('addTipo').value;
+    const lblPaginas = document.getElementById('lblPaginas');
+    const wrapperFandom = document.getElementById('wrapperFandom');
+    const inputFandom = document.getElementById('addFandom');
+
+    if (tipo === 'Fanfiction') {
+      lblPaginas.innerText = "Número de palavras";
+      wrapperFandom.style.display = 'block';
+      inputFandom.required = true;
+    } else {
+      lblPaginas.innerText = "Número de páginas";
+      wrapperFandom.style.display = 'none';
+      inputFandom.required = false;
+    }
+  }
+
+  function handleSerieChange() {
+    const possuiSerie = document.getElementById('addSerie').value;
+    const wrapperSerie = document.getElementById('wrapperSerie');
+    const nomeInput = document.getElementById('addNomeSerie');
+    const volInput = document.getElementById('addVolume');
+
+    if (possuiSerie === 'Sim') {
+      wrapperSerie.style.display = 'grid';
+      nomeInput.required = true;
+      volInput.required = true;
+    } else {
+      wrapperSerie.style.display = 'none';
+      nomeInput.required = false;
+      volInput.required = false;
+    }
+  }
+
+  function openAddModal() {
+    document.getElementById('newBookForm').reset();
+    handleTipoChange();
+    handleSerieChange();
+    document.getElementById('addBookModal').style.display = 'flex';
+  }
+
+  function closeAddModal() { document.getElementById('addBookModal').style.display = 'none'; }
+
+  function submitNewBook(e) {
+    e.preventDefault();
+    
+    const tipo = document.getElementById('addTipo').value;
+    const quantOriginal = parseInt(document.getElementById('addPaginas').value, 10) || 0;
+    
+    let paginasCalculadas = quantOriginal;
+    let palavrasCalculadas = "";
+
+    if (tipo === 'Fanfiction') {
+      palavrasCalculadas = quantOriginal; // Guarda as palavras digitadas
+      paginasCalculadas = Math.ceil(quantOriginal / 300); // Divide e joga na coluna Páginas
+    }
+
+    const checkboxes = document.getElementsByName('formTags');
+    const selectedTags = [];
+    checkboxes.forEach(cb => { if(cb.checked) selectedTags.push(cb.value); });
+
+    const payload = {
+      tipo: tipo,
+      titulo: document.getElementById('addTitulo').value.trim(),
+      autor: document.getElementById('addAutor').value.trim(),
+      status: "Quero ler", 
+      serie: document.getElementById('addSerie').value,
+      nomeSerie: document.getElementById('addSerie').value === 'Sim' ? document.getElementById('addNomeSerie').value.trim() : "",
+      volume: document.getElementById('addSerie').value === 'Sim' ? document.getElementById('addVolume').value : "",
+      genero: document.getElementById('addGenero').value,
+      idioma: document.getElementById('addIdioma').value,
+      tags: selectedTags.join(', '),
+      plot: document.getElementById('addPlot').value.trim(),
+      capaUrl: document.getElementById('addCapa').value.trim(),
+      paginas: paginasCalculadas,
+      palavras: palavrasCalculadas,
+      fandom: tipo === 'Fanfiction' ? document.getElementById('addFandom').value.trim() : ""
+    };
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.innerText = "Salvando...";
+    submitBtn.disabled = true;
+
+    google.script.run
+      .withSuccessHandler(() => {
+        closeAddModal();
+        google.script.run.withSuccessHandler(init).getHomeDataAPI();
+      })
+      .saveNewBookAPI(JSON.stringify(payload));
+  }
+
+  function getDonutGradient(breakdown, total) {
+  if (total === 0) return 'var(--borda-bege)';
+  const pLivro = (breakdown.livro / total) * 100;
+  const pEbook = (breakdown.ebook / total) * 100;
+  const pFanfic = (breakdown.fanfic / total) * 100;
+  
+  const fimLivro = pLivro;
+  const fimEbook = pLivro + pEbook;
+  
+  return `conic-gradient(var(--cor-livro) 0% ${fimLivro}%, var(--cor-ebook) ${fimLivro}% ${fimEbook}%, var(--cor-fanfic) ${fimEbook}% 100%)`;
+}
+
+  function generateStars(nota) {
+    const val = parseFloat(nota.toString().replace(',', '.')) || 0;
+    let starsHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      if (val >= i) starsHtml += '<i class="fa-solid fa-star"></i>';
+      else if (val >= i - 0.5) starsHtml += '<i class="fa-solid fa-star-half-stroke"></i>';
+      else starsHtml += '<i class="fa-regular fa-star"></i>';
+    }
+    return starsHtml;
+  }
+
+  function renderDashboard() {
+    const counts = {
+      total: allBooks.length,
+      lidos: allBooks.filter(b => norm(b.Status) === 'lido').length,
+      lendo: allBooks.filter(b => norm(b.Status) === 'lendo').length,
+      quero: allBooks.filter(b => norm(b.Status) === 'quero ler').length
+    };
+
+    const getBreakdown = (filterFn) => {
+      const bks = allBooks.filter(filterFn);
+      const tot = bks.length;
+      return {
+        tot,
+        livro: bks.filter(b => norm(b.Tipo) === 'livro').length,
+        ebook: bks.filter(b => norm(b.Tipo) === 'ebook').length,
+        fanfic: bks.filter(b => norm(b.Tipo) === 'fanfiction').length
+      };
+    };
+
+    const livrosAvaliados = allBooks.filter(b => b.Nota && !isNaN(parseFloat(b.Nota.toString().replace(',', '.'))));
+    const notaMedia = livrosAvaliados.length ? (livrosAvaliados.reduce((sum, b) => sum + parseFloat(b.Nota.toString().replace(',', '.')), 0) / livrosAvaliados.length).toFixed(1) : "0.0";
+    const starPercentage = Math.round((parseFloat(notaMedia) / 5) * 100);
+
+    const cardNotaMedia = `
+      <div class="status-card rating-special-card">
+        <div class="card-text">
+          <span class="card-label">Nota Média</span>
+          <span class="card-value">${notaMedia}</span>
+        </div>
+        <div class="proportional-star" style="--star-fill: ${starPercentage}%"><i class="fa-solid fa-star"></i></div>
+      </div>
+    `;
+
+    const totalPaginas = allBooks.reduce((sum, b) => {
+      let p = parseInt(b["Páginas lidas"] || 0, 10);
+      if (!p && norm(b.Status) === 'lido') p = parseInt(b["Páginas"] || b["Paginas"] || 0, 10);
+      return sum + (isNaN(p) ? 0 : p);
+    }, 0);
+
+    const cardPaginasLidas = `
+      <div class="status-card pages-special-card">
+        <div class="card-text">
+          <span class="card-label">Págs. Lidas</span>
+          <span class="card-value">${totalPaginas.toLocaleString('pt-BR')}</span>
+        </div>
+        <i class="fa-solid fa-book-open" style="color: var(--cor-fanfic); font-size: 18px; opacity: 0.8;"></i>
+      </div>
+    `;
+
+    function makeStandardCard(label, val, filterFn) {
+      const bd = getBreakdown(filterFn);
+      const pLivro = bd.tot ? Math.round((bd.livro / bd.tot) * 100) : 0;
+      const pEbook = bd.tot ? Math.round((bd.ebook / bd.tot) * 100) : 0;
+      const pFanfic = bd.tot ? Math.round((bd.fanfic / bd.tot) * 100) : 0;
+
+      const customTooltip = `
+        <div class="donut-tooltip">
+          <div class="tooltip-row">
+            <span class="tooltip-label"><span class="tooltip-dot" style="background: var(--cor-livro);"></span>Livros</span>
+            <span class="tooltip-value">${bd.livro} <span style="font-weight:400; font-size:10px; color:var(--texto-secundario);">(${pLivro}%)</span></span>
+          </div>
+          <div class="tooltip-row">
+            <span class="tooltip-label"><span class="tooltip-dot" style="background: var(--cor-ebook);"></span>Ebooks</span>
+            <span class="tooltip-value">${bd.ebook} <span style="font-weight:400; font-size:10px; color:var(--texto-secundario);">(${pEbook}%)</span></span>
+          </div>
+          <div class="tooltip-row">
+            <span class="tooltip-label"><span class="tooltip-dot" style="background: var(--cor-fanfic);"></span>Fanfics</span>
+            <span class="tooltip-value">${bd.fanfic} <span style="font-weight:400; font-size:10px; color:var(--texto-secundario);">(${pFanfic}%)</span></span>
+          </div>
+        </div>
+      `;
+
+      return `
+        <div class="status-card">
+          <div class="card-text"><span class="card-label">${label}</span><span class="card-value">${val}</span></div>
+          <div class="donut-container" style="background: ${getDonutGradient(bd, bd.tot)}">
+            <div class="donut-hole"></div>
+            ${customTooltip}
+          </div>
+        </div>
+      `;
+    }
+
+    document.getElementById('left-sidebar-cards').innerHTML = 
+      cardNotaMedia + cardPaginasLidas + 
+      makeStandardCard('Total', counts.total, () => true) + 
+      makeStandardCard('Lidos', counts.lidos, b => norm(b.Status) === 'lido') + 
+      makeStandardCard('Lendo', counts.lendo, b => norm(b.Status) === 'lendo') + 
+      makeStandardCard('Quero Ler', counts.quero, b => norm(b.Status) === 'quero ler');
+  }
+
+  function renderGoal() {
+    const META_ANUAL = 120; const anoAtual = new Date().getFullYear(); 
+    const lidosEsseAno = allBooks.filter(b => norm(b.Status) === 'lido' && (b['Ano da leitura'] || '').toString().trim() === anoAtual.toString()).length;
+    const porcentagem = Math.min(Math.round((lidosEsseAno / META_ANUAL) * 100), 100);
+
+    document.getElementById('goal-container').innerHTML = `
+      <div class="goal-card">
+        <div class="goal-title-wrapper"><i class="fa-solid fa-ranking-star" style="color: var(--cor-fanfic); font-size: 15px;"></i> <span class="goal-title">Meta de ${anoAtual}</span></div>
+        <div class="goal-track-container">
+          <div class="goal-track"><div class="goal-fill" style="width: 0%;" id="goalBar"></div></div>
+          <div class="goal-subtitle">${lidosEsseAno} / ${META_ANUAL} obras (${porcentagem}%)</div>
+        </div>
+      </div>
+    `;
+    setTimeout(() => { const bar = document.getElementById('goalBar'); if (bar) bar.style.width = porcentagem + '%'; }, 150);
+  }
+
+  function renderFavorites(obras) {
+    const favs = obras.filter(o => norm(o["Obs."]) === 'favorite'); 
+    const container = document.getElementById("favorites-grid");
+    if (favs.length === 0) { container.innerHTML = `<div style="font-size: 13px; color: var(--texto-secundario); grid-column: span 3;">Nenhum favorito encontrado.</div>`; return; }
+    
+    container.innerHTML = favs.map((f) => {
+      const tipo = norm(f.Tipo); 
+      const cor = tipo === 'livro' ? 'var(--cor-livro)' : tipo === 'ebook' ? 'var(--cor-ebook)' : 'var(--cor-fanfic)';
+      return `
+        <div class="fav-card" onclick="openModal(${allBooks.indexOf(f)})">
+          <div class="capa-container" style="border-left-color: ${cor}"><img class="capa-img" src="${f["URL da imagem"] || ''}" loading="lazy"></div>
+          <div class="fav-info">
+            <div class="stars-container">${generateStars(f.Nota)}</div>
+            <div class="fav-titulo" title="${f["Título"] || ''}">${f["Título"] || 'Sem título'}</div>
+            <div class="fav-autor" title="${f["Autor"] || ''}">${f["Autor"] || 'Desconhecido'}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function safeParseDate(dateInput) {
+    if (!dateInput) return new Date(0); if (dateInput instanceof Date) return dateInput;
+    if (typeof dateInput === 'string' && dateInput.includes('-')) { const d = new Date(dateInput); return isNaN(d.getTime()) ? new Date(0) : d; }
+    const parts = dateInput.toString().trim().split('/');
+    if (parts.length === 3) return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    const fallback = new Date(dateInput); return isNaN(fallback.getTime()) ? new Date(0) : fallback;
+  }
+
+  function renderRecentReads() {
+    const container = document.getElementById("recent-reads-list"); if (!container) return;
+    const recentes = allBooks.filter(b => norm(b.Status) === "lido" && b["Data final"]).sort((a, b) => safeParseDate(b["Data final"]) - safeParseDate(a["Data final"]) || 0).slice(0, 10); 
+    if (recentes.length === 0) { container.innerHTML = `<div style="font-size: 13px; color: var(--texto-secundario);">Nenhuma obra recente.</div>`; return; }
+    
+    container.innerHTML = recentes.map(b => {
+      const tipo = norm(b.Tipo); let corTitulo = 'var(--texto-marrom)';
+      if (tipo === 'livro') corTitulo = 'var(--cor-livro)'; else if (tipo === 'ebook') corTitulo = 'var(--cor-ebook)'; else if (tipo === 'fanfiction') corTitulo = 'var(--cor-fanfic)';
+      const fandomTag = (tipo === 'fanfiction' && b["Fandom"]) ? `<span class="fandom-span">[${b["Fandom"]}]</span>` : '';
+      return `
+        <div class="list-row-item" onclick="openModal(${allBooks.indexOf(b)})">
+          <img class="list-mini-cover" src="${b["URL da imagem"] || ''}" loading="lazy">
+          <div class="list-info-block">
+            <div class="list-inline-text"><span class="title-span" style="color: ${corTitulo};">${b["Título"] || 'Sem título'}</span>${fandomTag}<span class="divider-span"> - </span><span class="author-span">${b["Autor"] || 'Desconhecido'}</span></div>
+            <div class="stars-container">${generateStars(b.Nota)}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function openModal(idx) {
+    const b = allBooks[idx]; if (!b) return; const tipo = norm(b.Tipo);
+    const cor = tipo === 'livro' ? 'var(--cor-livro)' : tipo === 'ebook' ? 'var(--cor-ebook)' : 'var(--cor-fanfic)';
+    document.getElementById('mCapa').src = b["URL da imagem"] || ''; document.getElementById('mTitulo').innerText = b["Título"] || 'Sem Título';
+    document.getElementById('mAutor').innerText = b["Autor"] || 'Desconhecido'; document.getElementById('mStars').innerHTML = generateStars(b.Nota || 0);
+    document.getElementById('mPlot').innerText = b["Plot"] || "Sem descrição disponível."; document.getElementById('mTag').innerText = b.Tipo || 'Outro';
+    document.getElementById('mTag').style.backgroundColor = cor; document.getElementById('bookModal').style.display = 'flex';
+  }
+
+  function closeModal() { document.getElementById('bookModal').style.display = 'none'; }
+  
+  window.onclick = function(event) {
+    if (event.target == document.getElementById('bookModal')) closeModal();
+    if (event.target == document.getElementById('addBookModal')) closeAddModal();
+  }
+</script>
+</body>
+</html>
