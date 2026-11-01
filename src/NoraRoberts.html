@@ -1,27 +1,6 @@
 <!-- Seção "Nora Roberts" — dados da aba "Nora Roberts" da planilha (exibida dentro do Front.html). -->
 <div class="nr-layout">
 
-  <!-- Indicadores gerais (não mudam com aba ou filtro) + gráfico por década -->
-  <div class="nr-top">
-    <div class="nr-kpis">
-      <div class="nr-kpi nr-kpi-nota"><span class="nr-kpi-label">Nota média</span><span class="nr-kpi-valor" id="nr-k-nota">–</span><span class="nr-kpi-sub" id="nr-k-nota-sub"></span></div>
-      <div class="nr-kpi"><span class="nr-kpi-label">Obras</span><span class="nr-kpi-valor" id="nr-k-total">–</span></div>
-      <div class="nr-kpi nr-kpi-lidas"><span class="nr-kpi-label">Lidas</span><span class="nr-kpi-valor" id="nr-k-lidas">–</span><span class="nr-kpi-sub" id="nr-k-lidas-sub"></span></div>
-      <div class="nr-kpi nr-kpi-tenho"><span class="nr-kpi-label">Adquiridas</span><span class="nr-kpi-valor" id="nr-k-tenho">–</span><span class="nr-kpi-sub" id="nr-k-tenho-sub"></span></div>
-    </div>
-    <div class="nr-chart-card">
-      <div class="nr-chart-head">
-        <span class="nr-chart-title">Por década de lançamento</span>
-        <span class="nr-legend">
-          <span><i class="nr-leg-line" style="background:#6E4C8C"></i>Lançadas</span>
-          <span><i class="nr-leg-line" style="background:#D46A84"></i>Lidas</span>
-        </span>
-      </div>
-      <div class="nr-chart" id="nr-chart"></div>
-      <div class="nr-tooltip" id="nr-tooltip"></div>
-    </div>
-  </div>
-
   <!-- Abas + filtros -->
   <div class="nr-bar">
     <div class="inc-tabs">
@@ -51,7 +30,19 @@
 
   <!-- Lista + indicadores da aba (fixos à direita) -->
   <div class="nr-body">
-    <aside class="nr-side" id="nr-side"></aside>
+    <!-- Indicadores gerais: fixos, não mudam com aba, busca ou filtro -->
+    <aside class="nr-geral">
+      <div class="nr-painel-titulo"><i class="fa-solid fa-crown"></i> Geral</div>
+      <div class="nr-stat nota"><span class="nr-stat-label">Nota média</span><span class="nr-stat-valor" id="nr-k-nota">–</span><span class="nr-stat-sub" id="nr-k-nota-sub"></span></div>
+      <div class="nr-stat obras"><span class="nr-stat-label">Obras</span><span class="nr-stat-valor" id="nr-k-total">–</span></div>
+      <div class="nr-stat lidas"><span class="nr-stat-label">Lidas</span><span class="nr-stat-valor" id="nr-k-lidas">–</span><span class="nr-stat-sub" id="nr-k-lidas-sub"></span></div>
+      <div class="nr-stat tenho"><span class="nr-stat-label">Adquiridas</span><span class="nr-stat-valor" id="nr-k-tenho">–</span><span class="nr-stat-sub" id="nr-k-tenho-sub"></span></div>
+    </aside>
+    <!-- Indicadores da aba atual -->
+    <aside class="nr-side-wrap">
+      <div class="nr-painel-titulo" id="nr-side-titulo">Nesta aba</div>
+      <div class="nr-side" id="nr-side"></div>
+    </aside>
     <div class="nr-list-scroll">
       <div class="nr-row nr-header">
         <span></span><span class="col-titulo">Título</span><span>Ano</span><span>Páginas</span><span>Obs.</span><span>Status</span><span>Nota</span><span></span><span></span>
@@ -66,41 +57,6 @@
 <style>
   .nr-layout { height: 100%; display: flex; flex-direction: column; gap: 12px; }
 
-  /* ===== Topo ===== */
-  .nr-top { flex-shrink: 0; display: flex; gap: 12px; height: 78px; }
-  .nr-kpis { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-  .nr-kpi {
-    background: var(--bg-cards); border-radius: 10px; box-shadow: 0 3px 8px rgba(155, 125, 97, 0.04);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; text-align: center; padding: 2px 4px;
-  }
-  .nr-kpi-lidas { background: #e3ece8; }
-  .nr-kpi-tenho { background: #f3ece1; }
-  .nr-kpi-nota { background: #fff9c4; }
-  .nr-kpi-label { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texto-secundario); white-space: nowrap; }
-  .nr-kpi-valor { font-size: 17px; font-weight: 700; color: var(--texto-marrom); line-height: 1.2; white-space: nowrap; }
-  .nr-kpi-sub { display: none; }
-
-  .nr-chart-card {
-    flex: 0 0 50%; min-width: 0; position: relative; background: var(--bg-cards); border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(155, 125, 97, 0.04); padding: 6px 12px 2px; display: flex; flex-direction: column;
-  }
-  .nr-chart-head { display: flex; justify-content: space-between; align-items: center; }
-  .nr-chart-title { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texto-secundario); }
-  .nr-legend { display: flex; gap: 10px; font-size: 9.5px; font-weight: 600; color: var(--texto-secundario); }
-  .nr-legend span { display: flex; align-items: center; gap: 6px; }
-  .nr-leg-line { display: inline-block; width: 12px; height: 2px; border-radius: 2px; }
-  .nr-chart { flex: 1; min-height: 0; }
-  .nr-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  .nr-tooltip {
-    position: absolute; pointer-events: none; background: var(--bg-cards); border-radius: 8px;
-    box-shadow: 0 6px 20px rgba(90, 71, 54, 0.18); padding: 7px 10px; font-size: 11px; color: var(--texto-marrom);
-    opacity: 0; transition: opacity 0.1s; white-space: nowrap; z-index: 10;
-  }
-  .nr-tooltip.show { opacity: 1; }
-  .nr-tooltip b { display: block; margin-bottom: 3px; }
-  .nr-tooltip .linha { display: flex; align-items: center; gap: 6px; }
-  .nr-tooltip .linha i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-
   /* ===== Abas + filtros ===== */
   .nr-bar { flex-shrink: 0; display: flex; align-items: center; gap: 12px; }
   .nr-toolbar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
@@ -110,7 +66,16 @@
   /* ===== Lista + lateral ===== */
   .nr-body { flex: 1; min-height: 0; display: flex; gap: 16px; }
   .nr-list-scroll { flex: 1; min-width: 0; overflow-y: auto; padding-right: 4px; }
-  .nr-side { width: 150px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .nr-geral, .nr-side-wrap { width: 140px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .nr-geral { background: #E9DCC9; border-radius: 14px; padding: 8px; }
+  .nr-side-wrap { padding: 8px 0; }
+  .nr-side { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .nr-painel-titulo {
+    flex-shrink: 0; text-align: center; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--texto-marrom); padding: 2px 0 4px;
+  }
+  .nr-geral .nr-painel-titulo i { color: #A0763F; margin-right: 4px; }
+  .nr-side-wrap .nr-painel-titulo { color: var(--texto-secundario); }
 
   .nr-row {
     display: grid;
@@ -170,17 +135,18 @@
   .nr-stat-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texto-secundario); }
   .nr-stat-valor { font-size: 15px; font-weight: 700; color: var(--texto-marrom); line-height: 1.2; }
   .nr-stat-sub { font-size: 9.5px; font-weight: 600; color: var(--texto-secundario); white-space: nowrap; }
+  .nr-stat.obras { background: #DCE3CB; }
+  .nr-stat.obras .nr-stat-valor { color: #56663A; }
   .nr-stat.lidas { background: #e3ece8; }
   .nr-stat.naolidas { background: #fbeee8; }
   .nr-stat.tenho { background: #f3ece1; }
+  .nr-geral .nr-stat.tenho { background: #F7F1E8; }
   .nr-stat.nota { background: #fff9c4; }
   .nr-stat .split-bar { width: 100%; margin-top: 4px; }
 </style>
 
 <script>
   // ===== Estado =====
-  const NR_COR_LANCADAS = '#6E4C8C'; // roxo ameixa
-  const NR_COR_LIDAS = '#D46A84';    // rosa queimado
   let nrObras = [];
   let nrCarregado = false, nrCarregando = false;
   let nrAba = 'unicos';
@@ -269,7 +235,6 @@
 
   function nrRenderTudo() {
     nrRenderKpis();
-    nrRenderGrafico();
     nrRenderAba();
   }
 
@@ -277,74 +242,12 @@
   function nrRenderKpis() {
     const r = nrResumo(nrObras);
     document.getElementById('nr-k-total').textContent = r.total;
-    document.getElementById('nr-k-lidas').innerHTML = `${r.lidas} <small style="font-size:9.5px;font-weight:600;color:var(--texto-secundario)">${nrPct(r.lidas, r.total)}%</small>`;
+    document.getElementById('nr-k-lidas').textContent = r.lidas;
     document.getElementById('nr-k-lidas-sub').textContent = `${nrPct(r.lidas, r.total)}%`;
-    document.getElementById('nr-k-tenho').innerHTML = `${r.tenho} <small style="font-size:9.5px;font-weight:600;color:var(--texto-secundario)">${nrPct(r.tenho, r.total)}%</small>`;
-    document.getElementById('nr-k-tenho-sub').textContent = `${nrPct(r.tenho, r.total)}%`;
+    document.getElementById('nr-k-tenho').textContent = r.tenho;
+    document.getElementById('nr-k-tenho-sub').textContent = `${nrPct(r.tenho, r.total)}% · faltam ${r.total - r.tenho}`;
     document.getElementById('nr-k-nota').textContent = r.nota.toFixed(1);
     document.getElementById('nr-k-nota-sub').textContent = `${r.avaliadas} ${r.avaliadas === 1 ? 'avaliação' : 'avaliações'}`;
-  }
-
-  // ===== Gráfico de linhas por década =====
-  function nrRenderGrafico() {
-    const el = document.getElementById('nr-chart');
-    const porDecada = {};
-    nrObras.forEach(o => {
-      const d = nrDecada(o);
-      if (d === null) return;
-      porDecada[d] = porDecada[d] || { lancadas: 0, lidas: 0 };
-      porDecada[d].lancadas++;
-      if (nrLida(o)) porDecada[d].lidas++;
-    });
-    const decadas = Object.keys(porDecada).map(Number).sort((a, b) => a - b);
-    if (!decadas.length) { el.innerHTML = '<div class="obras-vazio" style="padding:20px">Sem ano/década na planilha.</div>'; return; }
-    // preenche décadas vazias no meio
-    for (let d = decadas[0]; d <= decadas[decadas.length - 1]; d += 10) if (!porDecada[d]) porDecada[d] = { lancadas: 0, lidas: 0 };
-    const xs = Object.keys(porDecada).map(Number).sort((a, b) => a - b);
-
-    const W = el.clientWidth || 600, H = el.clientHeight || 90;
-    const pad = { l: 8, r: 8, t: 5, b: 13 };
-    const max = Math.max(1, ...xs.map(d => porDecada[d].lancadas));
-    const passo = Math.pow(10, Math.floor(Math.log10(max)));
-    const topo = Math.ceil(max / passo) * passo;
-    const x = i => pad.l + (xs.length === 1 ? (W - pad.l - pad.r) / 2 : i * (W - pad.l - pad.r) / (xs.length - 1));
-    const y = v => pad.t + (H - pad.t - pad.b) * (1 - v / topo);
-    const linha = k => xs.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(porDecada[d][k]).toFixed(1)}`).join('');
-    const ticks = [0, topo / 2, topo];
-
-    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Obras lançadas e lidas por década">`;
-    ticks.forEach(t => {
-      svg += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(t)}" y2="${y(t)}" stroke="#F3ECE1" stroke-width="1"/>`;
-    });
-    xs.forEach((d, i) => { svg += `<text x="${x(i)}" y="${H - 4}" text-anchor="middle" font-size="8" fill="#B8A089">${String(d).slice(2)}s</text>`; });
-    svg += `<line id="nr-cross" x1="0" x2="0" y1="${pad.t}" y2="${H - pad.b}" stroke="#D9C8B4" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>`;
-    [['lancadas', NR_COR_LANCADAS], ['lidas', NR_COR_LIDAS]].forEach(([k, cor]) => {
-      svg += `<path d="${linha(k)}" fill="none" stroke="${cor}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;
-      xs.forEach((d, i) => { svg += `<circle cx="${x(i)}" cy="${y(porDecada[d][k])}" r="2.5" fill="${cor}" stroke="#fff" stroke-width="1.5"/>`; });
-    });
-    // áreas de hover por década (maiores que os pontos)
-    const larg = xs.length > 1 ? (W - pad.l - pad.r) / (xs.length - 1) : W;
-    xs.forEach((d, i) => { svg += `<rect data-i="${i}" x="${x(i) - larg / 2}" y="0" width="${larg}" height="${H}" fill="transparent"/>`; });
-    svg += '</svg>';
-    el.innerHTML = svg;
-
-    const tip = document.getElementById('nr-tooltip');
-    const cross = el.querySelector('#nr-cross');
-    el.querySelectorAll('rect[data-i]').forEach(r => {
-      r.addEventListener('mouseenter', () => {
-        const i = Number(r.dataset.i), d = xs[i], v = porDecada[d];
-        cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('opacity', 1);
-        tip.innerHTML = `<b>Década de ${d}</b>
-          <span class="linha"><i style="background:${NR_COR_LANCADAS}"></i>Lançadas: <strong>${v.lancadas}</strong></span>
-          <span class="linha"><i style="background:${NR_COR_LIDAS}"></i>Lidas: <strong>${v.lidas}</strong></span>`;
-        const card = el.parentElement.getBoundingClientRect(), svgBox = el.getBoundingClientRect();
-        const px = svgBox.left - card.left + x(i) * (svgBox.width / W);
-        tip.style.left = Math.min(Math.max(px - 60, 4), card.width - 130) + 'px';
-        tip.style.top = '18px';
-        tip.classList.add('show');
-      });
-      r.addEventListener('mouseleave', () => { tip.classList.remove('show'); cross.setAttribute('opacity', 0); });
-    });
   }
 
   // ===== Abas, filtros e lista =====
@@ -375,7 +278,6 @@
       nrStatusAberto = null;
       document.querySelectorAll('#nr-lista .status-dd.aberto').forEach(d => d.classList.remove('aberto', 'pra-cima'));
     });
-    window.addEventListener('resize', () => { if (nrCarregado && !document.getElementById('view-nora').hidden) nrRenderGrafico(); });
   }
 
   function nrFiltrarSerie(i, ev) {
@@ -515,13 +417,14 @@
     const stat = (cls, label, valor, sub, extra) => `
       <div class="nr-stat ${cls}"><span class="nr-stat-label">${label}</span><span class="nr-stat-valor">${valor}</span>${sub ? `<span class="nr-stat-sub">${sub}</span>` : ''}${extra || ''}</div>`;
     let html = stat('nota', 'Nota média', r.nota.toFixed(1), `${r.avaliadas} ${r.avaliadas === 1 ? 'avaliação' : 'avaliações'}`);
-    html += stat('', 'Obras', r.total);
+    html += stat('obras', 'Obras', r.total);
     if (nrAba === 'series') html += stat('', 'Séries', new Set(lista.map(o => nrNorm(nrSerie(o)))).size);
     html += stat('lidas', 'Lidas', r.lidas, `${nrPct(r.lidas, r.total)}%`,
       `<div class="split-bar"><div class="split-bar-lidas" style="width:${nrPct(r.lidas, r.total)}%"></div><div class="split-bar-naolidas" style="width:${r.total ? 100 - nrPct(r.lidas, r.total) : 0}%"></div></div>`);
     html += stat('naolidas', 'Não lidas', r.naoLidas, `${r.total ? 100 - nrPct(r.lidas, r.total) : 0}%`);
     html += stat('tenho', 'Adquiridas', r.tenho, `${nrPct(r.tenho, r.total)}% · faltam ${r.total - r.tenho}`);
     document.getElementById('nr-side').innerHTML = html;
+    document.getElementById('nr-side-titulo').textContent = { unicos: 'Títulos únicos', series: 'Séries', mortal: 'Série Mortal' }[nrAba];
   }
 
   // ===== Plot expansível (uma obra por vez) =====
