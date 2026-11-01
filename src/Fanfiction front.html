@@ -24,24 +24,9 @@
       <div class="stat-text">
         <span class="stat-label">Nota média</span>
         <span class="stat-value" id="stat-nota">0.0</span>
+        <span class="stat-sub" id="stat-nota-sub"></span>
       </div>
       <i class="fa-solid fa-star stat-icon" style="color: #E2A03F;"></i>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-text">
-        <span class="stat-label">Palavras lidas</span>
-        <span class="stat-value" id="stat-palavras">0</span>
-      </div>
-      <i class="fa-solid fa-font stat-icon"></i>
-    </div>
-
-    <div class="stat-card stat-paginas">
-      <div class="stat-text">
-        <span class="stat-label">Págs. lidas</span>
-        <span class="stat-value" id="stat-paginas">0</span>
-      </div>
-      <i class="fa-solid fa-book-open stat-icon"></i>
     </div>
 
     <div class="autores-card">
@@ -216,9 +201,9 @@
     justify-content: space-between;
     align-items: center;
   }
-  .stat-card.stat-lidas { background: #e3ece8; padding: 14px; }
+  .stat-card { padding: 14px; height: 84px; }
+  .stat-card.stat-lidas { background: #e3ece8; }
   .stat-card.stat-nota { background: #fff9c4; }
-  .stat-card.stat-paginas { background: #ffd1c1; }
 
   .stat-text { display: flex; flex-direction: column; }
   .stat-label {
@@ -235,10 +220,11 @@
     line-height: 1.1;
     margin-top: 2px;
   }
-  .stat-lidas .stat-value { font-size: 28px; }
+  .fanfic-stats .stat-value { font-size: 28px; }
   .stat-sub { font-size: 10.5px; font-weight: 600; color: var(--texto-secundario); }
   .stat-icon { font-size: 18px; color: var(--cor-fanfic); opacity: 0.8; }
-  .stat-lidas .stat-icon { font-size: 24px; color: var(--cor-livro); }
+  .fanfic-stats .stat-icon { font-size: 24px; }
+  .stat-lidas .stat-icon { color: var(--cor-livro); }
 
   .autores-card {
     flex: 1;
@@ -266,19 +252,25 @@
   .autores-list {
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-right: 4px;
   }
-  .autor-row { display: flex; flex-direction: column; gap: 4px; }
+  .autor-row {
+    flex: 1;
+    min-height: 0;
+    max-height: 64px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+  }
   .autor-top {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     gap: 8px;
-    font-size: 12px;
+    font-size: 13px;
   }
   .autor-nome {
     font-weight: 600;
@@ -289,7 +281,7 @@
   }
   .autor-pos { color: var(--texto-secundario); font-weight: 700; margin-right: 4px; }
   .autor-total { font-weight: 700; color: var(--texto-marrom); white-space: nowrap; }
-  .autor-row .split-bar { height: 6px; }
+  .autor-row .split-bar { height: 8px; }
   .autores-legend {
     flex-shrink: 0;
     display: flex;
@@ -569,17 +561,9 @@
       ? avaliadas.reduce((s, f) => s + parseFloat(f['Nota'].toString().replace(',', '.')), 0) / avaliadas.length
       : 0;
     document.getElementById('stat-nota').textContent = nota.toFixed(1);
+    document.getElementById('stat-nota-sub').textContent =
+      avaliadas.length ? `${avaliadas.length} ${avaliadas.length === 1 ? 'avaliação' : 'avaliações'}` : 'sem avaliações';
 
-    const palavras = lidas.reduce((s, f) => s + fanficNum(f['Palavras']), 0);
-    document.getElementById('stat-palavras').textContent = palavras.toLocaleString('pt-BR');
-
-    // Mesma regra do Prefácio: "Páginas lidas" se existir; senão "Páginas" das obras lidas
-    const paginas = base.reduce((s, f) => {
-      let p = fanficNum(f['Páginas lidas']);
-      if (!p && fanficLida(f)) p = fanficNum(f['Páginas'] || f['Paginas']);
-      return s + p;
-    }, 0);
-    document.getElementById('stat-paginas').textContent = paginas.toLocaleString('pt-BR');
   }
 
   // ===== Coluna 2: top autores =====
