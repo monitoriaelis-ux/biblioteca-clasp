@@ -732,8 +732,10 @@
   let fanficSerie = null;           // nome da série selecionada (mostra a série toda)
 
   function serieDaObra(f) {
+    const nome = (f['Nome da série'] || f['Nome da Série'] || f['Nome série'] || '').toString().trim();
+    if (nome) return nome;
     const serie = (f['Série'] || '').toString().trim();
-    return serie && !['não', 'nao', 'n', '-'].includes(fanficNorm(serie)) ? serie : '';
+    return serie && !['não', 'nao', 'n', '-', 'sim', 's'].includes(fanficNorm(serie)) ? serie : '';
   }
   function volumeDaObra(f) {
     const v = parseFloat((f['Volume'] === undefined || f['Volume'] === null ? '' : f['Volume']).toString().replace(',', '.'));

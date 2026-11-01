@@ -67,7 +67,7 @@
     .nav-add-btn {
       background: var(--hover-bege); color: var(--texto-marrom); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; border: 1px solid var(--borda-bege);
     }
-    .nav-add-btn:hover { background: var(--cor-fanfic); color: white; transform: scale(1.1); }
+    .nav-add-btn:hover, .nav-add-btn.active { background: var(--cor-fanfic); color: white; transform: scale(1.1); }
 
     .main-container { 
       margin-top: 93px; padding: 16px; height: calc(100vh - 93px); display: flex; gap: 16px; overflow: hidden;
@@ -281,7 +281,7 @@
     <a href="#" class="nav-item" data-view="obsessoes"><i class="fa-solid fa-fire" style="margin-right: 6px;"></i> Minhas obsessões</a>
     <a href="#" class="nav-item" data-view="nora"><i class="fa-solid fa-crown" style="margin-right: 6px;"></i> Nora Roberts</a>
     <a href="#" class="nav-item" data-view="epilogo"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i> Epílogo</a>
-    <div class="nav-add-btn" onclick="openAddModal()" title="Adicionar Nova Obra"><i class="fa-solid fa-plus"></i></div>
+    <div class="nav-add-btn" data-view="incluir" onclick="showView('incluir', true)" title="Incluir obras"><i class="fa-solid fa-plus"></i></div>
   </div>
 </div>
 
@@ -291,6 +291,7 @@
 <div class="main-container page-view" id="view-obsessoes" hidden><?!= include('Fanfiction front'); ?></div>
 <div class="main-container page-view" id="view-nora" hidden><?!= include('NoraRoberts'); ?></div>
 <div class="main-container page-view" id="view-epilogo" hidden><?!= include('Epilogo'); ?></div>
+<div class="main-container page-view" id="view-incluir" hidden><?!= include('Incluir'); ?></div>
 
 <div class="main-container" id="view-prefacio">
   <div id="left-sidebar-cards" class="left-sidebar"></div>
@@ -330,102 +331,6 @@
   </div>
 </div>
 
-<!-- Modal Inclusão -->
-<div id="addBookModal" class="modal">
-  <div class="modal-content" style="width: 650px;">
-    <span class="modal-close" onclick="closeAddModal()">&times;</span>
-    <h3 class="form-title"><i class="fa-solid fa-bookmark" style="color: var(--cor-fanfic);"></i> Incluir Nova Obra</h3>
-    
-    <form id="newBookForm" onsubmit="submitNewBook(event)">
-      <div class="form-grid">
-        
-        <div class="form-group">
-          <label for="addTipo">Tipo</label>
-          <select id="addTipo" class="form-control" onchange="handleTipoChange()" required>
-            <option value="Livro">Livro</option>
-            <option value="Ebook">Ebook</option>
-            <option value="Fanfiction">Fanfiction</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label id="lblPaginas" for="addPaginas">Número de páginas</label>
-          <input type="number" id="addPaginas" class="form-control" min="1" required>
-        </div>
-
-        <div class="form-group full-width">
-          <label for="addTitulo">Título</label>
-          <input type="text" id="addTitulo" class="form-control" required>
-        </div>
-
-        <div class="form-group">
-          <label for="addAutor">Autor</label>
-          <input type="text" id="addAutor" class="form-control" list="autoresDatalist" required>
-          <datalist id="autoresDatalist"></datalist>
-        </div>
-
-        <div class="form-group">
-          <label for="addGenero">Gênero</label>
-          <select id="addGenero" class="form-control" required></select>
-        </div>
-
-        <div class="form-group">
-          <label for="addIdioma">Idioma</label>
-          <select id="addIdioma" class="form-control" required>
-            <option value="Português">Português</option>
-            <option value="Inglês">Inglês</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="addSerie">Possui Série?</label>
-          <select id="addSerie" class="form-control" onchange="handleSerieChange()">
-            <option value="Não">Não</option>
-            <option value="Sim">Sim</option>
-          </select>
-        </div>
-
-        <div id="wrapperSerie" class="form-group full-width form-grid" style="display: none; gap: 16px; padding: 0;">
-          <div class="form-group">
-            <label for="addNomeSerie">Nome da Série</label>
-            <input type="text" id="addNomeSerie" class="form-control">
-          </div>
-          <div class="form-group">
-            <label for="addVolume">Volume</label>
-            <input type="number" id="addVolume" class="form-control" min="1">
-          </div>
-        </div>
-
-        <div id="wrapperFandom" class="form-group full-width" style="display: none;">
-          <label for="addFandom">Fandom</label>
-          <input type="text" id="addFandom" class="form-control">
-        </div>
-
-        <div class="form-group full-width">
-          <label id="lblTags">Tags (Selecione Múltiplas)</label>
-          <div id="tagsContainer" class="form-tags-wrapper"></div>
-        </div>
-
-        <div class="form-group full-width">
-          <label for="addCapa">URL da Capa</label>
-          <input type="url" id="addCapa" class="form-control" placeholder="https://...">
-        </div>
-
-        <div class="form-group full-width">
-          <label for="addPlot">Plot</label>
-          <textarea id="addPlot" class="form-control" rows="3"></textarea>
-        </div>
-
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Salvar Obra</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <script {nonce}>
   let allBooks = [];
 
@@ -435,12 +340,13 @@
   };
 
   // ===== Navbar: troca a seção visível sem recarregar a página =====
-  const VIEWS = ['prefacio', 'estante', 'kindle', 'obsessoes', 'nora', 'epilogo'];
+  const VIEWS = ['prefacio', 'estante', 'kindle', 'obsessoes', 'nora', 'epilogo', 'incluir'];
   let currentView = 'prefacio';
 
   // Funções chamadas quando uma seção é exibida (e quando os dados recarregam)
   const viewRenderers = {
-    obsessoes: () => { if (typeof renderFanficsView === 'function') renderFanficsView(); }
+    obsessoes: () => { if (typeof renderFanficsView === 'function') renderFanficsView(); },
+    incluir: () => { if (typeof renderIncluir === 'function') renderIncluir(); }
   };
 
   function setupNavbar() {
@@ -474,7 +380,7 @@
       const el = document.getElementById('view-' + v);
       if (el) el.hidden = (v !== name);
     });
-    document.querySelectorAll('.nav-item[data-view]').forEach(link => {
+    document.querySelectorAll('.nav-item[data-view], .nav-add-btn').forEach(link => {
       link.classList.toggle('active', link.dataset.view === name);
     });
     if (viewRenderers[name]) viewRenderers[name]();
@@ -531,96 +437,8 @@
     }
   }
 
-  function handleTipoChange() {
-    const tipo = document.getElementById('addTipo').value;
-    const lblPaginas = document.getElementById('lblPaginas');
-    const wrapperFandom = document.getElementById('wrapperFandom');
-    const inputFandom = document.getElementById('addFandom');
-
-    if (tipo === 'Fanfiction') {
-      lblPaginas.innerText = "Número de palavras";
-      wrapperFandom.style.display = 'block';
-      inputFandom.required = true;
-    } else {
-      lblPaginas.innerText = "Número de páginas";
-      wrapperFandom.style.display = 'none';
-      inputFandom.required = false;
-    }
-  }
-
-  function handleSerieChange() {
-    const possuiSerie = document.getElementById('addSerie').value;
-    const wrapperSerie = document.getElementById('wrapperSerie');
-    const nomeInput = document.getElementById('addNomeSerie');
-    const volInput = document.getElementById('addVolume');
-
-    if (possuiSerie === 'Sim') {
-      wrapperSerie.style.display = 'grid';
-      nomeInput.required = true;
-      volInput.required = true;
-    } else {
-      wrapperSerie.style.display = 'none';
-      nomeInput.required = false;
-      volInput.required = false;
-    }
-  }
-
-  function openAddModal() {
-    document.getElementById('newBookForm').reset();
-    handleTipoChange();
-    handleSerieChange();
-    document.getElementById('addBookModal').style.display = 'flex';
-  }
-
-  function closeAddModal() { document.getElementById('addBookModal').style.display = 'none'; }
-
-  function submitNewBook(e) {
-    e.preventDefault();
-    
-    const tipo = document.getElementById('addTipo').value;
-    const quantOriginal = parseInt(document.getElementById('addPaginas').value, 10) || 0;
-    
-    let paginasCalculadas = quantOriginal;
-    let palavrasCalculadas = "";
-
-    if (tipo === 'Fanfiction') {
-      palavrasCalculadas = quantOriginal; // Guarda as palavras digitadas
-      paginasCalculadas = Math.ceil(quantOriginal / 300); // Divide e joga na coluna Páginas
-    }
-
-    const checkboxes = document.getElementsByName('formTags');
-    const selectedTags = [];
-    checkboxes.forEach(cb => { if(cb.checked) selectedTags.push(cb.value); });
-
-    const payload = {
-      tipo: tipo,
-      titulo: document.getElementById('addTitulo').value.trim(),
-      autor: document.getElementById('addAutor').value.trim(),
-      status: "Quero ler", 
-      serie: document.getElementById('addSerie').value,
-      nomeSerie: document.getElementById('addSerie').value === 'Sim' ? document.getElementById('addNomeSerie').value.trim() : "",
-      volume: document.getElementById('addSerie').value === 'Sim' ? document.getElementById('addVolume').value : "",
-      genero: document.getElementById('addGenero').value,
-      idioma: document.getElementById('addIdioma').value,
-      tags: selectedTags.join(', '),
-      plot: document.getElementById('addPlot').value.trim(),
-      capaUrl: document.getElementById('addCapa').value.trim(),
-      paginas: paginasCalculadas,
-      palavras: palavrasCalculadas,
-      fandom: tipo === 'Fanfiction' ? document.getElementById('addFandom').value.trim() : ""
-    };
-
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.innerText = "Salvando...";
-    submitBtn.disabled = true;
-
-    google.script.run
-      .withSuccessHandler(() => {
-        closeAddModal();
-        google.script.run.withSuccessHandler(init).getHomeDataAPI();
-      })
-      .saveNewBookAPI(JSON.stringify(payload));
-  }
+  // O botão + agora abre a seção "Incluir obras"
+  function openAddModal() { showView('incluir', true); }
 
   function getDonutGradient(breakdown, total) {
   if (total === 0) return 'var(--borda-bege)';
@@ -816,7 +634,6 @@
   
   window.onclick = function(event) {
     if (event.target == document.getElementById('bookModal')) closeModal();
-    if (event.target == document.getElementById('addBookModal')) closeAddModal();
   }
 </script>
 </body>

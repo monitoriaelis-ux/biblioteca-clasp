@@ -1,0 +1,493 @@
+<!-- Seção "Incluir obras" — aberta pelo botão + da navbar (exibida dentro do Front.html). -->
+<div class="inc-layout">
+
+  <!-- Menu fixo da seção -->
+  <div class="inc-topbar">
+    <div class="inc-tabs">
+      <button type="button" class="inc-tab active" data-inc-tab="fanfic"><i class="fa-solid fa-fire"></i> Fanfiction</button>
+      <button type="button" class="inc-tab" data-inc-tab="livros"><i class="fa-solid fa-book"></i> E-book / Livros</button>
+    </div>
+
+    <div class="inc-actions" id="inc-actions-fanfic">
+      <span class="inc-count" id="inc-count"></span>
+      <button type="button" class="inc-btn" onclick="incAddLinhas(1)"><i class="fa-solid fa-plus"></i> Linha</button>
+      <button type="button" class="inc-btn" onclick="incAddLinhas(5)"><i class="fa-solid fa-plus"></i> 5 linhas</button>
+      <button type="button" class="inc-btn" onclick="incLimpar()"><i class="fa-solid fa-eraser"></i> Limpar</button>
+      <button type="button" class="inc-btn inc-btn-primary" id="inc-salvar" onclick="incSalvar()">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Salvar na planilha
+      </button>
+    </div>
+  </div>
+
+  <!-- Aba Fanfiction: tabela estilo planilha -->
+  <div class="inc-panel" id="inc-panel-fanfic">
+    <div class="inc-dica">
+      <i class="fa-solid fa-lightbulb"></i>
+      Idioma vai sempre como <strong>Inglês</strong> e as páginas são calculadas (palavras ÷ 300).
+      Dá para colar várias linhas copiadas de uma planilha direto na coluna <strong>Título</strong>.
+      O rascunho fica guardado neste navegador até você salvar.
+    </div>
+    <div class="inc-table-wrap">
+      <table class="inc-table">
+        <thead>
+          <tr>
+            <th class="c-num">#</th>
+            <th class="c-titulo">Título *</th>
+            <th class="c-autor">Autor *</th>
+            <th class="c-fandom">Fandom *</th>
+            <th class="c-serie">Série?</th>
+            <th class="c-nomeserie">Nome da série</th>
+            <th class="c-vol">Vol.</th>
+            <th class="c-genero">Gênero</th>
+            <th class="c-palavras">Palavras</th>
+            <th class="c-plot">Plot</th>
+            <th class="c-status">Status</th>
+            <th class="c-data">Data fim</th>
+            <th class="c-nota">Nota</th>
+            <th class="c-check" title="Favorita"><i class="fa-solid fa-heart" style="color:#e0607e"></i></th>
+            <th class="c-check" title="Abandonada"><i class="fa-solid fa-ban" style="color:#C9675C"></i></th>
+            <th class="c-capa">Link da capa</th>
+            <th class="c-del"></th>
+          </tr>
+        </thead>
+        <tbody id="inc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Aba E-book / Livros -->
+  <div class="inc-panel" id="inc-panel-livros" hidden>
+    <div class="placeholder-card">
+      <i class="fa-solid fa-book"></i>
+      <h2>E-book / Livros</h2>
+      <p>Em construção. Me diga quais campos você quer aqui.</p>
+    </div>
+  </div>
+
+  <datalist id="inc-dl-autores"></datalist>
+  <datalist id="inc-dl-fandoms"></datalist>
+  <datalist id="inc-dl-series"></datalist>
+  <div id="inc-toast" class="fanfic-toast"></div>
+</div>
+
+<style>
+  .inc-layout { height: 100%; display: flex; flex-direction: column; gap: 12px; }
+
+  .inc-topbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .inc-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-cards);
+    border-radius: 10px;
+    padding: 3px;
+    box-shadow: 0 2px 8px rgba(155, 125, 97, 0.06);
+  }
+  .inc-tab {
+    border: none;
+    background: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+    padding: 8px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .inc-tab i { margin-right: 6px; }
+  .inc-tab:hover { color: var(--texto-marrom); }
+  .inc-tab.active { background: var(--cor-fanfic); color: #fff; }
+
+  .inc-actions { display: flex; align-items: center; gap: 8px; }
+  .inc-actions[hidden] { display: none; }
+  .inc-count { font-size: 12px; font-weight: 600; color: var(--texto-secundario); margin-right: 4px; }
+  .inc-btn {
+    height: 36px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 10px;
+    background: var(--bg-cards);
+    box-shadow: 0 2px 8px rgba(155, 125, 97, 0.06);
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .inc-btn i { margin-right: 5px; }
+  .inc-btn:hover { background: var(--hover-bege); color: var(--texto-marrom); }
+  .inc-btn-primary { background: var(--cor-livro); color: #fff; }
+  .inc-btn-primary:hover { background: #7b968d; color: #fff; }
+  .inc-btn:disabled { opacity: 0.6; cursor: wait; }
+
+  .inc-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+  .inc-panel[hidden] { display: none; }
+  .inc-dica {
+    flex-shrink: 0;
+    font-size: 11.5px;
+    color: var(--texto-secundario);
+    background: var(--bg-cards);
+    border-radius: 10px;
+    padding: 8px 14px;
+  }
+  .inc-dica i { color: #E2A03F; margin-right: 6px; }
+
+  .inc-table-wrap {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    background: var(--bg-cards);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(155, 125, 97, 0.05);
+  }
+  .inc-table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 12px; }
+  .inc-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--hover-bege);
+    color: var(--texto-marrom);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 9px 8px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .inc-table td {
+    border-bottom: 1px solid var(--hover-bege);
+    padding: 4px;
+    vertical-align: middle;
+    text-align: center;
+    background: var(--bg-cards);
+  }
+  .inc-table tr.inc-lido td { background: #f4f8f6; }
+  .inc-table tr:hover td { background: var(--bg-creme); }
+
+  /* Larguras */
+  .c-num { width: 34px; color: var(--texto-secundario); font-weight: 600; }
+  .c-titulo { width: 210px; } .c-autor { width: 140px; } .c-fandom { width: 120px; }
+  .c-serie { width: 72px; } .c-nomeserie { width: 150px; } .c-vol { width: 60px; }
+  .c-genero { width: 115px; } .c-palavras { width: 90px; } .c-plot { width: 220px; }
+  .c-status { width: 105px; } .c-data { width: 130px; } .c-nota { width: 110px; }
+  .c-check { width: 40px; } .c-capa { width: 170px; } .c-del { width: 36px; }
+
+  /* Colunas # e Título congeladas à esquerda */
+  .inc-table th:nth-child(1), .inc-table td:nth-child(1) { position: sticky; left: 0; z-index: 1; min-width: 34px; }
+  .inc-table th:nth-child(2), .inc-table td:nth-child(2) { position: sticky; left: 34px; z-index: 1; min-width: 210px; box-shadow: 4px 0 6px -4px rgba(90, 71, 54, 0.15); }
+  .inc-table th:nth-child(1), .inc-table th:nth-child(2) { z-index: 3; }
+
+  .inc-in {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    color: var(--texto-marrom);
+    padding: 6px 6px;
+    border-radius: 6px;
+    outline: none;
+  }
+  .inc-in:focus { background: #fff; box-shadow: 0 0 0 2px rgba(218, 163, 143, 0.45); }
+  .inc-in.num { text-align: center; }
+  select.inc-in { cursor: pointer; text-align: center; }
+  textarea.inc-in { resize: none; height: 30px; line-height: 1.4; display: block; }
+  textarea.inc-in:focus { height: 90px; position: relative; z-index: 3; box-shadow: 0 4px 14px rgba(90, 71, 54, 0.15), 0 0 0 2px rgba(218, 163, 143, 0.45); }
+  .inc-in.erro { background: #fbe7e4; }
+  .inc-in:disabled { opacity: 0.35; }
+  .inc-vazio { color: var(--borda-bege); }
+
+  .inc-stars { display: flex; justify-content: center; gap: 3px; font-size: 14px; color: #E2A03F; cursor: pointer; }
+  .inc-stars i:hover { transform: scale(1.15); }
+  .inc-check { width: 16px; height: 16px; cursor: pointer; accent-color: var(--cor-fanfic); }
+  .inc-del {
+    border: none; background: none; color: var(--borda-bege); cursor: pointer;
+    width: 26px; height: 26px; border-radius: 50%;
+  }
+  .inc-del:hover { background: #fbe7e4; color: #C9675C; }
+  .inc-status-lido { color: #6f948a; font-weight: 700; }
+  .inc-status-lendo { color: #b8962a; font-weight: 700; }
+</style>
+
+<script>
+  // ===== Estado =====
+  const INC_STORAGE = 'incluirFanficsRascunho';
+  const INC_STATUS = ['Quero ler', 'Lendo', 'Lido'];
+  let incLinhas = [];
+  let incSalvando = false;
+
+  function incNovaLinha() {
+    return { titulo: '', autor: '', fandom: '', serie: false, nomeSerie: '', volume: '', genero: 'Romance',
+             palavras: '', plot: '', status: 'Quero ler', dataFim: '', nota: 0, favorita: false, abandonada: false, capaUrl: '' };
+  }
+  function incLinhaVazia(r) {
+    return !r.titulo.trim() && !r.autor.trim() && !r.fandom.trim() && !r.plot.trim() && !String(r.palavras).trim() && !r.capaUrl.trim();
+  }
+  function incHoje() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function incEsc(v) { return (v === undefined || v === null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  function incGuardar() {
+    try { localStorage.setItem(INC_STORAGE, JSON.stringify(incLinhas)); } catch (e) {}
+  }
+  function incCarregar() {
+    try {
+      const salvo = JSON.parse(localStorage.getItem(INC_STORAGE) || 'null');
+      if (Array.isArray(salvo) && salvo.length) incLinhas = salvo.map(r => Object.assign(incNovaLinha(), r));
+    } catch (e) {}
+    if (!incLinhas.length) incLinhas = [incNovaLinha(), incNovaLinha(), incNovaLinha()];
+  }
+
+  // Gêneros existentes na planilha (Romance sempre presente e padrão)
+  function incGeneros() {
+    const base = (typeof allBooks !== 'undefined' ? allBooks : []).map(b => (b['Gênero'] || b['Genero'] || '').toString().trim()).filter(Boolean);
+    const set = [...new Set(['Romance'].concat(base))];
+    return ['Romance'].concat(set.filter(g => g !== 'Romance').sort((a, b) => a.localeCompare(b, 'pt-BR')));
+  }
+
+  function incPreencherDatalists() {
+    const livros = typeof allBooks !== 'undefined' ? allBooks : [];
+    const uniq = arr => [...new Set(arr.map(v => (v || '').toString().trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const fandomsConfig = typeof FANDOMS !== 'undefined' ? FANDOMS.filter(f => !f.outros).map(f => f.nome) : [];
+    document.getElementById('inc-dl-autores').innerHTML = uniq(livros.map(b => b['Autor'])).map(a => `<option value="${incEsc(a)}">`).join('');
+    document.getElementById('inc-dl-fandoms').innerHTML = uniq(fandomsConfig.concat(livros.map(b => b['Fandom']))).map(a => `<option value="${incEsc(a)}">`).join('');
+    const series = typeof serieDaObra === 'function' ? livros.map(serieDaObra) : [];
+    document.getElementById('inc-dl-series').innerHTML = uniq(series).map(a => `<option value="${incEsc(a)}">`).join('');
+  }
+
+  // ===== Renderização =====
+  let incIniciado = false;
+  function renderIncluir() {
+    if (!incIniciado) {
+      incIniciado = true;
+      incCarregar();
+      document.querySelectorAll('.inc-tab').forEach(t => t.addEventListener('click', () => incTrocarAba(t.dataset.incTab)));
+    }
+    incPreencherDatalists();
+    incRenderTabela();
+  }
+
+  function incTrocarAba(aba) {
+    document.querySelectorAll('.inc-tab').forEach(t => t.classList.toggle('active', t.dataset.incTab === aba));
+    document.getElementById('inc-panel-fanfic').hidden = aba !== 'fanfic';
+    document.getElementById('inc-panel-livros').hidden = aba !== 'livros';
+    document.getElementById('inc-actions-fanfic').hidden = aba !== 'fanfic';
+  }
+
+  function incRenderTabela() {
+    const generos = incGeneros();
+    document.getElementById('inc-tbody').innerHTML = incLinhas.map((r, i) => {
+      const lido = r.status === 'Lido';
+      const gens = generos.includes(r.genero) ? generos : [r.genero].concat(generos);
+      let stars = '';
+      for (let v = 1; v <= 5; v++) stars += `<i class="${r.nota >= v ? 'fa-solid' : 'fa-regular'} fa-star" data-v="${v}"></i>`;
+      return `
+        <tr data-i="${i}" class="${lido ? 'inc-lido' : ''}">
+          <td class="c-num">${i + 1}</td>
+          <td><input class="inc-in" data-f="titulo" value="${incEsc(r.titulo)}" placeholder="Título"></td>
+          <td><input class="inc-in" data-f="autor" value="${incEsc(r.autor)}" list="inc-dl-autores" placeholder="Autor"></td>
+          <td><input class="inc-in" data-f="fandom" value="${incEsc(r.fandom)}" list="inc-dl-fandoms" placeholder="Fandom"></td>
+          <td>
+            <select class="inc-in" data-f="serie" data-tipo="bool">
+              <option value="0"${r.serie ? '' : ' selected'}>Não</option>
+              <option value="1"${r.serie ? ' selected' : ''}>Sim</option>
+            </select>
+          </td>
+          <td>${r.serie ? `<input class="inc-in" data-f="nomeSerie" value="${incEsc(r.nomeSerie)}" list="inc-dl-series" placeholder="Nome da série">` : '<span class="inc-vazio">—</span>'}</td>
+          <td>${r.serie ? `<input class="inc-in num" data-f="volume" type="number" min="1" value="${incEsc(r.volume)}">` : '<span class="inc-vazio">—</span>'}</td>
+          <td>
+            <select class="inc-in" data-f="genero">
+              ${gens.map(g => `<option value="${incEsc(g)}"${g === r.genero ? ' selected' : ''}>${incEsc(g)}</option>`).join('')}
+            </select>
+          </td>
+          <td><input class="inc-in num" data-f="palavras" type="number" min="0" step="1" value="${incEsc(r.palavras)}" placeholder="0"></td>
+          <td><textarea class="inc-in" data-f="plot" placeholder="Plot">${incEsc(r.plot)}</textarea></td>
+          <td>
+            <select class="inc-in ${r.status === 'Lido' ? 'inc-status-lido' : r.status === 'Lendo' ? 'inc-status-lendo' : ''}" data-f="status">
+              ${INC_STATUS.map(s => `<option value="${s}"${s === r.status ? ' selected' : ''}>${s}</option>`).join('')}
+            </select>
+          </td>
+          <td>${lido ? `<input class="inc-in num" data-f="dataFim" type="date" value="${incEsc(r.dataFim)}">` : '<span class="inc-vazio">—</span>'}</td>
+          <td>${lido ? `<div class="inc-stars" data-i="${i}" title="Clique na mesma estrela para limpar">${stars}</div>` : '<span class="inc-vazio">—</span>'}</td>
+          <td><input type="checkbox" class="inc-check" data-f="favorita"${r.favorita ? ' checked' : ''}></td>
+          <td><input type="checkbox" class="inc-check" data-f="abandonada"${r.abandonada ? ' checked' : ''}></td>
+          <td><input class="inc-in" data-f="capaUrl" type="url" value="${incEsc(r.capaUrl)}" placeholder="https://..."></td>
+          <td><button type="button" class="inc-del" title="Remover linha" onclick="incRemover(${i})"><i class="fa-solid fa-xmark"></i></button></td>
+        </tr>`;
+    }).join('');
+    incAtualizarContador();
+    incLigarEventos();
+  }
+
+  function incAtualizarContador() {
+    const n = incLinhas.filter(r => !incLinhaVazia(r)).length;
+    document.getElementById('inc-count').textContent = n ? `${n} ${n === 1 ? 'obra preenchida' : 'obras preenchidas'}` : '';
+    document.getElementById('inc-salvar').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Salvar na planilha${n ? ` (${n})` : ''}`;
+  }
+
+  // Campos que mudam a estrutura da linha (mostram/escondem células) redesenham a tabela
+  const INC_ESTRUTURAIS = ['serie', 'status'];
+
+  function incLigarEventos() {
+    const tbody = document.getElementById('inc-tbody');
+    tbody.querySelectorAll('[data-f]').forEach(el => {
+      const evento = (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'date') ? 'change' : 'input';
+      el.addEventListener(evento, () => {
+        const i = Number(el.closest('tr').dataset.i);
+        const f = el.dataset.f;
+        let v = el.type === 'checkbox' ? el.checked : el.dataset.tipo === 'bool' ? el.value === '1' : el.value;
+        incLinhas[i][f] = v;
+        el.classList.remove('erro');
+        if (f === 'status' && v === 'Lido' && !incLinhas[i].dataFim) incLinhas[i].dataFim = incHoje();
+        if (f === 'status' && v !== 'Lido') incLinhas[i].nota = 0;
+        incGuardar();
+        if (INC_ESTRUTURAIS.includes(f)) incRenderTabela(); else incAtualizarContador();
+      });
+    });
+    tbody.querySelectorAll('.inc-stars').forEach(el => {
+      el.addEventListener('click', e => {
+        const v = Number(e.target.dataset && e.target.dataset.v);
+        if (!v) return;
+        const r = incLinhas[Number(el.dataset.i)];
+        r.nota = r.nota === v ? 0 : v;
+        incGuardar();
+        incRenderTabela();
+      });
+    });
+    // Colar várias linhas (copiadas de uma planilha) a partir de qualquer célula de texto
+    tbody.querySelectorAll('input.inc-in, textarea.inc-in').forEach(el => {
+      el.addEventListener('paste', e => incColar(e, el));
+    });
+  }
+
+  // Ordem das colunas para colagem (igual à tabela)
+  const INC_COLS_COLAR = ['titulo', 'autor', 'fandom', 'serie', 'nomeSerie', 'volume', 'genero', 'palavras', 'plot', 'status', 'dataFim', 'nota', 'favorita', 'abandonada', 'capaUrl'];
+
+  function incColar(e, el) {
+    const texto = (e.clipboardData || window.clipboardData).getData('text');
+    if (!texto || (texto.indexOf('\t') < 0 && texto.indexOf('\n') < 0)) return; // colagem simples: deixa o navegador fazer
+    e.preventDefault();
+    const linhas = texto.replace(/\r/g, '').replace(/\n$/, '').split('\n').map(l => l.split('\t'));
+    const i0 = Number(el.closest('tr').dataset.i);
+    const c0 = INC_COLS_COLAR.indexOf(el.dataset.f);
+    const simNao = v => ['sim', 's', 'x', 'true', '1', 'yes'].includes(v.trim().toLowerCase());
+    linhas.forEach((cels, k) => {
+      const i = i0 + k;
+      if (!incLinhas[i]) incLinhas.push(incNovaLinha());
+      const r = incLinhas[i];
+      cels.forEach((valor, j) => {
+        const campo = INC_COLS_COLAR[c0 + j];
+        if (!campo) return;
+        valor = valor.trim();
+        if (campo === 'serie' || campo === 'favorita' || campo === 'abandonada') r[campo] = simNao(valor);
+        else if (campo === 'status') r.status = INC_STATUS.find(s => s.toLowerCase() === valor.toLowerCase()) || r.status;
+        else if (campo === 'palavras' || campo === 'volume') r[campo] = valor.replace(/[^\d]/g, '');
+        else if (campo === 'nota') r.nota = Math.max(0, Math.min(5, Math.round(Number(valor.replace(',', '.')) || 0)));
+        else r[campo] = valor;
+      });
+      if (r.status === 'Lido' && !r.dataFim) r.dataFim = incHoje();
+    });
+    incGuardar();
+    incRenderTabela();
+  }
+
+  // ===== Ações =====
+  function incAddLinhas(n) {
+    for (let k = 0; k < n; k++) incLinhas.push(incNovaLinha());
+    incGuardar();
+    incRenderTabela();
+    const wrap = document.querySelector('.inc-table-wrap');
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function incRemover(i) {
+    incLinhas.splice(i, 1);
+    if (!incLinhas.length) incLinhas.push(incNovaLinha());
+    incGuardar();
+    incRenderTabela();
+  }
+
+  function incLimpar() {
+    const n = incLinhas.filter(r => !incLinhaVazia(r)).length;
+    if (n && !confirm(`Apagar as ${n} linhas preenchidas? Elas ainda não foram salvas na planilha.`)) return;
+    incLinhas = [incNovaLinha(), incNovaLinha(), incNovaLinha()];
+    incGuardar();
+    incRenderTabela();
+  }
+
+  let incToastTimer = null;
+  function incToast(msg, erro) {
+    const t = document.getElementById('inc-toast');
+    t.textContent = msg;
+    t.classList.toggle('erro', !!erro);
+    t.classList.add('show');
+    clearTimeout(incToastTimer);
+    incToastTimer = setTimeout(() => t.classList.remove('show'), erro ? 6000 : 2500);
+  }
+
+  function incValidar() {
+    let ok = true;
+    const marcar = (i, f) => {
+      ok = false;
+      const el = document.querySelector(`#inc-tbody tr[data-i="${i}"] [data-f="${f}"]`);
+      if (el) el.classList.add('erro');
+    };
+    incLinhas.forEach((r, i) => {
+      if (incLinhaVazia(r)) return;
+      if (!r.titulo.trim()) marcar(i, 'titulo');
+      if (!r.autor.trim()) marcar(i, 'autor');
+      if (!r.fandom.trim()) marcar(i, 'fandom');
+      if (r.serie && !r.nomeSerie.trim()) marcar(i, 'nomeSerie');
+      if (r.serie && !String(r.volume).trim()) marcar(i, 'volume');
+      if (r.status === 'Lido' && !r.dataFim) marcar(i, 'dataFim');
+    });
+    return ok;
+  }
+
+  function incSalvar() {
+    if (incSalvando) return;
+    const preenchidas = incLinhas.map((r, i) => ({ r, i })).filter(x => !incLinhaVazia(x.r));
+    if (!preenchidas.length) { incToast('Nenhuma obra preenchida para salvar.', true); return; }
+    if (!incValidar()) { incToast('Preencha os campos destacados em vermelho.', true); return; }
+
+    incSalvando = true;
+    const btn = document.getElementById('inc-salvar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+    const payload = preenchidas.map(x => Object.assign({}, x.r, { palavras: Number(x.r.palavras) || 0 }));
+    google.script.run
+      .withSuccessHandler(raw => {
+        const res = JSON.parse(raw);
+        incSalvando = false;
+        btn.disabled = false;
+        // Remove da tabela só as linhas salvas
+        const salvas = new Set(preenchidas.map(x => x.i));
+        incLinhas = incLinhas.filter((r, i) => !salvas.has(i));
+        if (!incLinhas.length) incLinhas = [incNovaLinha(), incNovaLinha(), incNovaLinha()];
+        incGuardar();
+        incRenderTabela();
+        const msg = `${res.salvas} ${res.salvas === 1 ? 'obra salva' : 'obras salvas'} na planilha ✓`;
+        if (res.avisos && res.avisos.length) incToast(msg + ' — atenção: ' + res.avisos.join('; '), true);
+        else incToast(msg);
+        // Recarrega os dados para atualizar as outras seções
+        google.script.run.withSuccessHandler(init).getHomeDataAPI();
+      })
+      .withFailureHandler(err => {
+        incSalvando = false;
+        btn.disabled = false;
+        incAtualizarContador();
+        incToast('Não foi possível salvar: ' + (err && err.message ? err.message : err), true);
+      })
+      .saveFanficsBatchAPI(JSON.stringify(payload));
+  }
+</script>

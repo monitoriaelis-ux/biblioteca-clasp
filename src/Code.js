@@ -176,6 +176,129 @@ function updateObraAPI(JSONPayload) {
   }
 }
 
+// Inclui várias fanfics de uma vez (página "Incluir obras").
+// rows: [{ titulo, autor, fandom, serie: bool, nomeSerie, volume, genero, palavras, plot,
+//          status, dataFim: "yyyy-mm-dd", nota, favorita: bool, abandonada: bool, capaUrl }]
+function saveFanficsBatchAPI(JSONPayload) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const rows = JSON.parse(JSONPayload);
+    if (!rows || !rows.length) return JSON.stringify({ success: true, salvas: 0, avisos: [] });
+
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Base");
+    if (!sheet) throw new Error("A aba 'Base' não foi encontrada.");
+
+    const lastCol = sheet.getLastColumn();
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => h.toString().trim());
+    const norm = v => (v === null || v === undefined ? "" : v.toString()).trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const colPor = nomes => headers.findIndex(h => nomes.indexOf(norm(h)) >= 0);
+
+    const C = {
+      tipo: colPor(["tipo"]),
+      titulo: colPor(["titulo"]),
+      autor: colPor(["autor"]),
+      fandom: colPor(["fandom"]),
+      serie: colPor(["serie"]),
+      nomeSerie: colPor(["nome da serie", "nome serie", "serie (nome)"]),
+      volume: colPor(["volume", "vol", "vol."]),
+      genero: colPor(["genero"]),
+      idioma: colPor(["idioma"]),
+      paginas: colPor(["paginas", "numero de paginas", "n de paginas"]),
+      palavras: colPor(["palavras", "numero de palavras"]),
+      plot: colPor(["plot", "sinopse"]),
+      status: colPor(["status"]),
+      dataFinal: colPor(["data final", "data fim", "data de fim"]),
+      ano: colPor(["ano da leitura", "ano de leitura", "ano leitura", "ano"]),
+      nota: colPor(["nota"]),
+      capa: colPor(["url da imagem", "url da capa", "capa url", "link da capa"]),
+      obs: 14 // coluna O
+    };
+    if (C.titulo < 0) throw new Error("Coluna 'Título' não encontrada na aba Base.");
+
+    // Primeira linha livre = depois da última linha com Título preenchido
+    const totalLinhas = sheet.getMaxRows();
+    const titulos = sheet.getRange(1, C.titulo + 1, totalLinhas, 1).getValues();
+    let ultima = 1;
+    for (let i = titulos.length - 1; i >= 1; i--) {
+      if (titulos[i][0] !== "" && titulos[i][0] !== null) { ultima = i + 1; break; }
+    }
+    const inicio = ultima + 1;
+    const n = rows.length;
+    if (inicio + n - 1 > totalLinhas) sheet.insertRowsAfter(totalLinhas, inicio + n - 1 - totalLinhas);
+
+    const STATUS_VALIDOS = ["Lido", "Lendo", "Quero ler"];
+    const valores = {}; // índice da coluna -> array de valores (uma linha por obra)
+    const put = (c, i, v) => {
+      if (c === undefined || c < 0) return;
+      if (!valores[c]) valores[c] = new Array(n).fill("");
+      valores[c][i] = v;
+    };
+
+    rows.forEach((r, i) => {
+      const titulo = (r.titulo || "").toString().trim();
+      if (!titulo) throw new Error("Linha " + (i + 1) + ": título obrigatório.");
+      const status = STATUS_VALIDOS.indexOf(r.status) >= 0 ? r.status : "Quero ler";
+      const palavras = Number(r.palavras) || 0;
+
+      put(C.tipo, i, "Fanfiction");
+      put(C.titulo, i, titulo);
+      put(C.autor, i, (r.autor || "").trim());
+      put(C.fandom, i, (r.fandom || "").trim());
+      if (r.serie) {
+        if (C.nomeSerie >= 0) { put(C.serie, i, "Sim"); put(C.nomeSerie, i, (r.nomeSerie || "").trim()); }
+        else put(C.serie, i, (r.nomeSerie || "").trim() || "Sim");
+        put(C.volume, i, r.volume === "" || r.volume === undefined ? "" : Number(r.volume));
+      } else {
+        put(C.serie, i, "Não");
+      }
+      put(C.genero, i, r.genero || "Romance");
+      put(C.idioma, i, "Inglês");
+      put(C.palavras, i, palavras || "");
+      put(C.paginas, i, palavras ? Math.ceil(palavras / 300) : "");
+      put(C.plot, i, (r.plot || "").trim());
+      put(C.status, i, status);
+      if (status === "Lido" && r.dataFim) {
+        const p = r.dataFim.split("-").map(Number); // yyyy-mm-dd
+        const data = new Date(p[0], p[1] - 1, p[2]);
+        put(C.dataFinal, i, data);
+        put(C.ano, i, p[0]);
+      }
+      if (status === "Lido" && r.nota) put(C.nota, i, Number(r.nota));
+      const obs = [r.favorita ? "Favorita" : "", r.abandonada ? "Abandonada" : ""].filter(Boolean).join(", ");
+      if (obs) put(C.obs, i, obs);
+      put(C.capa, i, (r.capaUrl || "").trim());
+    });
+
+    // Grava só as colunas preenchidas (não apaga fórmulas que já estejam nas linhas)
+    Object.keys(valores).forEach(c => {
+      c = Number(c);
+      if (c >= lastCol) return;
+      sheet.getRange(inicio, c + 1, n, 1).setValues(valores[c].map(v => [v]));
+    });
+
+    // Colunas com fórmula na linha de cima (ex.: imagem da capa): copia a fórmula para as novas linhas
+    if (ultima >= 2) {
+      const modelo = sheet.getRange(ultima, 1, 1, lastCol).getFormulasR1C1()[0];
+      const atuais = sheet.getRange(inicio, 1, n, lastCol).getFormulasR1C1();
+      modelo.forEach((formula, c) => {
+        if (!formula || valores[c]) return;
+        const vazias = atuais.every(linha => !linha[c]);
+        if (vazias) sheet.getRange(inicio, c + 1, n, 1).setFormulasR1C1(new Array(n).fill([formula]));
+      });
+    }
+
+    const avisos = [];
+    if (C.ano < 0 && rows.some(r => r.status === "Lido")) avisos.push("coluna 'Ano da leitura' não encontrada");
+    if (C.dataFinal < 0 && rows.some(r => r.status === "Lido")) avisos.push("coluna 'Data final' não encontrada");
+    if (C.capa < 0 && rows.some(r => r.capaUrl)) avisos.push("coluna 'URL da imagem' não encontrada");
+    return JSON.stringify({ success: true, salvas: n, linhaInicial: inicio, avisos: avisos });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 // Insere o conteúdo de outro arquivo HTML do projeto dentro do Front
 // (usado pelas seções da navbar: <?!= include('Estante'); ?>)
 function include(filename) {
