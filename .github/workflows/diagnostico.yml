@@ -1,0 +1,39 @@
+# Diagnóstico (somente leitura): baixa o código guardado no Apps Script e compara com o do repositório.
+# Não altera nada no Apps Script nem no GitHub.
+name: Diagnóstico (comparar com o Apps Script)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  comparar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar clasp
+        run: npm install -g @google/clasp@3
+
+      - name: Configurar credencial
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: printf '%s' "$CLASPRC_JSON" > ~/.clasprc.json
+
+      - name: Baixar e comparar
+        run: |
+          mkdir -p /tmp/remoto && cp .clasp.json /tmp/remoto/
+          cd /tmp/remoto && clasp pull
+          cd "$GITHUB_WORKSPACE"
+          echo "== Arquivos no Apps Script =="; ls -la /tmp/remoto/src
+          echo "== Diferenças (repositório x Apps Script) =="
+          diff -r src /tmp/remoto/src && echo "Nenhuma diferença."
+          echo "== Caracteres fora do ASCII no Epilogo remoto (primeiros) =="
+          grep -nP '[^\x00-\x7F]' /tmp/remoto/src/Epilogo.html | head -5 || true
+
+      - name: Remover credencial
+        if: always()
+        run: rm -f ~/.clasprc.json
