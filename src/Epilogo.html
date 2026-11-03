@@ -1,4 +1,12 @@
 <!-- Seção "Epílogo" — diário de leitura estilo blog/Tumblr (posts guardados na aba "Epílogo" da planilha). -->
+<script>
+  // Diagnóstico: mostra na tela qualquer erro de JavaScript (no lugar de "Carregando o diário...")
+  window.addEventListener('error', function (e) {
+    var el = document.getElementById('ep-posts');
+    var msg = (e && e.message ? e.message : 'erro desconhecido') + (e && e.lineno ? ' (linha ' + e.lineno + ')' : '');
+    if (el) el.innerHTML = '<div class="obras-vazio">Erro no diário: ' + String(msg).replace(/</g, '&lt;') + '</div>';
+  });
+</script>
 <div class="ep-layout">
 
   <!-- Feed -->
@@ -511,4 +519,13 @@
     clearTimeout(epToastTimer);
     epToastTimer = setTimeout(() => t.classList.remove('show'), erro ? 5000 : 2000);
   }
+</script>
+<script>
+  // Diagnóstico: se o código principal do diário não carregou, avisa na tela
+  (function () {
+    if (typeof renderEpilogo !== 'function') {
+      var el = document.getElementById('ep-posts');
+      if (el && /Carregando/.test(el.textContent)) el.innerHTML = '<div class="obras-vazio">O código do diário não carregou neste navegador. Me mande um print desta mensagem e o nome/versão do navegador.</div>';
+    }
+  })();
 </script>
