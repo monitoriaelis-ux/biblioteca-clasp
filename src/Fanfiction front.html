@@ -52,14 +52,14 @@
       <button type="button" class="fanfic-sort-btn" id="sort-alfa" title="Ordenar por título">
         <i class="fa-solid fa-arrow-down-a-z"></i> <span>A-Z</span>
       </button>
-      <button type="button" class="fanfic-sort-btn" id="sort-palavras" title="Ordenar por número de palavras">
-        <i class="fa-solid fa-arrow-down-wide-short"></i> <span>Palavras</span>
+      <button type="button" class="fanfic-sort-btn" id="sort-palavras" title="Ordenar por número de páginas">
+        <i class="fa-solid fa-arrow-down-wide-short"></i> <span>Páginas</span>
       </button>
     </div>
 
     <div class="fanfic-list-scroll">
       <div class="obra-row obra-header">
-        <span></span><span class="col-titulo">Título</span><span>Palavras</span><span>Fandom</span><span>Status</span><span>Nota</span><span></span>
+        <span></span><span class="col-titulo">Título</span><span>Páginas</span><span>Fandom</span><span>Status</span><span>Nota</span><span></span>
       </div>
       <div id="fanfic-cards-grid" class="obras-list">
         <div class="obras-vazio">Carregando suas obsessões...</div>
@@ -1015,10 +1015,10 @@
     } else if (fanficOrdem === 'alfa') {
       list = list.slice().sort((a, b) => (a['Título'] || '').toString().localeCompare((b['Título'] || '').toString(), 'pt-BR', { sensitivity: 'base' }));
     } else if (fanficOrdem === 'palavras') {
-      list = list.slice().sort((a, b) => fanficNum(a['Palavras']) - fanficNum(b['Palavras']));
+      list = list.slice().sort((a, b) => fanficNum(a['Páginas']) - fanficNum(b['Páginas']));
     }
     if (!fanficSerie && fanficOrdem && !fanficOrdemAsc) list.reverse();
-    // Séries sempre juntas e em ordem de volume (exceto ao ordenar por palavras)
+    // Séries sempre juntas e em ordem de volume (exceto ao ordenar por páginas)
     if (!fanficSerie && fanficOrdem !== 'palavras') list = agruparSeries(list);
 
     // Estado visual dos botões de ordenação
@@ -1031,8 +1031,8 @@
     btnPal.querySelector('i').className = (fanficOrdem === 'palavras' && fanficOrdemAsc) ? 'fa-solid fa-arrow-up-short-wide' : 'fa-solid fa-arrow-down-wide-short';
     btnAlfa.title = fanficOrdem !== 'alfa' ? 'Ordenar de A a Z'
       : fanficOrdemAsc ? 'A-Z (clique para Z-A)' : 'Z-A (clique para remover a ordenação)';
-    btnPal.title = fanficOrdem !== 'palavras' ? 'Mais palavras primeiro'
-      : !fanficOrdemAsc ? 'Mais palavras primeiro (clique para inverter)' : 'Menos palavras primeiro (clique para remover a ordenação)';
+    btnPal.title = fanficOrdem !== 'palavras' ? 'Mais páginas primeiro'
+      : !fanficOrdemAsc ? 'Mais páginas primeiro (clique para inverter)' : 'Menos páginas primeiro (clique para remover a ordenação)';
     // Na série a ordem é fixa por volume: botões ficam apagados
     btnAlfa.classList.toggle('active', !fanficSerie && fanficOrdem === 'alfa');
     btnPal.classList.toggle('active', !fanficSerie && fanficOrdem === 'palavras');
@@ -1126,7 +1126,7 @@
           </div>
           <span class="obra-autor">${fanficEsc(f['Autor'] || 'Autor desconhecido')}${serieHtml}</span>
         </div>
-        <span class="obra-palavras">${f['Palavras'] ? fanficNum(f['Palavras']).toLocaleString('pt-BR') : '—'}</span>
+        <span class="obra-palavras">${f['Páginas'] ? fanficNum(f['Páginas']).toLocaleString('pt-BR') : '—'}</span>
         <span class="obra-cel"><span class="obra-fandom" title="${fanficEsc(f['Fandom'])}">${fanficEsc(f['Fandom'] || '—')}</span></span>
         <div class="obra-cel">
         ${lida ? `

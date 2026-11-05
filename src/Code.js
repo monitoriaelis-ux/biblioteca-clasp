@@ -181,7 +181,7 @@ function updateObraAPI(JSONPayload) {
 
 // Inclui várias obras de uma vez (página "Incluir obras").
 // rows: [{ tipo: "Fanfiction" | "Ebook" | "Livro", titulo, autor, fandom, serie: bool, nomeSerie, volume,
-//          genero, orientacao, idioma, palavras (fanfic), paginas (livro/ebook), plot,
+//          genero, orientacao, idioma, paginas, palavras (opcional, fanfic), plot,
 //          status, dataFim: "yyyy-mm-dd", nota, favorita: bool, abandonada: bool, capaUrl }]
 function saveFanficsBatchAPI(JSONPayload) { return saveObrasBatchAPI(JSONPayload); }
 
@@ -250,7 +250,8 @@ function saveObrasBatchAPI(JSONPayload) {
       const tipo = ["Fanfiction", "Ebook", "Livro"].indexOf(r.tipo) >= 0 ? r.tipo : "Fanfiction";
       const fanfic = tipo === "Fanfiction";
       const palavras = fanfic ? (Number(r.palavras) || 0) : 0;
-      const paginas = fanfic ? (palavras ? Math.ceil(palavras / 300) : "") : (Number(r.paginas) || "");
+      // páginas informadas têm prioridade; palavras ÷ 300 só como alternativa (rascunhos antigos)
+      const paginas = Number(r.paginas) || (fanfic && palavras ? Math.ceil(palavras / 300) : "");
 
       put(C.tipo, i, tipo);
       put(C.titulo, i, titulo);
