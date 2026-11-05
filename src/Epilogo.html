@@ -240,8 +240,24 @@
   let epEditando = null;              // id do post em edição
   let epImagens = [];                 // imagens do post sendo escrito
   const epF = { busca: '', tag: null, obra: null };
-  const EP_HUMORES = ['\u{1F60D} apaixonada', '\u{1F970} quentinha', '\u{1F62D} chorando', '\u{1F494} de coração partido', '\u{1F92F} surtando', '\u{1F631} em choque',
-    '\u{1F624} revoltada', '\u{1F60F} shippando', '\u{1F525} com calor', '\u{1F60C} em paz', '\u{1F914} pensativa', '\u{1F634} sonolenta', '\u{1F913} nerd', '\u{1F972} nostálgica', '\u{1F4DA} sem conseguir parar'];
+  // Humores sugeridos (emoji pelo código, para o Apps Script não alterar)
+  const EP_HUMORES = [
+    [0x1F60D, 'apaixonada'],
+    [0x1F970, 'quentinha'],
+    [0x1F62D, 'chorando'],
+    [0x1F494, 'de coração partido'],
+    [0x1F92F, 'surtando'],
+    [0x1F631, 'em choque'],
+    [0x1F624, 'revoltada'],
+    [0x1F60F, 'shippando'],
+    [0x1F525, 'com calor'],
+    [0x1F60C, 'em paz'],
+    [0x1F914, 'pensativa'],
+    [0x1F634, 'sonolenta'],
+    [0x1F913, 'nerd'],
+    [0x1F972, 'nostálgica'],
+    [0x1F4DA, 'sem conseguir parar']
+  ].map(function (h) { return String.fromCodePoint(h[0]) + ' ' + h[1]; });
   const EP_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 
   const epNorm = v => (v === undefined || v === null ? '' : String(v)).trim().toLowerCase();
@@ -256,7 +272,10 @@
   function epArg(v) { return `decodeURIComponent('${encodeURIComponent(String(v)).replace(/'/g, '%27')}')`; }
   // Texto: escapa e transforma links em clicáveis
   function epTextoHtml(t) {
-    return epEsc(t).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    const abre = String.fromCharCode(60), fecha = String.fromCharCode(62);  // sinais de menor/maior
+    return epEsc(t).replace(/(https?:\/\/[^\s&]+)/g, function (url) {
+      return abre + 'a href="' + url + '" target="_blank" rel="noopener"' + fecha + url + abre + '/a' + fecha;
+    });
   }
   // Links de página do Giphy viram o GIF direto
   function epNormalizarImagem(url) {
@@ -451,7 +470,7 @@
 
   function epRender() {
     document.getElementById('ep-busca-x').hidden = !epF.busca;
-    const filtroAtivo = epF.tag ? `#${epF.tag}` : epF.obra ? `\u{1F4D6} ${epF.obra}` : '';
+    const filtroAtivo = epF.tag ? `#${epF.tag}` : epF.obra ? `${String.fromCodePoint(0x1F4D6)} ${epF.obra}` : '';
     document.getElementById('ep-filtro-ativo').hidden = !filtroAtivo;
     document.getElementById('ep-filtro-texto').textContent = filtroAtivo ? `Mostrando: ${filtroAtivo}` : '';
 
@@ -475,7 +494,7 @@
     const capa = obra && obra.capa ? `<img class="obra-capa" src="${epEsc(obra.capa)}" alt="" loading="lazy">` : '<div class="obra-capa"><i class="fa-solid fa-book"></i></div>';
     const n = Math.min(p.imagens.length, 3);
     return `
-      <article class="ep-post">
+      <div class="ep-post">
         <div class="ep-post-topo">
           <span class="ep-data">${epDataBonita(p.data)}</span>
           <div class="ep-post-acoes">
@@ -485,7 +504,7 @@
         </div>
         ${p.humor ? `<div class="ep-post-humor">humor: <b>${epEsc(p.humor)}</b></div>` : ''}
         <div class="ep-post-corpo">
-          ${p.titulo ? `<h3 class="ep-post-titulo">${epEsc(p.titulo)}</h3>` : ''}
+          ${p.titulo ? `<div class="ep-post-titulo">${epEsc(p.titulo)}</div>` : ''}
           ${p.obra ? `
             <div class="ep-obra-chip" title="Ver todos os posts desta obra" onclick="epFiltrarObra(${epArg(p.obra)})">
               ${capa}
@@ -498,7 +517,7 @@
           ${n ? `<div class="ep-imagens n${n}">${p.imagens.map(u => `<img src="${epEsc(u)}" alt="" loading="lazy">`).join('')}</div>` : ''}
           ${p.tags.length ? `<div class="ep-post-tags">${p.tags.map(t => `<span class="ep-tag${epNorm(epF.tag) === epNorm(t) ? ' ativo' : ''}" onclick="epFiltrarTag(${epArg(t)})">#${epEsc(t)}</span>`).join('')}</div>` : ''}
         </div>
-      </article>`;
+      </div>`;
   }
 
   function epRenderLateral() {
