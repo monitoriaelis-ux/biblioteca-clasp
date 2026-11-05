@@ -284,11 +284,23 @@
     const todas = epObras();
     return todas.find(o => epNorm(o.titulo) === t && (!tipo || epNorm(o.tipo) === epNorm(tipo))) || todas.find(o => epNorm(o.titulo) === t) || null;
   }
+  // Monta as sugestões criando os elementos direto (o Apps Script altera tags de opção escritas como texto no código)
+  function epPreencherDatalist(id, itens) {
+    const dl = document.getElementById(id);
+    while (dl.firstChild) dl.removeChild(dl.firstChild);
+    itens.forEach(it => {
+      const op = document.createElement('option');
+      op.value = it.valor;
+      if (it.rotulo) op.label = it.rotulo;
+      dl.appendChild(op);
+    });
+  }
+
   function epPreencherObras() {
     const vistos = new Set();
-    document.getElementById('ep-dl-obras').innerHTML = epObras().filter(o => {
+    epPreencherDatalist('ep-dl-obras', epObras().filter(o => {
       const k = epNorm(o.titulo); if (vistos.has(k)) return false; vistos.add(k); return true;
-    }).map(o => `<option value="${epEsc(o.titulo)}">${epEsc(o.sub)}</option>`).join('');
+    }).map(o => ({ valor: o.titulo, rotulo: o.sub })));
   }
 
   // ===== Carregamento =====
@@ -330,7 +342,7 @@
 
   function epIniciar() {
     epIniciado = true;
-    document.getElementById('ep-dl-humores').innerHTML = EP_HUMORES.map(h => `<option value="${epEsc(h)}">`).join('');
+    epPreencherDatalist('ep-dl-humores', EP_HUMORES.map(h => ({ valor: h })));
     const humor = document.getElementById('ep-humor');
     document.getElementById('ep-humores').innerHTML = EP_HUMORES.map(h =>
       `<button type="button" class="ep-humor-chip" title="${epEsc(h.replace(/^\S+\s/, ''))}" data-h="${epEsc(h)}">${h.split(' ')[0]}</button>`).join('');
