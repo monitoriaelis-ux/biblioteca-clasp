@@ -433,7 +433,7 @@
           <div class="nr-titulo-bloco">
             <div class="nr-titulo-linha">
               <span class="nr-titulo" title="${nrEsc(nrTitulo(o))}">${nrEsc(nrTitulo(o) || trad || 'Sem título')}</span>
-              ${nrFav(o) ? '<i class="fa-solid fa-heart nr-icone-fav" title="Favorito"></i>' : ''}
+              <button type="button" class="obra-fav-btn${nrFav(o) ? ' on' : ''}" title="${nrFav(o) ? 'Favorito — clique para desfavoritar' : 'Favoritar'}" onclick="nrAlterarFavorito(${i}, event)"><i class="${nrFav(o) ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>
             </div>
             ${sub ? `<span class="nr-sub">${sub}</span>` : ''}
           </div>
@@ -551,6 +551,7 @@
         const r = JSON.parse(raw);
         if (r.row) o._row = r.row;
         if (r.ano && r.colunaAno) o[r.colunaAno] = r.ano;
+        if (r.fav !== undefined) { o._fav = r.fav; o['Favorito'] = r.fav; }
         nrRenderTudo();
         if (r.avisos && r.avisos.length) nrToast('Salvo, mas: ' + r.avisos.join('; '), true);
         else nrToast('Salvo na planilha ✓');
@@ -573,6 +574,16 @@
     const anterior = { Status: o['Status'] };
     o['Status'] = novo;
     nrSalvar(i, { Status: novo }, anterior, { marcarLeitura: novo === 'Lido' });
+  }
+
+  function nrAlterarFavorito(i, ev) {
+    if (ev) ev.stopPropagation();
+    const o = nrObras[i];
+    if (!o) return;
+    const marcar = !nrFav(o);
+    const anterior = { _fav: o._fav, Favorito: o['Favorito'] };
+    o._fav = marcar ? 'Sim' : ''; o['Favorito'] = o._fav;   // mostra na hora; o valor final vem da planilha
+    nrSalvar(i, { Favorito: marcar }, anterior);
   }
 
   function nrAlterarNota(i, ev) {

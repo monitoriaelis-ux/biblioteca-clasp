@@ -574,7 +574,7 @@
   }
 
   function renderFavorites(obras) {
-    const favs = obras.filter(o => norm(o["Obs."]) === 'favorite'); 
+    const favs = obras.filter(o => /favorit/.test(norm(o["Obs."]))); 
     const container = document.getElementById("favorites-grid");
     if (favs.length === 0) { container.innerHTML = `<div style="font-size: 13px; color: var(--texto-secundario); grid-column: span 3;">Nenhum favorito encontrado.</div>`; return; }
     

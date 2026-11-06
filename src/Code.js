@@ -121,7 +121,32 @@ function updateObraAPI(JSONPayload) {
     }
 
     const STATUS_VALIDOS = ["Lido", "Lendo", "Quero ler"];
-    const campos = p.campos || {};
+    const campos = Object.assign({}, p.campos || {});
+    const resultadoExtra = {};
+
+    // Favorito: Base -> "Favorite" na coluna O (mantém o resto, ex.: abandonada);
+    //           Nora -> coluna "Favorito" (caixa de seleção ou "Sim")
+    if (campos.hasOwnProperty("Favorito")) {
+      const marcar = !!campos.Favorito;
+      delete campos.Favorito;
+      if (!nora) {
+        const cel = sheet.getRange(row, 15); // coluna O
+        const partes = String(cel.getValue() || "").split(",").map(x => x.trim()).filter(x => x && !/favorit/i.test(x));
+        if (marcar) partes.unshift("Favorite");
+        const novo = partes.join(", ");
+        cel.setValue(novo);
+        resultadoExtra.obs = novo;
+      } else {
+        const cFav = headers.findIndex(h => ["favorito", "favorita"].indexOf(norm(h)) >= 0);
+        if (cFav < 0) throw new Error("Coluna 'Favorito' não encontrada na aba Nora Roberts.");
+        const colValores = sheet.getRange(2, cFav + 1, Math.max(lastRow - 1, 1), 1).getValues().map(r => r[0]);
+        const usaCaixa = colValores.some(v => typeof v === "boolean");
+        const valor = usaCaixa ? marcar : (marcar ? "Sim" : "");
+        sheet.getRange(row, cFav + 1).setValue(valor);
+        resultadoExtra.fav = valor;
+      }
+    }
+
     Object.keys(campos).forEach(nome => {
       let valor = campos[nome];
       if (nome === "Status") {
@@ -149,7 +174,7 @@ function updateObraAPI(JSONPayload) {
     });
 
     // Ao marcar como lido: grava a data de hoje em "Data final" e o ano em "Ano da leitura"
-    const resultado = { success: true, row: row, avisos: [] };
+    const resultado = Object.assign({ success: true, row: row, avisos: [] }, resultadoExtra);
     if (p.marcarLeitura) {
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
@@ -276,7 +301,8 @@ function saveObrasBatchAPI(JSONPayload) {
         put(C.ano, i, p[0]);
       }
       if (status === "Lido" && r.nota) put(C.nota, i, Number(r.nota));
-      const obs = [r.favorita ? "Favorita" : "", r.abandonada ? "Abandonada" : ""].filter(Boolean).join(", ");
+      // "Favorite" é o valor que o painel Meus Favoritos (Prefácio) reconhece
+      const obs = [r.favorita ? "Favorite" : "", r.abandonada ? "Abandonada" : ""].filter(Boolean).join(", ");
       if (obs) put(C.obs, i, obs);
       put(C.capa, i, (r.capaUrl || "").trim());
     });

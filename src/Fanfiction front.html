@@ -511,6 +511,12 @@
   .obra-titulo-linha { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .obra-badge { flex-shrink: 0; font-size: 11px; }
   .obra-badge.fav { color: #e0607e; }
+  .obra-fav-btn {
+    border: none; background: none; padding: 0 2px; cursor: pointer; flex-shrink: 0;
+    font-size: 11.5px; color: var(--borda-bege); transition: transform 0.1s, color 0.15s;
+  }
+  .obra-fav-btn:hover { color: #e0607e; transform: scale(1.2); }
+  .obra-fav-btn.on { color: #e0607e; }
   .obra-badge.aband { color: #C9675C; }
   .obra-card.abandonada .obra-titulo { color: var(--texto-secundario); }
   .obra-serie { color: var(--texto-marrom); font-weight: 600; cursor: pointer; border-radius: 4px; }
@@ -1110,7 +1116,7 @@
       : '';
     const releituras = Math.max(0, Math.floor(fanficNum(f['Releituras'])));
     const badges =
-      (obs.favorita ? '<i class="fa-solid fa-heart obra-badge fav" title="Favorita"></i>' : '') +
+      `<button type="button" class="obra-fav-btn${obs.favorita ? ' on' : ''}" title="${obs.favorita ? 'Favorita — clique para desfavoritar' : 'Favoritar'}" onclick="alterarFavoritoObra(${idx}, event)"><i class="${obs.favorita ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>` +
       (obs.abandonada ? '<i class="fa-solid fa-ban obra-badge aband" title="Abandonada"></i>' : '');
     const lida = fanficLida(f);
     const statusAtual = (f['Status'] || '').toString().trim();
@@ -1190,6 +1196,7 @@
     renderFanficsView();
     if (typeof renderDashboard === 'function') renderDashboard();
     if (typeof renderRecentReads === 'function') renderRecentReads();
+    if (typeof renderFavorites === 'function') renderFavorites(allBooks);
   }
 
   function salvarObra(idx, campos, anterior, opcoes) {
@@ -1204,6 +1211,7 @@
         const r = JSON.parse(raw);
         if (r.row) f._row = r.row;
         if (r.dataFinal) f['Data final'] = r.dataFinal;
+        if (r.obs !== undefined) { f._obs = r.obs; f['Obs.'] = r.obs; }
         if (r.ano && r.colunaAno) f[r.colunaAno] = r.ano;
         atualizarTelasAposEdicao();
         if (r.avisos && r.avisos.length) fanficToast('Salvo, mas: ' + r.avisos.join('; '), true);
@@ -1281,6 +1289,19 @@
     const anterior = { Releituras: f['Releituras'] };
     f['Releituras'] = novo || '';
     salvarObra(idx, { Releituras: novo }, anterior);
+  }
+
+  function alterarFavoritoObra(idx, ev) {
+    if (ev) ev.stopPropagation();
+    const f = allBooks[idx];
+    if (!f) return;
+    const marcar = !obsDaObra(f).favorita;
+    const anterior = { _obs: f._obs, 'Obs.': f['Obs.'] };
+    // mostra na hora; o valor final vem da planilha
+    const partes = String(f._obs || '').split(',').map(x => x.trim()).filter(x => x && !/favorit/i.test(x));
+    if (marcar) partes.unshift('Favorite');
+    f._obs = partes.join(', '); f['Obs.'] = f._obs;
+    salvarObra(idx, { Favorito: marcar }, anterior);
   }
 
   function alterarNotaObra(idx, ev) {
