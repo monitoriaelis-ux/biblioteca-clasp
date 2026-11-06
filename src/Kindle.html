@@ -1,17 +1,23 @@
-<!-- Seção "Meu kindle" — e-books da aba Base (Tipo = Ebook), exibida dentro do Front.html. -->
+<!-- Seção "Meu kindle" — e-books da aba Base (Tipo = Ebook), exibida dentro do Front.html.
+     Mesmo esquema da página de fanfics: indicadores à esquerda, top autores no meio, lista à direita. -->
 <div class="fanfic-layout">
 
-  <!-- Coluna fixa: indicadores + Kindle com sugestão de leitura -->
+  <!-- Coluna 1 (fixa): indicadores + Kindle com sugestão de leitura -->
   <aside class="fandom-sidebar kd-sidebar">
-    <div class="kd-stats">
-      <div class="kd-stat kd-st-lidos"><span class="kd-stat-valor" id="kd-lidos">0</span><span class="kd-stat-label">Lidos</span><span class="kd-stat-sub" id="kd-lidos-sub"></span></div>
-      <div class="kd-stat kd-st-quero"><span class="kd-stat-valor" id="kd-quero">0</span><span class="kd-stat-label">Quero ler</span><span class="kd-stat-sub" id="kd-quero-sub"></span></div>
-      <div class="kd-stat kd-st-ano"><span class="kd-stat-valor" id="kd-lidos-ano">0</span><span class="kd-stat-label">Lidos em <span id="kd-ano"></span></span><span class="kd-stat-sub" id="kd-lidos-ano-sub"></span></div>
+    <div class="stat-card stat-lidas kd-stat">
+      <span class="stat-label"><i class="fa-solid fa-book-bookmark"></i> Lidos</span>
+      <span class="stat-value" id="kd-lidos">0</span>
+      <span class="stat-sub" id="kd-lidos-sub"></span>
     </div>
-
-    <div class="kd-lendo">
-      <div class="kd-bloco-titulo"><i class="fa-solid fa-book-open-reader"></i> Lendo agora</div>
-      <div id="kd-lendo-lista" class="kd-lendo-lista"></div>
+    <div class="stat-card kd-stat kd-stat-quero">
+      <span class="stat-label"><i class="fa-solid fa-bookmark"></i> Quero ler</span>
+      <span class="stat-value" id="kd-quero">0</span>
+      <span class="stat-sub" id="kd-quero-sub"></span>
+    </div>
+    <div class="stat-card kd-stat kd-stat-ano">
+      <span class="stat-label"><i class="fa-solid fa-calendar-check"></i> Lidos em <span id="kd-ano"></span></span>
+      <span class="stat-value" id="kd-lidos-ano">0</span>
+      <span class="stat-sub" id="kd-lidos-ano-sub"></span>
     </div>
 
     <!-- Kindle: sugestão de próxima leitura -->
@@ -27,7 +33,15 @@
     </div>
   </aside>
 
-  <!-- Busca, filtros e lista -->
+  <!-- Coluna 2 (fixa): top autores — acompanha o filtro LGBT -->
+  <aside class="fanfic-stats kd-autores-col">
+    <div class="autores-card">
+      <div class="autores-title"><i class="fa-solid fa-feather-pointed"></i> Top autores<span id="kd-autores-sub" class="kd-autores-sub"></span></div>
+      <div id="kd-autores" class="autores-list"></div>
+    </div>
+  </aside>
+
+  <!-- Coluna 3: busca, filtros e lista -->
   <div class="fanfic-main">
     <div class="fanfic-toolbar">
       <div class="fanfic-search">
@@ -36,12 +50,12 @@
         <button type="button" id="kd-busca-x" class="fanfic-search-clear" title="Limpar busca" hidden><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div id="kd-chip" class="fanfic-serie-chip" hidden>
-        <i class="fa-solid fa-layer-group"></i><span id="kd-chip-nome"></span>
-        <button type="button" id="kd-chip-x" title="Sair da série"><i class="fa-solid fa-xmark"></i></button>
+        <i class="fa-solid fa-filter"></i><span id="kd-chip-nome"></span>
+        <button type="button" id="kd-chip-x" title="Remover filtro"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="fanfic-seg">
         <button type="button" class="fanfic-seg-btn active" data-kd-lgbt="todos">Todos</button>
-        <button type="button" class="fanfic-seg-btn kd-lgbt-btn" data-kd-lgbt="lgbt"><span class="kd-arcoiris-mini"></span>LGBT</button>
+        <button type="button" class="fanfic-seg-btn" data-kd-lgbt="lgbt"><span class="kd-arcoiris-mini"></span>LGBT</button>
       </div>
       <div class="fanfic-seg">
         <button type="button" class="fanfic-seg-btn active" data-kd-leitura="todas">Todas</button>
@@ -52,7 +66,10 @@
     </div>
 
     <div class="fanfic-list-scroll" id="kd-scroll">
-      <div id="kd-lista" class="kd-grade"><div class="obras-vazio">Carregando seus e-books...</div></div>
+      <div class="obra-row obra-header">
+        <span></span><span class="col-titulo">Título</span><span>Páginas</span><span>Orientação</span><span>Status</span><span>Nota</span><span></span>
+      </div>
+      <div id="kd-lista" class="obras-list"><div class="obras-vazio">Carregando seus e-books...</div></div>
     </div>
   </div>
 
@@ -60,52 +77,47 @@
 </div>
 
 <style>
-  .kd-sidebar { width: 236px; gap: 10px; }
-  .kd-stats { flex-shrink: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .kd-stat {
-    border-radius: 12px; padding: 9px 4px 8px; text-align: center; display: flex; flex-direction: column; gap: 1px;
-    box-shadow: 0 3px 8px rgba(155, 125, 97, 0.05);
-  }
-  .kd-st-lidos { background: #e3ece8; } .kd-st-quero { background: #fbeee8; } .kd-st-ano { background: #fff9c4; }
-  .kd-stat-valor { font-size: 21px; font-weight: 700; color: var(--texto-marrom); line-height: 1.1; }
-  .kd-stat-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texto-marrom); }
-  .kd-stat-sub { font-size: 9px; font-weight: 600; color: var(--texto-secundario); }
+  /* Coluna 1 */
+  .kd-sidebar { width: 200px; }
+  .kd-stat { flex: 1; min-height: 0; max-height: 130px; padding: 10px 8px; justify-content: center; }
+  .kd-stat .stat-value { font-size: 24px; }
+  .kd-stat .stat-label { font-size: 10.5px; }
+  .kd-stat .stat-sub { font-size: 10.5px; }
+  .kd-stat-quero { background: #fbeee8; }
+  .kd-stat-quero .stat-label i { color: var(--cor-fanfic); }
+  .kd-stat-ano { background: #fff9c4; }
+  .kd-stat-ano .stat-label i { color: #E2A03F; }
 
-  .kd-bloco-titulo { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-marrom); margin-bottom: 8px; }
-  .kd-bloco-titulo i { color: #b8962a; margin-right: 4px; }
-  .kd-lendo { flex: 1; min-height: 0; background: var(--bg-cards); border-radius: 12px; padding: 12px; box-shadow: 0 3px 8px rgba(155, 125, 97, 0.05); display: flex; flex-direction: column; }
-  .kd-lendo-lista { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-  .kd-lendo-item { display: flex; gap: 10px; align-items: center; cursor: pointer; border-radius: 8px; padding: 4px; }
-  .kd-lendo-item:hover { background: var(--bg-creme); }
-  .kd-lendo-item .obra-capa { width: 34px; height: 51px; flex-shrink: 0; }
-  .kd-lendo-item b { display: block; font-size: 12px; color: var(--texto-marrom); line-height: 1.25; }
-  .kd-lendo-item span { font-size: 10.5px; color: var(--texto-secundario); }
-  .kd-lendo-vazio { font-size: 11.5px; color: var(--texto-secundario); }
+  /* Coluna 2 */
+  .kd-autores-col { width: 230px; }
+  .kd-autores-sub { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.3px; text-transform: none; color: var(--texto-secundario); margin-top: 2px; }
+  #kd-autores .autor-row { cursor: pointer; border-radius: 6px; }
+  #kd-autores .autor-row:hover .autor-nome { color: #6f948a; text-decoration: underline; }
+  #kd-autores .autor-row.ativo .autor-nome { color: #6f948a; }
 
   /* ===== Kindle (canto inferior esquerdo) ===== */
-  .kd-kindle-area { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 0; }
+  .kd-kindle-area { flex-shrink: 0; margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 0; }
   .kd-kindle-titulo { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--texto-secundario); }
   .kd-kindle {
-    width: 190px; background: #2f2b28; border-radius: 16px; padding: 12px 12px 8px;
+    width: 178px; background: #2f2b28; border-radius: 16px; padding: 12px 12px 8px;
     box-shadow: 0 8px 20px rgba(60, 45, 35, 0.28), inset 0 0 0 2px #46413c;
   }
   .kd-tela {
-    position: relative; height: 210px; background: #f1ede4; border-radius: 3px; overflow: hidden;
+    position: relative; height: 205px; background: #f1ede4; border-radius: 3px; overflow: hidden;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px;
-    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15); cursor: default;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
   }
-  .kd-tela img { width: 100px; height: 150px; object-fit: cover; border-radius: 3px; filter: grayscale(35%) contrast(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  .kd-tela img { width: 98px; height: 147px; object-fit: cover; border-radius: 3px; filter: grayscale(35%) contrast(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
   .kd-tela-capa-vazia {
-    width: 100px; height: 150px; border-radius: 3px; background: #e2ddd2; color: #6b6259;
+    width: 98px; height: 147px; border-radius: 3px; background: #e2ddd2; color: #6b6259;
     display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px;
     font-family: Georgia, serif; font-size: 12px; line-height: 1.3;
   }
   .kd-tela-titulo { font-family: Georgia, serif; font-size: 11.5px; font-weight: 700; color: #3a332d; text-align: center; line-height: 1.25; max-width: 100%; }
   .kd-tela-autor { font-family: Georgia, serif; font-size: 10px; color: #6b6259; text-align: center; }
   .kd-tela-vazia { font-family: Georgia, serif; font-size: 11.5px; color: #6b6259; text-align: center; }
-  /* sinopse ao passar o mouse */
   .kd-sinopse {
-    position: absolute; inset: 0; background: #f1ede4; padding: 12px 12px; overflow-y: auto;
+    position: absolute; inset: 0; background: #f1ede4; padding: 12px; overflow-y: auto; cursor: pointer;
     font-family: Georgia, serif; font-size: 11px; line-height: 1.5; color: #3a332d; white-space: pre-line;
     opacity: 0; transition: opacity 0.2s;
   }
@@ -133,50 +145,16 @@
     background: linear-gradient(180deg, #e57373 0 17%, #f6a65a 17% 34%, #f2d45c 34% 51%, #8cc084 51% 68%, #6fa3d6 68% 85%, #a07cc5 85% 100%);
   }
   .kd-vazio { color: var(--borda-bege); }
-
-  /* ===== Grade de cards ===== */
-  .kd-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; padding-bottom: 20px; align-items: start; }
-  .kd-grade .obras-vazio { grid-column: 1 / -1; }
-  .kd-card {
-    --status-cor: var(--borda-bege);
-    background: var(--bg-cards); border-radius: 12px; box-shadow: 0 3px 10px rgba(155, 125, 97, 0.06);
-    border-left: 5px solid var(--status-cor); padding: 10px 12px 10px 10px;
-    display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 12px;
-  }
-  .kd-card:hover { box-shadow: 0 5px 14px rgba(155, 125, 97, 0.12); }
-  .kd-card.st-lido { --status-cor: var(--cor-livro); }
-  .kd-card.st-lendo { --status-cor: #F2D45C; }
-  .kd-card.st-quero { --status-cor: var(--cor-fanfic); }
-  .kd-card .obra-capa { width: 62px; height: 93px; font-size: 18px; }
-  .kd-info { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-  .kd-topo { display: flex; align-items: flex-start; gap: 6px; }
-  .kd-titulo {
-    flex: 1; min-width: 0; font-weight: 700; font-size: 13.5px; color: var(--texto-marrom); line-height: 1.3;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .kd-autor { font-size: 11px; color: var(--texto-secundario); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .kd-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--texto-secundario); }
-  .kd-meta b { color: var(--texto-marrom); }
-  .kd-base { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 4px; }
-  .kd-base .obra-status { width: 98px; padding: 4px 8px; font-size: 11px; }
-  .kd-base .obra-status-fixo { padding: 3px 12px; font-size: 11px; }
-  .kd-base .obra-nota { font-size: 13px; }
-  .kd-card .obra-expand { height: auto; width: 18px; }
-  .kd-plot {
-    display: none; grid-column: 1 / -1; font-size: 12px; line-height: 1.55; color: var(--texto-marrom);
-    border-top: 1px dashed var(--hover-bege); padding-top: 8px; white-space: pre-line;
-  }
-  .kd-card.aberta .kd-plot { display: block; }
-  .kd-card.aberta .obra-expand { transform: rotate(180deg); }
 </style>
 
 <script>
   // ===== Estado =====
+  const KD_TOP_AUTORES = 10;
   let kdIniciado = false;
   let kdSugestao = null;          // índice (em allBooks) do e-book sugerido
   let kdAberta = null;            // linha com o plot aberto
   let kdStatusAberto = null;
-  const kdF = { busca: '', lgbt: 'todos', leitura: 'todas', ordem: null, asc: true, serie: null };
+  const kdF = { busca: '', lgbt: 'todos', leitura: 'todas', ordem: null, asc: true, serie: null, autor: null };
 
   // ===== Utilidades =====
   const kdNorm = v => (v === undefined || v === null ? '' : String(v)).trim().toLowerCase();
@@ -209,13 +187,12 @@
   function kdAnoLeitura(b) {
     const a = kdNum(b['Ano da leitura']);
     if (a) return a;
-    const d = b['Data final'];
-    if (!d) return 0;
-    const m = String(d).match(/(\d{4})/);
+    const m = String(b['Data final'] || '').match(/(\d{4})/);
     return m ? Number(m[1]) : 0;
   }
+  // Base da página conforme o filtro LGBT (indicadores e top autores seguem esse filtro)
+  const kdBase = () => kdF.lgbt === 'lgbt' ? kdEbooks().filter(kdLgbt) : kdEbooks();
 
-  // Séries juntas e em ordem de volume, na posição do primeiro volume
   function kdAgrupar(lista) {
     const grupos = {}, vistos = new Set(), res = [];
     lista.forEach(b => { const k = kdNorm(kdSerie(b)); if (k) (grupos[k] = grupos[k] || []).push(b); });
@@ -232,7 +209,7 @@
   function renderKindle() {
     if (!kdIniciado) kdIniciar();
     kdRenderStats();
-    kdRenderLendo();
+    kdRenderAutores();
     kdRenderKindle();
     kdRenderLista();
   }
@@ -240,10 +217,10 @@
   function kdIniciar() {
     kdIniciado = true;
     const busca = document.getElementById('kd-busca');
-    busca.addEventListener('input', () => { kdF.busca = busca.value; if (kdF.busca) kdF.serie = null; kdRenderLista(); });
+    busca.addEventListener('input', () => { kdF.busca = busca.value; if (kdF.busca) { kdF.serie = null; kdF.autor = null; } kdRenderLista(); kdRenderAutores(); });
     document.getElementById('kd-busca-x').addEventListener('click', () => { busca.value = ''; kdF.busca = ''; kdRenderLista(); busca.focus(); });
-    document.getElementById('kd-chip-x').addEventListener('click', () => { kdF.serie = null; kdRenderLista(); });
-    document.querySelectorAll('[data-kd-lgbt]').forEach(b => b.addEventListener('click', () => { kdF.lgbt = b.dataset.kdLgbt; kdRenderLista(); }));
+    document.getElementById('kd-chip-x').addEventListener('click', () => { kdF.serie = null; kdF.autor = null; kdRenderLista(); kdRenderAutores(); });
+    document.querySelectorAll('[data-kd-lgbt]').forEach(b => b.addEventListener('click', () => { kdF.lgbt = b.dataset.kdLgbt; renderKindle(); }));
     document.querySelectorAll('[data-kd-leitura]').forEach(b => b.addEventListener('click', () => { kdF.leitura = b.dataset.kdLeitura; kdRenderLista(); }));
     document.querySelectorAll('[data-kd-ordem]').forEach(b => b.addEventListener('click', () => {
       // 1º clique ativa, 2º inverte, 3º remove — A-Z crescente; Páginas: maiores primeiro
@@ -262,39 +239,60 @@
   }
 
   function kdRenderStats() {
-    const todos = kdEbooks();
-    const lidos = todos.filter(kdLido).length;
-    const quero = todos.filter(b => kdStatus(b) === 'quero ler').length;
+    const base = kdBase();
+    const lidos = base.filter(kdLido).length;
+    const quero = base.filter(b => kdStatus(b) === 'quero ler').length;
     const ano = new Date().getFullYear();
-    const lidosAno = todos.filter(b => kdLido(b) && kdAnoLeitura(b) === ano).length;
+    const lidosAno = base.filter(b => kdLido(b) && kdAnoLeitura(b) === ano).length;
+    const sufixo = kdF.lgbt === 'lgbt' ? ' LGBT' : '';
     document.getElementById('kd-lidos').textContent = lidos;
-    document.getElementById('kd-lidos-sub').textContent = todos.length ? `de ${todos.length} · ${kdPct(lidos, todos.length)}%` : 'nenhum e-book';
+    document.getElementById('kd-lidos-sub').textContent = base.length ? `de ${base.length}${sufixo} · ${kdPct(lidos, base.length)}%` : 'nenhum e-book';
     document.getElementById('kd-quero').textContent = quero;
-    document.getElementById('kd-quero-sub').textContent = todos.length ? `${kdPct(quero, todos.length)}% da biblioteca` : '';
+    document.getElementById('kd-quero-sub').textContent = base.length ? `${kdPct(quero, base.length)}% da biblioteca${sufixo}` : '';
     document.getElementById('kd-ano').textContent = ano;
     document.getElementById('kd-lidos-ano').textContent = lidosAno;
-    const lgbtLidos = todos.filter(b => kdLido(b) && kdAnoLeitura(b) === ano && kdLgbt(b)).length;
-    document.getElementById('kd-lidos-ano-sub').textContent = lidosAno ? `${lgbtLidos} LGBT` : 'nenhum ainda';
+    document.getElementById('kd-lidos-ano-sub').textContent = lidosAno ? `${lidosAno === 1 ? 'e-book' : 'e-books'}${sufixo} terminados` : 'nenhum ainda';
   }
 
-  // ===== Lendo agora =====
-  function kdRenderLendo() {
-    const lendo = kdEbooks().filter(b => kdStatus(b) === 'lendo');
-    const el = document.getElementById('kd-lendo-lista');
-    el.innerHTML = lendo.length ? lendo.map(b => {
-      const i = allBooks.indexOf(b);
-      const capa = b['URL da imagem'] ? `<img class="obra-capa" src="${kdEsc(b['URL da imagem'])}" alt="" loading="lazy">` : '<div class="obra-capa"><i class="fa-solid fa-tablet-screen-button"></i></div>';
-      return `<div class="kd-lendo-item" title="Mostrar na lista" onclick="kdIrPara(${i})">${capa}<div style="min-width:0"><b>${kdEsc(b['Título'] || '')}</b><span>${kdEsc(b['Autor'] || '')}</span></div></div>`;
-    }).join('') : '<div class="kd-lendo-vazio">Nenhum e-book em leitura no momento.</div>';
-  }
-
-  // Leva até o card da obra na lista (limpa filtros que a esconderiam)
-  function kdIrPara(i) {
-    kdF.busca = ''; kdF.serie = null; kdF.lgbt = 'todos'; kdF.leitura = 'todas';
-    document.getElementById('kd-busca').value = '';
-    kdRenderLista();
-    const card = document.querySelector(`#kd-lista [data-kd="${i}"]`);
-    if (card) { card.scrollIntoView({ block: 'center', behavior: 'smooth' }); card.animate([{ boxShadow: '0 0 0 3px #F2D45C' }, { boxShadow: '0 0 0 0 transparent' }], { duration: 1400 }); }
+  // ===== Top autores (segue o filtro LGBT) =====
+  function kdRenderAutores() {
+    const porAutor = {};
+    kdBase().forEach(b => {
+      const nome = (b['Autor'] || '').toString().trim();
+      if (!nome) return;
+      const k = kdNorm(nome);
+      porAutor[k] = porAutor[k] || { nome, total: 0, lidas: 0 };
+      porAutor[k].total++;
+      if (kdLido(b)) porAutor[k].lidas++;
+    });
+    const top = Object.values(porAutor).sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR')).slice(0, KD_TOP_AUTORES);
+    document.getElementById('kd-autores-sub').textContent = kdF.lgbt === 'lgbt' ? 'somente LGBT' : '';
+    const el = document.getElementById('kd-autores');
+    el.innerHTML = top.length ? top.map((a, i) => {
+      const pL = kdPct(a.lidas, a.total);
+      return `
+        <div class="autor-row${kdNorm(kdF.autor) === kdNorm(a.nome) ? ' ativo' : ''}" data-autor="${kdEsc(a.nome)}" title="${a.lidas} lidos · ${a.total - a.lidas} não lidos — clique para filtrar">
+          <div class="autor-top">
+            <span class="autor-nome"><span class="autor-pos">${i + 1}.</span>${kdEsc(a.nome)}</span>
+            <span class="autor-total">${a.total}</span>
+          </div>
+          <div class="split-bar"><div class="split-bar-lidas" style="width:${pL}%"></div><div class="split-bar-naolidas" style="width:${a.total ? 100 - pL : 0}%"></div></div>
+        </div>`;
+    }).join('') : '<div class="autores-vazio">Nenhum autor aqui.</div>';
+    el.querySelectorAll('.autor-row').forEach(r => r.addEventListener('click', () => {
+      kdF.autor = kdNorm(kdF.autor) === kdNorm(r.dataset.autor) ? null : r.dataset.autor;
+      kdF.serie = null;
+      kdRenderLista(); kdRenderAutores();
+      document.getElementById('kd-scroll').scrollTop = 0;
+    }));
+    const card = el.parentElement;
+    if (!card.querySelector('.autores-legend')) {
+      card.insertAdjacentHTML('beforeend', `
+        <div class="autores-legend">
+          <span><span class="dot" style="background: var(--cor-livro);"></span>Lidos</span>
+          <span><span class="dot" style="background: var(--cor-fanfic);"></span>Não lidos</span>
+        </div>`);
+    }
   }
 
   // ===== Kindle: sugestão de próxima leitura =====
@@ -324,12 +322,22 @@
       <div class="kd-sinopse" title="Clique para ver na lista" onclick="kdIrPara(${kdSugestao})"><b>${kdEsc(b['Título'] || '')}</b>${plot ? kdEsc(plot) : 'Sem sinopse cadastrada.'}</div>`;
   }
 
+  // Leva até a obra na lista (limpa filtros que a esconderiam)
+  function kdIrPara(i) {
+    kdF.busca = ''; kdF.serie = null; kdF.autor = null; kdF.leitura = 'todas';
+    if (!kdLgbt(allBooks[i])) kdF.lgbt = 'todos';
+    document.getElementById('kd-busca').value = '';
+    renderKindle();
+    const card = document.querySelector(`#kd-lista [data-kd="${i}"]`);
+    if (card) { card.scrollIntoView({ block: 'center', behavior: 'smooth' }); card.animate([{ boxShadow: '0 0 0 3px #F2D45C' }, { boxShadow: '0 0 0 0 transparent' }], { duration: 1400 }); }
+  }
+
   // ===== Lista =====
   function kdAplicarSerie(i, ev) {
     if (ev) ev.stopPropagation();
-    kdF.serie = kdSerie(allBooks[i]); kdF.busca = '';
+    kdF.serie = kdSerie(allBooks[i]); kdF.autor = null; kdF.busca = '';
     document.getElementById('kd-busca').value = '';
-    kdRenderLista();
+    kdRenderLista(); kdRenderAutores();
     document.getElementById('kd-scroll').scrollTop = 0;
   }
 
@@ -337,8 +345,8 @@
     if (kdF.serie) {
       return kdEbooks().filter(b => kdNorm(kdSerie(b)) === kdNorm(kdF.serie)).sort((a, b) => kdVolume(a) - kdVolume(b));
     }
-    let lista = kdEbooks();
-    if (kdF.lgbt === 'lgbt') lista = lista.filter(kdLgbt);
+    let lista = kdBase();
+    if (kdF.autor) lista = lista.filter(b => kdNorm(b['Autor']) === kdNorm(kdF.autor));
     if (kdF.leitura === 'naolidas') lista = lista.filter(b => !kdLido(b));
     const termo = kdSemAcento(kdF.busca);
     if (termo) lista = lista.filter(b => [b['Título'], b['Autor'], kdSerie(b)].some(x => kdSemAcento(x).includes(termo)));
@@ -351,8 +359,9 @@
 
   function kdRenderLista() {
     document.getElementById('kd-busca-x').hidden = !kdF.busca;
-    document.getElementById('kd-chip').hidden = !kdF.serie;
-    document.getElementById('kd-chip-nome').textContent = kdF.serie || '';
+    const filtroChip = kdF.serie || kdF.autor;
+    document.getElementById('kd-chip').hidden = !filtroChip;
+    document.getElementById('kd-chip-nome').textContent = filtroChip || '';
     document.querySelectorAll('[data-kd-lgbt]').forEach(b => b.classList.toggle('active', b.dataset.kdLgbt === kdF.lgbt));
     document.querySelectorAll('[data-kd-leitura]').forEach(b => b.classList.toggle('active', b.dataset.kdLeitura === kdF.leitura));
     document.querySelectorAll('[data-kd-ordem]').forEach(b => {
@@ -390,29 +399,26 @@
           ${['Lido', 'Lendo', 'Quero ler'].map(s => `<button type="button" class="${kdNorm(s) === st ? 'atual' : ''}" onclick="kdAlterarStatus(${i}, '${s}')"><span class="dot" style="background:${s === 'Lido' ? 'var(--cor-livro)' : s === 'Lendo' ? '#F2D45C' : 'var(--cor-fanfic)'}"></span>${s}</button>`).join('')}
         </div>
       </div>`;
-    const orient = kdOrientacao(b);
 
     return `
-      <div class="kd-card ${cls}${kdAberta === i ? ' aberta' : ''}" data-kd="${i}">
-        ${capa}
-        <div class="kd-info">
-          <div class="kd-topo">
-            <span class="kd-titulo" title="${kdEsc(b['Título'])}">${kdEsc(b['Título'] || 'Sem título')}</span>
-            <button type="button" class="obra-fav-btn${fav ? ' on' : ''}" title="${fav ? 'Favorito — clique para desfavoritar' : 'Favoritar'}" onclick="kdAlterarFavorito(${i}, event)"><i class="${fav ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>
-            ${kdAband(b) ? '<i class="fa-solid fa-ban obra-badge aband" title="Abandonado"></i>' : ''}
+      <div class="obra-card kd-card ${cls}${kdAberta === i ? ' aberta' : ''}" data-kd="${i}">
+        <div class="obra-row">
+          ${capa}
+          <div class="obra-titulo-bloco">
+            <div class="obra-titulo-linha">
+              <span class="obra-titulo" title="${kdEsc(b['Título'])}">${kdEsc(b['Título'] || 'Sem título')}</span>
+              <button type="button" class="obra-fav-btn${fav ? ' on' : ''}" title="${fav ? 'Favorito — clique para desfavoritar' : 'Favoritar'}" onclick="kdAlterarFavorito(${i}, event)"><i class="${fav ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>
+              ${kdAband(b) ? '<i class="fa-solid fa-ban obra-badge aband" title="Abandonado"></i>' : ''}
+            </div>
+            <span class="obra-autor">${kdEsc(b['Autor'] || 'Autor desconhecido')}${serie ? ` · <span class="obra-serie" title="Ver a série toda" onclick="kdAplicarSerie(${i}, event)"><i class="fa-solid fa-layer-group"></i> ${kdEsc(serie)}${vol !== Infinity ? `, vol. ${vol}` : ''}</span>` : ''}</span>
           </div>
-          <span class="kd-autor">${kdEsc(b['Autor'] || 'Autor desconhecido')}${serie ? ` · <span class="obra-serie" title="Ver a série toda" onclick="kdAplicarSerie(${i}, event)"><i class="fa-solid fa-layer-group"></i> ${kdEsc(serie)}${vol !== Infinity ? `, vol. ${vol}` : ''}</span>` : ''}</span>
-          <div class="kd-meta">
-            ${kdNum(b['Páginas']) ? `<span><b>${Math.ceil(kdNum(b['Páginas'])).toLocaleString('pt-BR')}</b> págs.</span>` : ''}
-            ${kdLgbt(b) ? `<span class="kd-lgbt" title="LGBT">${kdEsc(orient)}</span>` : ''}
-          </div>
-          <div class="kd-base">
-            <div class="obra-cel">${statusHtml}</div>
-            <div class="obra-nota ${lido ? 'editavel' : 'bloqueada'}" title="${lido ? 'Clique para dar a nota (mesma estrela limpa)' : 'Marque como Lido para avaliar'}" ${lido ? `onclick="kdAlterarNota(${i}, event)"` : ''}>${stars}</div>
-            ${plot ? `<button type="button" class="obra-expand" onclick="kdToggleObra(${i})" title="Ver plot"><i class="fa-solid fa-chevron-down"></i></button>` : '<span style="width:18px"></span>'}
-          </div>
+          <span class="obra-palavras">${kdNum(b['Páginas']) ? Math.ceil(kdNum(b['Páginas'])).toLocaleString('pt-BR') : '—'}</span>
+          <span class="obra-cel">${kdLgbt(b) ? `<span class="kd-lgbt" title="LGBT">${kdEsc(kdOrientacao(b))}</span>` : '<span class="kd-vazio">—</span>'}</span>
+          <div class="obra-cel">${statusHtml}</div>
+          <div class="obra-cel"><div class="obra-nota ${lido ? 'editavel' : 'bloqueada'}" title="${lido ? 'Clique para dar a nota (mesma estrela limpa)' : 'Marque como Lido para avaliar'}" ${lido ? `onclick="kdAlterarNota(${i}, event)"` : ''}>${stars}</div></div>
+          ${plot ? `<button type="button" class="obra-expand" onclick="kdToggleObra(${i})" title="Ver plot"><i class="fa-solid fa-chevron-down"></i></button>` : '<span></span>'}
         </div>
-        ${plot ? `<div class="kd-plot">${kdEsc(plot)}</div>` : ''}
+        ${plot ? `<div class="obra-plot">${kdEsc(plot)}</div>` : ''}
       </div>`;
   }
 
